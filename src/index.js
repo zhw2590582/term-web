@@ -26,9 +26,9 @@ export default class Term extends Emitter {
         return {
             container: '#term',
             title: 'Term UI',
-            prefix: 'root@linux:~$ ',
-            width: 400,
-            height: 300,
+            prefix: 'root@linux:~$',
+            width: 600,
+            height: 500,
             borderRadius: 5,
             font: 'Arial',
             welcome: '🎉 Welcome to use the Term UI 🎉',
@@ -68,7 +68,11 @@ export default class Term extends Emitter {
         if (this.options.welcome) {
             this.input({
                 type: 'output',
-                text: this.options.welcome,
+                text: this.options.welcome.repeat(10),
+            });
+            this.input({
+                type: 'input',
+                text: this.options.title.repeat(100),
             });
         }
 

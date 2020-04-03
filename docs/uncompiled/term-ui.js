@@ -420,11 +420,55 @@
     this.term = term;
   };
 
-  var Log = function Log(drawer, data) {
-    classCallCheck(this, Log);
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
 
-    this.data = data;
-  };
+    for (var i = 0, arr2 = new Array(len); i < len; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+
+  var arrayLikeToArray = _arrayLikeToArray;
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return arrayLikeToArray(arr);
+  }
+
+  var arrayWithoutHoles = _arrayWithoutHoles;
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  }
+
+  var iterableToArray = _iterableToArray;
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(n);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+  }
+
+  var unsupportedIterableToArray = _unsupportedIterableToArray;
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var nonIterableSpread = _nonIterableSpread;
+
+  function _toConsumableArray(arr) {
+    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
+  }
+
+  var toConsumableArray = _toConsumableArray;
+
+  var INPUT = 'input';
+  var OUTPUT = 'output';
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
@@ -432,18 +476,19 @@
 
       this.term = term;
       var pixelRatio = term.options.pixelRatio;
-      this.gap = 5 * pixelRatio;
-      this.fontSize = 13 * pixelRatio;
+      this.gap = 10 * pixelRatio;
+      this.fontSize = 14 * pixelRatio;
       this.padding = [35, 10, 10, 10].map(function (item) {
         return item * pixelRatio;
       });
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
       this.btnSize = 6 * pixelRatio;
-      this.titleColor = '#fff';
+      this.textColor = '#fff';
       this.$canvas = term.template.$canvas;
       this.ctx = this.$canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px Arial");
       this.ctx.textBaseline = 'top';
+      this.lineIndex = 0;
       this.logs = [];
       (function loop() {
         var _this = this;
@@ -465,7 +510,7 @@
             height = _this$$canvas.height;
         this.height = height - this.padding[0] - this.padding[2];
         this.width = width - this.padding[1] - this.padding[3];
-        this.line = Math.floor(this.height / (this.fontSize + this.gap));
+        this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
         this.drawContent(data);
@@ -487,7 +532,7 @@
         var _this2 = this;
 
         var title = this.term.options.title;
-        this.ctx.fillStyle = this.titleColor;
+        this.ctx.fillStyle = this.textColor;
 
         var _this$ctx$measureText = this.ctx.measureText(title),
             width = _this$ctx$measureText.width;
@@ -508,11 +553,22 @@
     }, {
       key: "drawContent",
       value: function drawContent(data) {
+        var _this$logs;
+
         var backgroundColor = this.term.options.backgroundColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-        if (data) this.logs.push(new Log(this, data));
-        console.log(this.logs);
+        if (data) (_this$logs = this.logs).push.apply(_this$logs, toConsumableArray(this.getLog(data)));
+        this.ctx.fillStyle = this.textColor;
+
+        for (var i = 0; i < this.totalLine; i += 1) {
+          var text = this.logs[this.lineIndex + i];
+
+          if (text) {
+            var top = this.padding[0] + (this.fontSize + this.gap) * i;
+            this.ctx.fillText(text, this.padding[3], top);
+          }
+        }
       }
     }, {
       key: "drawCursor",
@@ -523,6 +579,30 @@
       value: function drawText() {//
       }
     }, {
+      key: "getLog",
+      value: function getLog(data) {
+        var prefix = this.term.options.prefix;
+        var chr = data.text.split(/\r?\n/).map(function (item) {
+          return item.trim();
+        }).join(' ').split(' ');
+        var temp = [data.type === INPUT ? prefix : ''];
+        var lines = [];
+
+        for (var i = 0; i < chr.length; i += 1) {
+          var text = [].concat(toConsumableArray(temp), [chr[i]]).join(' ').trim();
+
+          if (this.ctx.measureText(text).width > this.width) {
+            lines.push(temp.join(' '));
+            temp.length = 0;
+          } else {
+            temp = text.split(' ');
+          }
+        }
+
+        lines.push(temp.join(' '));
+        return lines;
+      }
+    }, {
       key: "destroy",
       value: function destroy() {
         clearTimeout(this.timer);
@@ -531,9 +611,6 @@
 
     return Drawer;
   }();
-
-  var INPUT = 'input';
-  var OUTPUT = 'output';
 
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -571,9 +648,9 @@
         return {
           container: '#term',
           title: 'Term UI',
-          prefix: 'root@linux:~$ ',
-          width: 400,
-          height: 300,
+          prefix: 'root@linux:~$',
+          width: 600,
+          height: 500,
           borderRadius: 5,
           font: 'Arial',
           welcome: '🎉 Welcome to use the Term UI 🎉',
@@ -621,7 +698,12 @@
       if (_this.options.welcome) {
         _this.input({
           type: 'output',
-          text: _this.options.welcome
+          text: _this.options.welcome.repeat(10)
+        });
+
+        _this.input({
+          type: 'input',
+          text: _this.options.title.repeat(100)
         });
       }
 
