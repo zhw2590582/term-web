@@ -506,7 +506,7 @@
           _this.drawCursor();
 
           loop.call(_this);
-        }, 1000);
+        }, 600);
       }).call(this);
     }
 
@@ -599,16 +599,12 @@
             backgroundColor = _this$term$options3.backgroundColor;
 
         if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
+          this.update();
+          var left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
+          var top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
           this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
-          var _this$lastLinePos = this.lastLinePos,
-              left = _this$lastLinePos.left,
-              top = _this$lastLinePos.top;
-          this.ctx.fillRect(left, top, pixelRatio * 2, this.fontSize);
+          this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
-      }
-    }, {
-      key: "drawText",
-      value: function drawText() {//
       }
     }, {
       key: "getLogNormal",
@@ -654,10 +650,6 @@
       value: function getLogRadio(data) {//
       }
     }, {
-      key: "updateLastLog",
-      value: function updateLastLog(log) {//
-      }
-    }, {
       key: "destroy",
       value: function destroy() {
         clearTimeout(this.timer);
@@ -671,15 +663,6 @@
       key: "lastLine",
       get: function get() {
         return this.lastLog.lines[this.lastLog.lines.length - 1];
-      }
-    }, {
-      key: "lastLinePos",
-      get: function get() {
-        var pixelRatio = this.term.options.pixelRatio;
-        return {
-          left: this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5,
-          top: this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1)
-        };
       }
     }]);
 
@@ -753,7 +736,7 @@
           borderRadius: 5,
           font: 'Arial',
           fontColor: '#b0b2b6',
-          welcome: 'Welcome to use the Term UI',
+          welcome: '🎉 Welcome to use the Term UI',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio

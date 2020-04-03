@@ -13,7 +13,6 @@ export default class Drawer {
         this.ctx = this.$canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px Arial`;
         this.ctx.textBaseline = 'top';
-
         this.logs = [];
 
         this.update();
@@ -24,7 +23,7 @@ export default class Drawer {
                 this.cursorOn = !this.cursorOn;
                 this.drawCursor();
                 loop.call(this);
-            }, 1000);
+            }, 600);
         }.call(this));
     }
 
@@ -34,14 +33,6 @@ export default class Drawer {
 
     get lastLine() {
         return this.lastLog.lines[this.lastLog.lines.length - 1];
-    }
-
-    get lastLinePos() {
-        const { pixelRatio } = this.term.options;
-        return {
-            left: this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5,
-            top: this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1),
-        };
     }
 
     update(data) {
@@ -112,14 +103,12 @@ export default class Drawer {
     drawCursor() {
         const { pixelRatio, backgroundColor } = this.term.options;
         if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
+            this.update();
+            const left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
+            const top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
             this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
-            const { left, top } = this.lastLinePos;
-            this.ctx.fillRect(left, top, pixelRatio * 2, this.fontSize);
+            this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
-    }
-
-    drawText() {
-        //
     }
 
     getLogNormal(data) {
@@ -161,10 +150,6 @@ export default class Drawer {
     }
 
     getLogRadio(data) {
-        //
-    }
-
-    updateLastLog(log) {
         //
     }
 
