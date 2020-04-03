@@ -4,36 +4,53 @@ export default class Drawer {
     constructor(term) {
         this.term = term;
         const { pixelRatio } = term.options;
-        this.gap = 10 * pixelRatio;
+        this.gap = 15 * pixelRatio;
         this.fontSize = 14 * pixelRatio;
-        this.padding = [35, 10, 10, 10].map(item => item * pixelRatio);
+        this.padding = [45, 15, 15, 15].map(item => item * pixelRatio);
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
         this.btnSize = 6 * pixelRatio;
-        this.textColor = '#fff';
         this.$canvas = term.template.$canvas;
         this.ctx = this.$canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px Arial`;
         this.ctx.textBaseline = 'top';
 
-        this.lineIndex = 0;
         this.logs = [];
 
+        this.update();
+
+        this.cursorOn = false;
         (function loop() {
             this.timer = setTimeout(() => {
+                this.cursorOn = !this.cursorOn;
                 this.drawCursor();
                 loop.call(this);
             }, 1000);
         }.call(this));
+    }
 
-        this.update();
+    get lastLog() {
+        return this.logs[this.logs.length - 1];
+    }
+
+    get lastLine() {
+        return this.lastLog.lines[this.lastLog.lines.length - 1];
+    }
+
+    get lastLinePos() {
+        const { pixelRatio } = this.term.options;
+        return {
+            left: this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5,
+            top: this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1),
+        };
     }
 
     update(data) {
+        this.lineStartIndex = 0;
+        this.lineEndIndex = 0;
         const { width, height } = this.$canvas;
         this.height = height - this.padding[0] - this.padding[2];
         this.width = width - this.padding[1] - this.padding[3];
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
-
         this.drawBackground();
         this.drawTopbar();
         this.drawContent(data);
@@ -48,10 +65,10 @@ export default class Drawer {
     }
 
     drawTopbar() {
-        const { title } = this.term.options;
-        this.ctx.fillStyle = this.textColor;
+        const { title, fontColor } = this.term.options;
+        this.ctx.fillStyle = fontColor;
         const { width } = this.ctx.measureText(title);
-        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1]);
+        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
         this.btnColor.forEach((item, index) => {
             this.ctx.beginPath();
             this.ctx.arc(
@@ -69,40 +86,62 @@ export default class Drawer {
     }
 
     drawContent(data) {
-        const { backgroundColor } = this.term.options;
+        const { backgroundColor, fontColor } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-        if (data) this.logs.push(...this.getLog(data));
-        this.ctx.fillStyle = this.textColor;
+        this.ctx.fillStyle = fontColor;
 
-        for (let i = 0; i < this.totalLine; i += 1) {
-            const text = this.logs[this.lineIndex + i];
-            if (text) {
-                const top = this.padding[0] + (this.fontSize + this.gap) * i;
-                this.ctx.fillText(text, this.padding[3], top);
+        if (data) {
+            this.logs.push(this.getLogNormal(data));
+        }
+
+        let lineIndex = 0;
+        for (let j = 0; j < this.logs.length; j += 1) {
+            for (let k = 0; k < this.logs[j].lines.length; k += 1) {
+                lineIndex += 1;
+                if (this.lineStartIndex < lineIndex && this.lineStartIndex + this.totalLine > lineIndex) {
+                    const text = this.logs[j].lines[k];
+                    const top = this.padding[0] + (this.fontSize + this.gap) * (lineIndex - 1);
+                    this.ctx.fillText(text, this.padding[3], top);
+                    this.lineEndIndex += 1;
+                }
             }
         }
     }
 
     drawCursor() {
-        //
+        const { pixelRatio, backgroundColor } = this.term.options;
+        if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
+            this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+            const { left, top } = this.lastLinePos;
+            this.ctx.fillRect(left, top, pixelRatio * 2, this.fontSize);
+        }
     }
 
     drawText() {
         //
     }
 
-    getLog(data) {
+    getLogNormal(data) {
         const { prefix } = this.term.options;
+        let temp = [data.type === INPUT ? prefix : ''];
+
+        if (!data.text) {
+            return {
+                ...data,
+                lines: temp,
+            };
+        }
+
         const chr = data.text
             .split(/\r?\n/)
             .map(item => item.trim())
             .join(' ')
             .split(' ');
-        let temp = [data.type === INPUT ? prefix : ''];
+
         const lines = [];
         for (let i = 0; i < chr.length; i += 1) {
-            const text = [...temp, chr[i]].join(' ').trim();
+            const text = [...temp, chr[i]].join(' ');
             if (this.ctx.measureText(text).width > this.width) {
                 lines.push(temp.join(' '));
                 temp.length = 0;
@@ -111,7 +150,22 @@ export default class Drawer {
             }
         }
         lines.push(temp.join(' '));
-        return lines;
+        return {
+            ...data,
+            lines: lines.filter(Boolean).map(item => item.trim()),
+        };
+    }
+
+    getLogCheckbox(data) {
+        //
+    }
+
+    getLogRadio(data) {
+        //
+    }
+
+    updateLastLog(log) {
+        //
     }
 
     destroy() {

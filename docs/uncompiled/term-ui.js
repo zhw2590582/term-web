@@ -469,6 +469,13 @@
 
   var INPUT = 'input';
   var OUTPUT = 'output';
+  var NORMAL = 'normal';
+  var CHECKBOX = 'checkbox';
+  var RADIO = 'radio';
+
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
@@ -476,35 +483,38 @@
 
       this.term = term;
       var pixelRatio = term.options.pixelRatio;
-      this.gap = 10 * pixelRatio;
+      this.gap = 15 * pixelRatio;
       this.fontSize = 14 * pixelRatio;
-      this.padding = [35, 10, 10, 10].map(function (item) {
+      this.padding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
       this.btnSize = 6 * pixelRatio;
-      this.textColor = '#fff';
       this.$canvas = term.template.$canvas;
       this.ctx = this.$canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px Arial");
       this.ctx.textBaseline = 'top';
-      this.lineIndex = 0;
       this.logs = [];
+      this.update();
+      this.cursorOn = false;
       (function loop() {
         var _this = this;
 
         this.timer = setTimeout(function () {
+          _this.cursorOn = !_this.cursorOn;
+
           _this.drawCursor();
 
           loop.call(_this);
         }, 1000);
       }).call(this);
-      this.update();
     }
 
     createClass(Drawer, [{
       key: "update",
       value: function update(data) {
+        this.lineStartIndex = 0;
+        this.lineEndIndex = 0;
         var _this$$canvas = this.$canvas,
             width = _this$$canvas.width,
             height = _this$$canvas.height;
@@ -531,13 +541,15 @@
       value: function drawTopbar() {
         var _this2 = this;
 
-        var title = this.term.options.title;
-        this.ctx.fillStyle = this.textColor;
+        var _this$term$options = this.term.options,
+            title = _this$term$options.title,
+            fontColor = _this$term$options.fontColor;
+        this.ctx.fillStyle = fontColor;
 
         var _this$ctx$measureText = this.ctx.measureText(title),
             width = _this$ctx$measureText.width;
 
-        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1]);
+        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
           _this2.ctx.beginPath();
 
@@ -553,43 +565,70 @@
     }, {
       key: "drawContent",
       value: function drawContent(data) {
-        var _this$logs;
-
-        var backgroundColor = this.term.options.backgroundColor;
+        var _this$term$options2 = this.term.options,
+            backgroundColor = _this$term$options2.backgroundColor,
+            fontColor = _this$term$options2.fontColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-        if (data) (_this$logs = this.logs).push.apply(_this$logs, toConsumableArray(this.getLog(data)));
-        this.ctx.fillStyle = this.textColor;
+        this.ctx.fillStyle = fontColor;
 
-        for (var i = 0; i < this.totalLine; i += 1) {
-          var text = this.logs[this.lineIndex + i];
+        if (data) {
+          this.logs.push(this.getLogNormal(data));
+        }
 
-          if (text) {
-            var top = this.padding[0] + (this.fontSize + this.gap) * i;
-            this.ctx.fillText(text, this.padding[3], top);
+        var lineIndex = 0;
+
+        for (var j = 0; j < this.logs.length; j += 1) {
+          for (var k = 0; k < this.logs[j].lines.length; k += 1) {
+            lineIndex += 1;
+
+            if (this.lineStartIndex < lineIndex && this.lineStartIndex + this.totalLine > lineIndex) {
+              var text = this.logs[j].lines[k];
+              var top = this.padding[0] + (this.fontSize + this.gap) * (lineIndex - 1);
+              this.ctx.fillText(text, this.padding[3], top);
+              this.lineEndIndex += 1;
+            }
           }
         }
       }
     }, {
       key: "drawCursor",
-      value: function drawCursor() {//
+      value: function drawCursor() {
+        var _this$term$options3 = this.term.options,
+            pixelRatio = _this$term$options3.pixelRatio,
+            backgroundColor = _this$term$options3.backgroundColor;
+
+        if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
+          this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+          var _this$lastLinePos = this.lastLinePos,
+              left = _this$lastLinePos.left,
+              top = _this$lastLinePos.top;
+          this.ctx.fillRect(left, top, pixelRatio * 2, this.fontSize);
+        }
       }
     }, {
       key: "drawText",
       value: function drawText() {//
       }
     }, {
-      key: "getLog",
-      value: function getLog(data) {
+      key: "getLogNormal",
+      value: function getLogNormal(data) {
         var prefix = this.term.options.prefix;
+        var temp = [data.type === INPUT ? prefix : ''];
+
+        if (!data.text) {
+          return _objectSpread({}, data, {
+            lines: temp
+          });
+        }
+
         var chr = data.text.split(/\r?\n/).map(function (item) {
           return item.trim();
         }).join(' ').split(' ');
-        var temp = [data.type === INPUT ? prefix : ''];
         var lines = [];
 
         for (var i = 0; i < chr.length; i += 1) {
-          var text = [].concat(toConsumableArray(temp), [chr[i]]).join(' ').trim();
+          var text = [].concat(toConsumableArray(temp), [chr[i]]).join(' ');
 
           if (this.ctx.measureText(text).width > this.width) {
             lines.push(temp.join(' '));
@@ -600,21 +639,56 @@
         }
 
         lines.push(temp.join(' '));
-        return lines;
+        return _objectSpread({}, data, {
+          lines: lines.filter(Boolean).map(function (item) {
+            return item.trim();
+          })
+        });
+      }
+    }, {
+      key: "getLogCheckbox",
+      value: function getLogCheckbox(data) {//
+      }
+    }, {
+      key: "getLogRadio",
+      value: function getLogRadio(data) {//
+      }
+    }, {
+      key: "updateLastLog",
+      value: function updateLastLog(log) {//
       }
     }, {
       key: "destroy",
       value: function destroy() {
         clearTimeout(this.timer);
       }
+    }, {
+      key: "lastLog",
+      get: function get() {
+        return this.logs[this.logs.length - 1];
+      }
+    }, {
+      key: "lastLine",
+      get: function get() {
+        return this.lastLog.lines[this.lastLog.lines.length - 1];
+      }
+    }, {
+      key: "lastLinePos",
+      get: function get() {
+        var pixelRatio = this.term.options.pixelRatio;
+        return {
+          left: this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5,
+          top: this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1)
+        };
+      }
     }]);
 
     return Drawer;
   }();
 
-  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
   function _createSuper$1(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct$2()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
 
@@ -633,6 +707,31 @@
         return instances;
       }
     }, {
+      key: "INPUT",
+      get: function get() {
+        return INPUT;
+      }
+    }, {
+      key: "OUTPUT",
+      get: function get() {
+        return OUTPUT;
+      }
+    }, {
+      key: "NORMAL",
+      get: function get() {
+        return NORMAL;
+      }
+    }, {
+      key: "CHECKBOX",
+      get: function get() {
+        return CHECKBOX;
+      }
+    }, {
+      key: "RADIO",
+      get: function get() {
+        return RADIO;
+      }
+    }, {
       key: "version",
       get: function get() {
         return '1.0.0';
@@ -648,12 +747,13 @@
         return {
           container: '#term',
           title: 'Term UI',
-          prefix: 'root@linux:~$',
+          prefix: 'root@linux: ~ $',
           width: 600,
           height: 500,
           borderRadius: 5,
           font: 'Arial',
-          welcome: '🎉 Welcome to use the Term UI 🎉',
+          fontColor: '#b0b2b6',
+          welcome: 'Welcome to use the Term UI',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio
@@ -694,22 +794,17 @@
       _this.template = new Template(assertThisInitialized(_this));
       _this.translate = new Translate(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
-
-      if (_this.options.welcome) {
-        _this.input({
-          type: 'output',
-          text: _this.options.welcome.repeat(10)
-        });
-
-        _this.input({
-          type: 'input',
-          text: _this.options.title.repeat(100)
-        });
-      }
-
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
+
+      _this.input({
+        type: OUTPUT,
+        text: _this.options.welcome
+      }).input({
+        type: INPUT
+      });
+
       return _this;
     }
 
@@ -723,24 +818,40 @@
           options.container = document.querySelector(options.container);
         }
 
-        this.options = optionValidator(_objectSpread({}, Term.default, {}, this.options, {}, options), Term.scheme);
-        this.emit('options', this.options);
+        this.options = optionValidator(_objectSpread$1({}, Term.default, {}, this.options, {}, options), Term.scheme);
         return this;
       }
     }, {
       key: "input",
       value: function input() {
-        var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-          type: '',
-          text: ''
-        };
-        errorHandle(data.type === INPUT || data.type === OUTPUT, "The type of the parameter on the input method must be ".concat(INPUT, " or ").concat(OUTPUT));
+        var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-        if (data.text) {
-          errorHandle(typeof data.text === 'string', "The text of the parameter on the input method must be a string");
+        if (data.type === INPUT) {
+          if (data.text) {
+            errorHandle(typeof data.text === 'string', "When the type is ".concat(INPUT, ", text must be a string"));
+          }
+        } else if (data.type === OUTPUT) {
+          if (data.text) {
+            if (data.style === NORMAL) {
+              errorHandle(typeof data.text === 'string', "When the type is ".concat(OUTPUT, " and the style is ").concat(NORMAL, ", text must be a string"));
+            }
+
+            if (data.style === CHECKBOX) {
+              errorHandle(Array.isArray(data.text), "When the type is ".concat(OUTPUT, " and the style is ").concat(CHECKBOX, ", text must be an array"));
+            }
+
+            if (data.style === RADIO) {
+              errorHandle(Array.isArray(data.text), "When the type is ".concat(OUTPUT, " and the style is ").concat(RADIO, ", text must be an array"));
+            }
+          } else {
+            errorHandle(false, "When the type is ".concat(OUTPUT, ", the text cannot be empty"));
+          }
+        } else {
+          errorHandle(false, "The type of the parameter on the input method must be ".concat(INPUT, " or ").concat(OUTPUT));
         }
 
         this.drawer.update(data);
+        return this;
       }
     }, {
       key: "exportPng",

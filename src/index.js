@@ -5,13 +5,33 @@ import Template from './template';
 import Translate from './translate';
 import Drawer from './drawer';
 import { errorHandle } from './utils';
-import { INPUT, OUTPUT } from './constant';
+import { INPUT, OUTPUT, NORMAL, CHECKBOX, RADIO } from './constant';
 
 let id = 0;
 const instances = [];
 export default class Term extends Emitter {
     static get instances() {
         return instances;
+    }
+
+    static get INPUT() {
+        return INPUT;
+    }
+
+    static get OUTPUT() {
+        return OUTPUT;
+    }
+
+    static get NORMAL() {
+        return NORMAL;
+    }
+
+    static get CHECKBOX() {
+        return CHECKBOX;
+    }
+
+    static get RADIO() {
+        return RADIO;
     }
 
     static get version() {
@@ -26,12 +46,13 @@ export default class Term extends Emitter {
         return {
             container: '#term',
             title: 'Term UI',
-            prefix: 'root@linux:~$',
+            prefix: 'root@linux: ~ $',
             width: 600,
             height: 500,
             borderRadius: 5,
             font: 'Arial',
-            welcome: '🎉 Welcome to use the Term UI 🎉',
+            fontColor: '#b0b2b6',
+            welcome: 'Welcome to use the Term UI',
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
@@ -56,29 +77,23 @@ export default class Term extends Emitter {
 
     constructor(options = {}) {
         super();
-
         this.options = {};
         this.setOptions(options);
-
         this.events = new Events(this);
         this.template = new Template(this);
         this.translate = new Translate(this);
         this.drawer = new Drawer(this);
 
-        if (this.options.welcome) {
-            this.input({
-                type: 'output',
-                text: this.options.welcome.repeat(10),
-            });
-            this.input({
-                type: 'input',
-                text: this.options.title.repeat(100),
-            });
-        }
-
         id += 1;
         this.id = id;
         instances.push(this);
+
+        this.input({
+            type: OUTPUT,
+            text: this.options.welcome,
+        }).input({
+            type: INPUT,
+        });
     }
 
     setOptions(options = {}) {
@@ -97,22 +112,42 @@ export default class Term extends Emitter {
             Term.scheme,
         );
 
-        this.emit('options', this.options);
         return this;
     }
 
-    input(data = { type: '', text: '' }) {
-        errorHandle(
-            data.type === INPUT || data.type === OUTPUT,
-            `The type of the parameter on the input method must be ${INPUT} or ${OUTPUT}`,
-        );
-        if (data.text) {
-            errorHandle(
-                typeof data.text === 'string',
-                `The text of the parameter on the input method must be a string`,
-            );
+    input(data = {}) {
+        if (data.type === INPUT) {
+            if (data.text) {
+                errorHandle(typeof data.text === 'string', `When the type is ${INPUT}, text must be a string`);
+            }
+        } else if (data.type === OUTPUT) {
+            if (data.text) {
+                if (data.style === NORMAL) {
+                    errorHandle(
+                        typeof data.text === 'string',
+                        `When the type is ${OUTPUT} and the style is ${NORMAL}, text must be a string`,
+                    );
+                }
+                if (data.style === CHECKBOX) {
+                    errorHandle(
+                        Array.isArray(data.text),
+                        `When the type is ${OUTPUT} and the style is ${CHECKBOX}, text must be an array`,
+                    );
+                }
+                if (data.style === RADIO) {
+                    errorHandle(
+                        Array.isArray(data.text),
+                        `When the type is ${OUTPUT} and the style is ${RADIO}, text must be an array`,
+                    );
+                }
+            } else {
+                errorHandle(false, `When the type is ${OUTPUT}, the text cannot be empty`);
+            }
+        } else {
+            errorHandle(false, `The type of the parameter on the input method must be ${INPUT} or ${OUTPUT}`);
         }
         this.drawer.update(data);
+        return this;
     }
 
     exportPng() {
