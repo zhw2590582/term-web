@@ -426,8 +426,8 @@
 
       this.term = term;
       var pixelRatio = term.options.pixelRatio;
-      this.fontSize = 12 * pixelRatio;
-      this.padding = [50, 20, 20, 20].map(function (item) {
+      this.fontSize = 13 * pixelRatio;
+      this.padding = [35, 10, 10, 10].map(function (item) {
         return item * pixelRatio;
       });
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
@@ -436,24 +436,38 @@
       this.$canvas = term.template.$canvas;
       this.ctx = this.$canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px Arial");
+      this.ctx.textBaseline = 'top';
+      (function loop() {
+        var _this = this;
+
+        this.timer = setTimeout(function () {
+          _this.drawCursor();
+
+          loop.call(_this);
+        }, 1000);
+      }).call(this);
       this.update();
     }
 
     createClass(Drawer, [{
       key: "update",
       value: function update() {
+        var _this$$canvas = this.$canvas,
+            width = _this$$canvas.width,
+            height = _this$$canvas.height;
+        this.height = height - this.padding[0] - this.padding[2];
+        this.width = width - this.padding[1] - this.padding[3];
         this.drawBackground();
         this.drawTopbar();
-        this.drawWelcome();
-        this.drawBody();
+        this.drawContent();
       }
     }, {
       key: "drawBackground",
       value: function drawBackground() {
         var backgroundColor = this.term.options.backgroundColor;
-        var _this$$canvas = this.$canvas,
-            width = _this$$canvas.width,
-            height = _this$$canvas.height;
+        var _this$$canvas2 = this.$canvas,
+            width = _this$$canvas2.width,
+            height = _this$$canvas2.height;
         this.ctx.clearRect(0, 0, width, height);
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(0, 0, width, height);
@@ -461,7 +475,7 @@
     }, {
       key: "drawTopbar",
       value: function drawTopbar() {
-        var _this = this;
+        var _this2 = this;
 
         var title = this.term.options.title;
         this.ctx.fillStyle = this.titleColor;
@@ -469,26 +483,38 @@
         var _this$ctx$measureText = this.ctx.measureText(title),
             width = _this$ctx$measureText.width;
 
-        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] * 1.2);
+        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1]);
         this.btnColor.forEach(function (item, index) {
-          _this.ctx.beginPath();
+          _this2.ctx.beginPath();
 
-          _this.ctx.arc(_this.padding[3] + index * _this.btnSize * 3.6, _this.padding[1], _this.btnSize, 0, 360, false);
+          _this2.ctx.arc(_this2.padding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.padding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
 
-          _this.ctx.fillStyle = item;
+          _this2.ctx.fillStyle = item;
 
-          _this.ctx.fill();
+          _this2.ctx.fill();
 
-          _this.ctx.closePath();
+          _this2.ctx.closePath();
         });
       }
     }, {
-      key: "drawWelcome",
-      value: function drawWelcome() {//
+      key: "drawContent",
+      value: function drawContent() {
+        var backgroundColor = this.term.options.backgroundColor;
+        this.ctx.fillStyle = backgroundColor;
+        this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
       }
     }, {
-      key: "drawBody",
-      value: function drawBody() {//
+      key: "drawCursor",
+      value: function drawCursor() {//
+      }
+    }, {
+      key: "drawText",
+      value: function drawText() {//
+      }
+    }, {
+      key: "destroy",
+      value: function destroy() {
+        clearTimeout(this.timer);
       }
     }]);
 
@@ -536,7 +562,7 @@
           height: 300,
           borderRadius: 5,
           font: 'Arial',
-          welcome: '🎉 Welcome to Term UI 🎉',
+          welcome: '🎉 Welcome to use the Term UI 🎉',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio

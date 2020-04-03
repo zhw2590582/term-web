@@ -29,7 +29,7 @@ export default class Term extends Emitter {
             height: 300,
             borderRadius: 5,
             font: 'Arial',
-            welcome: '🎉 Welcome to Term UI 🎉',
+            welcome: '🎉 Welcome to use the Term UI 🎉',
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
