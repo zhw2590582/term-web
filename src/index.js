@@ -98,7 +98,14 @@ export default class Term extends Emitter {
     }
 
     input(data = {}) {
-        this.drawer.update(data);
+        this.drawer.update(
+            validator(data, {
+                type: 'string',
+                text: 'undefined|string',
+                color: 'undefined|string',
+                style: 'undefined|string',
+            }),
+        );
         return this;
     }
 

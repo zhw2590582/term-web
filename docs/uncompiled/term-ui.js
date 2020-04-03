@@ -430,55 +430,10 @@
     this.term = term;
   };
 
-  function _arrayLikeToArray(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-
-    for (var i = 0, arr2 = new Array(len); i < len; i++) {
-      arr2[i] = arr[i];
-    }
-
-    return arr2;
-  }
-
-  var arrayLikeToArray = _arrayLikeToArray;
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) return arrayLikeToArray(arr);
-  }
-
-  var arrayWithoutHoles = _arrayWithoutHoles;
-
-  function _iterableToArray(iter) {
-    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
-  }
-
-  var iterableToArray = _iterableToArray;
-
-  function _unsupportedIterableToArray(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return arrayLikeToArray(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(n);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
-  }
-
-  var unsupportedIterableToArray = _unsupportedIterableToArray;
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  var nonIterableSpread = _nonIterableSpread;
-
-  function _toConsumableArray(arr) {
-    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
-  }
-
-  var toConsumableArray = _toConsumableArray;
-
   var INPUT = 'input';
   var OUTPUT = 'output';
+  var CHECKBOX = 'checkbox';
+  var RADIO = 'radio';
 
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -495,6 +450,7 @@
       this.padding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
+      this.cursorColor = '#FFF';
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
       this.btnSize = 6 * pixelRatio;
       this.$canvas = term.template.$canvas;
@@ -577,10 +533,21 @@
             fontColor = _this$term$options2.fontColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-        this.ctx.fillStyle = fontColor;
 
         if (data) {
-          this.logs.push(this.getLogNormal(data));
+          switch (data.style) {
+            case CHECKBOX:
+              this.logs.push(this.getLogCheckbox(data));
+              break;
+
+            case RADIO:
+              this.logs.push(this.getLogRadio(data));
+              break;
+
+            default:
+              this.logs.push(this.getLogNormal(data));
+              break;
+          }
         }
 
         var lineIndex = 0;
@@ -592,6 +559,7 @@
             if (this.lineStartIndex < lineIndex && this.lineStartIndex + this.totalLine > lineIndex) {
               var text = this.logs[j].lines[k];
               var top = this.padding[0] + (this.fontSize + this.gap) * (lineIndex - 1);
+              this.ctx.fillStyle = this.logs[j].color || fontColor;
               this.ctx.fillText(text, this.padding[3], top);
               this.lineEndIndex += 1;
             }
@@ -611,9 +579,9 @@
           var top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
 
           if (this.term.isFocus) {
-            this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+            this.ctx.fillStyle = this.cursorOn ? this.cursorColor : backgroundColor;
           } else {
-            this.ctx.fillStyle = '#fff';
+            this.ctx.fillStyle = this.cursorColor;
           }
 
           this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
@@ -623,35 +591,37 @@
       key: "getLogNormal",
       value: function getLogNormal(data) {
         var prefix = this.term.options.prefix;
-        var temp = [data.type === INPUT ? prefix : ''];
+        var temp = data.type === INPUT ? prefix : '';
 
         if (!data.text) {
           return _objectSpread({}, data, {
-            lines: temp
+            lines: [temp]
           });
         }
 
-        var chr = data.text.split(/\r?\n/).map(function (item) {
-          return item.trim();
-        }).join(' ').split(' ');
         var lines = [];
+        var temps = (data.text || '').split(/\r?\n/).filter(function (item) {
+          return item.trim();
+        });
 
-        for (var i = 0; i < chr.length; i += 1) {
-          var text = [].concat(toConsumableArray(temp), [chr[i]]).join(' ');
+        for (var i = 0; i < temps.length; i += 1) {
+          for (var j = 0; j < temps[i].length; j += 1) {
+            var char = temp + temps[i][j];
 
-          if (this.ctx.measureText(text).width > this.width) {
-            lines.push(temp.join(' '));
-            temp.length = 0;
-          } else {
-            temp = text.split(' ');
+            if (this.ctx.measureText(char).width > this.width) {
+              lines.push(temp);
+              temp = '';
+            } else {
+              temp = char;
+            }
           }
+
+          lines.push(temp);
+          temp = '';
         }
 
-        lines.push(temp.join(' '));
         return _objectSpread({}, data, {
-          lines: lines.filter(Boolean).map(function (item) {
-            return item.trim();
-          })
+          lines: lines
         });
       }
     }, {
@@ -797,7 +767,12 @@
       key: "input",
       value: function input() {
         var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        this.drawer.update(data);
+        this.drawer.update(optionValidator(data, {
+          type: 'string',
+          text: 'undefined|string',
+          color: 'undefined|string',
+          style: 'undefined|string'
+        }));
         return this;
       }
     }, {

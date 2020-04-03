@@ -1,4 +1,4 @@
-import { INPUT } from './constant';
+import { INPUT, CHECKBOX, RADIO } from './constant';
 
 export default class Drawer {
     constructor(term) {
@@ -7,6 +7,7 @@ export default class Drawer {
         this.gap = 15 * pixelRatio;
         this.fontSize = 14 * pixelRatio;
         this.padding = [45, 15, 15, 15].map(item => item * pixelRatio);
+        this.cursorColor = '#FFF';
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
         this.btnSize = 6 * pixelRatio;
         this.$canvas = term.template.$canvas;
@@ -80,10 +81,19 @@ export default class Drawer {
         const { backgroundColor, fontColor } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-        this.ctx.fillStyle = fontColor;
 
         if (data) {
-            this.logs.push(this.getLogNormal(data));
+            switch (data.style) {
+                case CHECKBOX:
+                    this.logs.push(this.getLogCheckbox(data));
+                    break;
+                case RADIO:
+                    this.logs.push(this.getLogRadio(data));
+                    break;
+                default:
+                    this.logs.push(this.getLogNormal(data));
+                    break;
+            }
         }
 
         let lineIndex = 0;
@@ -93,6 +103,7 @@ export default class Drawer {
                 if (this.lineStartIndex < lineIndex && this.lineStartIndex + this.totalLine > lineIndex) {
                     const text = this.logs[j].lines[k];
                     const top = this.padding[0] + (this.fontSize + this.gap) * (lineIndex - 1);
+                    this.ctx.fillStyle = this.logs[j].color || fontColor;
                     this.ctx.fillText(text, this.padding[3], top);
                     this.lineEndIndex += 1;
                 }
@@ -107,9 +118,9 @@ export default class Drawer {
             const left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
             const top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
             if (this.term.isFocus) {
-                this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+                this.ctx.fillStyle = this.cursorOn ? this.cursorColor : backgroundColor;
             } else {
-                this.ctx.fillStyle = '#fff';
+                this.ctx.fillStyle = this.cursorColor;
             }
             this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
@@ -117,35 +128,34 @@ export default class Drawer {
 
     getLogNormal(data) {
         const { prefix } = this.term.options;
-        let temp = [data.type === INPUT ? prefix : ''];
+        let temp = data.type === INPUT ? prefix : '';
 
         if (!data.text) {
             return {
                 ...data,
-                lines: temp,
+                lines: [temp],
             };
         }
 
-        const chr = data.text
-            .split(/\r?\n/)
-            .map(item => item.trim())
-            .join(' ')
-            .split(' ');
-
         const lines = [];
-        for (let i = 0; i < chr.length; i += 1) {
-            const text = [...temp, chr[i]].join(' ');
-            if (this.ctx.measureText(text).width > this.width) {
-                lines.push(temp.join(' '));
-                temp.length = 0;
-            } else {
-                temp = text.split(' ');
+        const temps = (data.text || '').split(/\r?\n/).filter(item => item.trim());
+        for (let i = 0; i < temps.length; i += 1) {
+            for (let j = 0; j < temps[i].length; j += 1) {
+                const char = temp + temps[i][j];
+                if (this.ctx.measureText(char).width > this.width) {
+                    lines.push(temp);
+                    temp = '';
+                } else {
+                    temp = char;
+                }
             }
+            lines.push(temp);
+            temp = '';
         }
-        lines.push(temp.join(' '));
+
         return {
             ...data,
-            lines: lines.filter(Boolean).map(item => item.trim()),
+            lines,
         };
     }
 
