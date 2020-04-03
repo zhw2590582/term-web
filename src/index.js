@@ -2,6 +2,7 @@ import validator from 'option-validator';
 import Emitter from './emitter';
 import Events from './events';
 import Template from './template';
+import Translate from './translate';
 import Drawer from './drawer';
 
 let id = 0;
@@ -23,10 +24,12 @@ export default class Term extends Emitter {
         return {
             container: '#term',
             title: 'Term UI',
+            prefix: 'root@linux:~$ ',
             width: 400,
             height: 300,
             borderRadius: 5,
             font: 'Arial',
+            welcome: '🎉 Welcome to Term UI 🎉',
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
@@ -54,6 +57,7 @@ export default class Term extends Emitter {
 
         this.events = new Events(this);
         this.template = new Template(this);
+        this.translate = new Translate(this);
         this.drawer = new Drawer(this);
 
         id += 1;

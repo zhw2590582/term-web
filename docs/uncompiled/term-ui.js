@@ -371,7 +371,16 @@
         return ins.options.container !== _this.$container;
       }), 'Cannot mount multiple instances on the same dom element, please destroy the previous instance first.');
       this.$canvas = document.createElement('canvas');
+      this.$canvas.classList.add('term-canvas');
       this.$container.appendChild(this.$canvas);
+
+      if (!document.getElementById('term-ui-style')) {
+        this.$style = document.createElement('style');
+        this.$style.id = 'term-ui-style';
+        this.$style.textContent = '.term-canvas:hover{cursor: text}';
+        document.head.appendChild(this.$style);
+      }
+
       this.update();
     }
 
@@ -394,12 +403,22 @@
     }, {
       key: "destroy",
       value: function destroy() {
+        if (this.$style) {
+          document.head.removeChild(this.$style);
+        }
+
         this.$container.innerHTML = '';
       }
     }]);
 
     return Template;
   }();
+
+  var Translate = function Translate(term) {
+    classCallCheck(this, Translate);
+
+    this.term = term;
+  };
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
@@ -512,10 +531,12 @@
         return {
           container: '#term',
           title: 'Term UI',
+          prefix: 'root@linux:~$ ',
           width: 400,
           height: 300,
           borderRadius: 5,
           font: 'Arial',
+          welcome: '🎉 Welcome to Term UI 🎉',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio
@@ -551,6 +572,7 @@
 
       _this.events = new Events(assertThisInitialized(_this));
       _this.template = new Template(assertThisInitialized(_this));
+      _this.translate = new Translate(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
       id += 1;
       _this.id = id;
