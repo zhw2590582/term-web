@@ -106,7 +106,11 @@ export default class Drawer {
             this.update();
             const left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
             const top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
-            this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+            if (this.term.isFocus) {
+                this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+            } else {
+                this.ctx.fillStyle = '#fff';
+            }
             this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
     }

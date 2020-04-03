@@ -1,7 +1,18 @@
 export default class Events {
-    constructor() {
+    constructor(term) {
         this.destroyEvents = [];
         this.proxy = this.proxy.bind(this);
+
+        const { $canvas } = term.template;
+        this.proxy(document, ['click', 'contextmenu'], event => {
+            if (event.composedPath && event.composedPath().indexOf($canvas) > -1) {
+                term.isFocus = true;
+                term.emit('focus');
+            } else {
+                term.isFocus = false;
+                term.emit('blur');
+            }
+        });
     }
 
     proxy(target, name, callback, option = {}) {

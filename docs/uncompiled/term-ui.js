@@ -213,11 +213,21 @@
   }();
 
   var Events = /*#__PURE__*/function () {
-    function Events() {
+    function Events(term) {
       classCallCheck(this, Events);
 
       this.destroyEvents = [];
       this.proxy = this.proxy.bind(this);
+      var $canvas = term.template.$canvas;
+      this.proxy(document, ['click', 'contextmenu'], function (event) {
+        if (event.composedPath && event.composedPath().indexOf($canvas) > -1) {
+          term.isFocus = true;
+          term.emit('focus');
+        } else {
+          term.isFocus = false;
+          term.emit('blur');
+        }
+      });
     }
 
     createClass(Events, [{
@@ -469,9 +479,6 @@
 
   var INPUT = 'input';
   var OUTPUT = 'output';
-  var NORMAL = 'normal';
-  var CHECKBOX = 'checkbox';
-  var RADIO = 'radio';
 
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -602,7 +609,13 @@
           this.update();
           var left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
           var top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
-          this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+
+          if (this.term.isFocus) {
+            this.ctx.fillStyle = this.cursorOn ? '#fff' : backgroundColor;
+          } else {
+            this.ctx.fillStyle = '#fff';
+          }
+
           this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
       }
@@ -690,31 +703,6 @@
         return instances;
       }
     }, {
-      key: "INPUT",
-      get: function get() {
-        return INPUT;
-      }
-    }, {
-      key: "OUTPUT",
-      get: function get() {
-        return OUTPUT;
-      }
-    }, {
-      key: "NORMAL",
-      get: function get() {
-        return NORMAL;
-      }
-    }, {
-      key: "CHECKBOX",
-      get: function get() {
-        return CHECKBOX;
-      }
-    }, {
-      key: "RADIO",
-      get: function get() {
-        return RADIO;
-      }
-    }, {
       key: "version",
       get: function get() {
         return '1.0.0';
@@ -773,10 +761,12 @@
 
       _this.setOptions(options);
 
-      _this.events = new Events(assertThisInitialized(_this));
       _this.template = new Template(assertThisInitialized(_this));
+      _this.events = new Events(assertThisInitialized(_this));
       _this.translate = new Translate(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
+      _this.isFocus = false;
+      _this.isDestroy = false;
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
@@ -795,7 +785,6 @@
       key: "setOptions",
       value: function setOptions() {
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        errorHandle(optionValidator.kindOf(options) === 'object', 'setOptions expects to receive object as a parameter');
 
         if (typeof options.container === 'string') {
           options.container = document.querySelector(options.container);
@@ -808,31 +797,6 @@
       key: "input",
       value: function input() {
         var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-        if (data.type === INPUT) {
-          if (data.text) {
-            errorHandle(typeof data.text === 'string', "When the type is ".concat(INPUT, ", text must be a string"));
-          }
-        } else if (data.type === OUTPUT) {
-          if (data.text) {
-            if (data.style === NORMAL) {
-              errorHandle(typeof data.text === 'string', "When the type is ".concat(OUTPUT, " and the style is ").concat(NORMAL, ", text must be a string"));
-            }
-
-            if (data.style === CHECKBOX) {
-              errorHandle(Array.isArray(data.text), "When the type is ".concat(OUTPUT, " and the style is ").concat(CHECKBOX, ", text must be an array"));
-            }
-
-            if (data.style === RADIO) {
-              errorHandle(Array.isArray(data.text), "When the type is ".concat(OUTPUT, " and the style is ").concat(RADIO, ", text must be an array"));
-            }
-          } else {
-            errorHandle(false, "When the type is ".concat(OUTPUT, ", the text cannot be empty"));
-          }
-        } else {
-          errorHandle(false, "The type of the parameter on the input method must be ".concat(INPUT, " or ").concat(OUTPUT));
-        }
-
         this.drawer.update(data);
         return this;
       }
@@ -857,6 +821,7 @@
         this.isDestroy = true;
         this.events.destroy();
         this.template.destroy();
+        this.drawer.destroy();
         instances.splice(instances.indexOf(this), 1);
       }
     }]);

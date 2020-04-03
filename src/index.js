@@ -4,34 +4,13 @@ import Events from './events';
 import Template from './template';
 import Translate from './translate';
 import Drawer from './drawer';
-import { errorHandle } from './utils';
-import { INPUT, OUTPUT, NORMAL, CHECKBOX, RADIO } from './constant';
+import { INPUT, OUTPUT } from './constant';
 
 let id = 0;
 const instances = [];
 export default class Term extends Emitter {
     static get instances() {
         return instances;
-    }
-
-    static get INPUT() {
-        return INPUT;
-    }
-
-    static get OUTPUT() {
-        return OUTPUT;
-    }
-
-    static get NORMAL() {
-        return NORMAL;
-    }
-
-    static get CHECKBOX() {
-        return CHECKBOX;
-    }
-
-    static get RADIO() {
-        return RADIO;
     }
 
     static get version() {
@@ -77,12 +56,17 @@ export default class Term extends Emitter {
 
     constructor(options = {}) {
         super();
+
         this.options = {};
         this.setOptions(options);
-        this.events = new Events(this);
+
         this.template = new Template(this);
+        this.events = new Events(this);
         this.translate = new Translate(this);
         this.drawer = new Drawer(this);
+
+        this.isFocus = false;
+        this.isDestroy = false;
 
         id += 1;
         this.id = id;
@@ -97,8 +81,6 @@ export default class Term extends Emitter {
     }
 
     setOptions(options = {}) {
-        errorHandle(validator.kindOf(options) === 'object', 'setOptions expects to receive object as a parameter');
-
         if (typeof options.container === 'string') {
             options.container = document.querySelector(options.container);
         }
@@ -116,36 +98,6 @@ export default class Term extends Emitter {
     }
 
     input(data = {}) {
-        if (data.type === INPUT) {
-            if (data.text) {
-                errorHandle(typeof data.text === 'string', `When the type is ${INPUT}, text must be a string`);
-            }
-        } else if (data.type === OUTPUT) {
-            if (data.text) {
-                if (data.style === NORMAL) {
-                    errorHandle(
-                        typeof data.text === 'string',
-                        `When the type is ${OUTPUT} and the style is ${NORMAL}, text must be a string`,
-                    );
-                }
-                if (data.style === CHECKBOX) {
-                    errorHandle(
-                        Array.isArray(data.text),
-                        `When the type is ${OUTPUT} and the style is ${CHECKBOX}, text must be an array`,
-                    );
-                }
-                if (data.style === RADIO) {
-                    errorHandle(
-                        Array.isArray(data.text),
-                        `When the type is ${OUTPUT} and the style is ${RADIO}, text must be an array`,
-                    );
-                }
-            } else {
-                errorHandle(false, `When the type is ${OUTPUT}, the text cannot be empty`);
-            }
-        } else {
-            errorHandle(false, `The type of the parameter on the input method must be ${INPUT} or ${OUTPUT}`);
-        }
         this.drawer.update(data);
         return this;
     }
@@ -166,6 +118,7 @@ export default class Term extends Emitter {
         this.isDestroy = true;
         this.events.destroy();
         this.template.destroy();
+        this.drawer.destroy();
         instances.splice(instances.indexOf(this), 1);
     }
 }
