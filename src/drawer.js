@@ -1,7 +1,10 @@
+import Log from './log';
+
 export default class Drawer {
     constructor(term) {
         this.term = term;
         const { pixelRatio } = term.options;
+        this.gap = 5 * pixelRatio;
         this.fontSize = 13 * pixelRatio;
         this.padding = [35, 10, 10, 10].map(item => item * pixelRatio);
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
@@ -11,6 +14,7 @@ export default class Drawer {
         this.ctx = this.$canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px Arial`;
         this.ctx.textBaseline = 'top';
+        this.logs = [];
 
         (function loop() {
             this.timer = setTimeout(() => {
@@ -22,14 +26,15 @@ export default class Drawer {
         this.update();
     }
 
-    update() {
+    update(data) {
         const { width, height } = this.$canvas;
         this.height = height - this.padding[0] - this.padding[2];
         this.width = width - this.padding[1] - this.padding[3];
+        this.line = Math.floor(this.height / (this.fontSize + this.gap));
 
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent();
+        this.drawContent(data);
     }
 
     drawBackground() {
@@ -61,10 +66,15 @@ export default class Drawer {
         });
     }
 
-    drawContent() {
-        const { backgroundColor } = this.term.options;
+    drawContent(data) {
+        const {
+            options: { backgroundColor },
+        } = this.term;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
+
+        if (data) this.logs.push(new Log(this, data));
+        console.log(this.logs);
     }
 
     drawCursor() {

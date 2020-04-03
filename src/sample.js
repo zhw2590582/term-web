@@ -1,18 +1,22 @@
 export default [
     {
-        cmd: '',
-        action: '1',
+        input: '',
+        output: 'test',
     },
     {
-        cmd: '',
-        action() {
-            return '2';
+        input: '',
+        output(input) {
+            return input.repeat(2);
         },
     },
     {
-        cmd: '',
-        action() {
-            return Promise.resolve('3');
+        input: '',
+        output(input) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(input.repeat(2));
+                }, 3000);
+            });
         },
     },
 ];

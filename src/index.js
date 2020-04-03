@@ -4,6 +4,8 @@ import Events from './events';
 import Template from './template';
 import Translate from './translate';
 import Drawer from './drawer';
+import { errorHandle } from './utils';
+import { INPUT, OUTPUT } from './constant';
 
 let id = 0;
 const instances = [];
@@ -39,10 +41,13 @@ export default class Term extends Emitter {
     static get scheme() {
         return {
             container: 'string|htmldivelement',
+            title: 'string',
+            prefix: 'string',
             width: 'number',
             height: 'number',
             borderRadius: 'number',
             font: 'string',
+            welcome: 'string',
             boxShadow: 'string',
             backgroundColor: 'string',
             pixelRatio: 'number',
@@ -60,12 +65,21 @@ export default class Term extends Emitter {
         this.translate = new Translate(this);
         this.drawer = new Drawer(this);
 
+        if (this.options.welcome) {
+            this.input({
+                type: 'output',
+                text: this.options.welcome,
+            });
+        }
+
         id += 1;
         this.id = id;
         instances.push(this);
     }
 
     setOptions(options = {}) {
+        errorHandle(validator.kindOf(options) === 'object', 'setOptions expects to receive object as a parameter');
+
         if (typeof options.container === 'string') {
             options.container = document.querySelector(options.container);
         }
@@ -81,6 +95,20 @@ export default class Term extends Emitter {
 
         this.emit('options', this.options);
         return this;
+    }
+
+    input(data = { type: '', text: '' }) {
+        errorHandle(
+            data.type === INPUT || data.type === OUTPUT,
+            `The type of the parameter on the input method must be ${INPUT} or ${OUTPUT}`,
+        );
+        if (data.text) {
+            errorHandle(
+                typeof data.text === 'string',
+                `The text of the parameter on the input method must be a string`,
+            );
+        }
+        this.drawer.update(data);
     }
 
     exportPng() {

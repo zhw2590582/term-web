@@ -420,12 +420,19 @@
     this.term = term;
   };
 
+  var Log = function Log(drawer, data) {
+    classCallCheck(this, Log);
+
+    this.data = data;
+  };
+
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
       classCallCheck(this, Drawer);
 
       this.term = term;
       var pixelRatio = term.options.pixelRatio;
+      this.gap = 5 * pixelRatio;
       this.fontSize = 13 * pixelRatio;
       this.padding = [35, 10, 10, 10].map(function (item) {
         return item * pixelRatio;
@@ -437,6 +444,7 @@
       this.ctx = this.$canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px Arial");
       this.ctx.textBaseline = 'top';
+      this.logs = [];
       (function loop() {
         var _this = this;
 
@@ -451,15 +459,16 @@
 
     createClass(Drawer, [{
       key: "update",
-      value: function update() {
+      value: function update(data) {
         var _this$$canvas = this.$canvas,
             width = _this$$canvas.width,
             height = _this$$canvas.height;
         this.height = height - this.padding[0] - this.padding[2];
         this.width = width - this.padding[1] - this.padding[3];
+        this.line = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent();
+        this.drawContent(data);
       }
     }, {
       key: "drawBackground",
@@ -498,10 +507,12 @@
       }
     }, {
       key: "drawContent",
-      value: function drawContent() {
+      value: function drawContent(data) {
         var backgroundColor = this.term.options.backgroundColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
+        if (data) this.logs.push(new Log(this, data));
+        console.log(this.logs);
       }
     }, {
       key: "drawCursor",
@@ -520,6 +531,9 @@
 
     return Drawer;
   }();
+
+  var INPUT = 'input';
+  var OUTPUT = 'output';
 
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -573,10 +587,13 @@
       get: function get() {
         return {
           container: 'string|htmldivelement',
+          title: 'string',
+          prefix: 'string',
           width: 'number',
           height: 'number',
           borderRadius: 'number',
           font: 'string',
+          welcome: 'string',
           boxShadow: 'string',
           backgroundColor: 'string',
           pixelRatio: 'number'
@@ -600,6 +617,14 @@
       _this.template = new Template(assertThisInitialized(_this));
       _this.translate = new Translate(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
+
+      if (_this.options.welcome) {
+        _this.input({
+          type: 'output',
+          text: _this.options.welcome
+        });
+      }
+
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
@@ -610,6 +635,7 @@
       key: "setOptions",
       value: function setOptions() {
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        errorHandle(optionValidator.kindOf(options) === 'object', 'setOptions expects to receive object as a parameter');
 
         if (typeof options.container === 'string') {
           options.container = document.querySelector(options.container);
@@ -618,6 +644,21 @@
         this.options = optionValidator(_objectSpread({}, Term.default, {}, this.options, {}, options), Term.scheme);
         this.emit('options', this.options);
         return this;
+      }
+    }, {
+      key: "input",
+      value: function input() {
+        var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+          type: '',
+          text: ''
+        };
+        errorHandle(data.type === INPUT || data.type === OUTPUT, "The type of the parameter on the input method must be ".concat(INPUT, " or ").concat(OUTPUT));
+
+        if (data.text) {
+          errorHandle(typeof data.text === 'string', "The text of the parameter on the input method must be a string");
+        }
+
+        this.drawer.update(data);
       }
     }, {
       key: "exportPng",
