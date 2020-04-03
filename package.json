@@ -1,0 +1,50 @@
+{
+    "name": "term-ui",
+    "version": "1.0.0",
+    "description": ":pager: A Simple Terminal UI That Run On The Web",
+    "main": "dist/term-ui.js",
+    "scripts": {
+        "dev": "npx cross-env NODE_ENV=development rollup -c -m -w",
+        "build": "npx cross-env NODE_ENV=production rollup -c",
+        "start": "npx cross-env NODE_ENV=development && npx servor docs index.html 8081 5000",
+        "test": "npx eslint src"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zhw2590582/term-ui.git"
+    },
+    "keywords": [
+        "Terminal",
+        "UI"
+    ],
+    "author": "Harvey Zack <laozhaochaguan@gmail.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/zhw2590582/term-ui/issues"
+    },
+    "homepage": "https://github.com/zhw2590582/term-ui#readme",
+    "devDependencies": {
+        "@babel/core": "^7.9.0",
+        "@babel/plugin-external-helpers": "^7.8.3",
+        "@babel/plugin-transform-runtime": "^7.9.0",
+        "@babel/preset-env": "^7.9.0",
+        "@babel/runtime": "^7.9.2",
+        "babel-eslint": "^10.1.0",
+        "cross-env": "^7.0.2",
+        "eslint": "^6.8.0",
+        "eslint-config-airbnb-base": "^14.1.0",
+        "eslint-config-prettier": "^6.10.1",
+        "eslint-plugin-import": "^2.20.2",
+        "rollup": "^2.3.2",
+        "rollup-plugin-babel": "^4.4.0",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-eslint": "^7.0.0",
+        "rollup-plugin-node-resolve": "^5.2.0",
+        "rollup-plugin-replace": "^2.2.0",
+        "rollup-plugin-uglify": "^6.0.4",
+        "servor": "^3.2.0"
+    },
+    "dependencies": {
+        "option-validator": "^2.0.5"
+    }
+}
