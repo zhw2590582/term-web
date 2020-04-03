@@ -4,6 +4,23 @@
   (global = global || self, global.Term = factory());
 }(this, (function () { 'use strict';
 
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  var defineProperty = _defineProperty;
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -233,16 +250,246 @@
     return Events;
   }();
 
-  function _createSuper(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
+  function _isNativeFunction(fn) {
+    return Function.toString.call(fn).indexOf("[native code]") !== -1;
+  }
 
-  function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+  var isNativeFunction = _isNativeFunction;
+
+  function _isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  var isNativeReflectConstruct = _isNativeReflectConstruct;
+
+  var construct = createCommonjsModule(function (module) {
+  function _construct(Parent, args, Class) {
+    if (isNativeReflectConstruct()) {
+      module.exports = _construct = Reflect.construct;
+    } else {
+      module.exports = _construct = function _construct(Parent, args, Class) {
+        var a = [null];
+        a.push.apply(a, args);
+        var Constructor = Function.bind.apply(Parent, a);
+        var instance = new Constructor();
+        if (Class) setPrototypeOf(instance, Class.prototype);
+        return instance;
+      };
+    }
+
+    return _construct.apply(null, arguments);
+  }
+
+  module.exports = _construct;
+  });
+
+  var wrapNativeSuper = createCommonjsModule(function (module) {
+  function _wrapNativeSuper(Class) {
+    var _cache = typeof Map === "function" ? new Map() : undefined;
+
+    module.exports = _wrapNativeSuper = function _wrapNativeSuper(Class) {
+      if (Class === null || !isNativeFunction(Class)) return Class;
+
+      if (typeof Class !== "function") {
+        throw new TypeError("Super expression must either be null or a function");
+      }
+
+      if (typeof _cache !== "undefined") {
+        if (_cache.has(Class)) return _cache.get(Class);
+
+        _cache.set(Class, Wrapper);
+      }
+
+      function Wrapper() {
+        return construct(Class, arguments, getPrototypeOf(this).constructor);
+      }
+
+      Wrapper.prototype = Object.create(Class.prototype, {
+        constructor: {
+          value: Wrapper,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      });
+      return setPrototypeOf(Wrapper, Class);
+    };
+
+    return _wrapNativeSuper(Class);
+  }
+
+  module.exports = _wrapNativeSuper;
+  });
+
+  function _createSuper(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct$1()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
+
+  function _isNativeReflectConstruct$1() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+  var TermError = /*#__PURE__*/function (_Error) {
+    inherits(TermError, _Error);
+
+    var _super = _createSuper(TermError);
+
+    function TermError(message) {
+      var _this;
+
+      classCallCheck(this, TermError);
+
+      _this = _super.call(this, message);
+      _this.name = 'TermError';
+      return _this;
+    }
+
+    return TermError;
+  }( /*#__PURE__*/wrapNativeSuper(Error));
+  function errorHandle(condition, msg) {
+    if (!condition) {
+      throw new TermError(msg);
+    }
+
+    return condition;
+  }
+
+  var Template = /*#__PURE__*/function () {
+    function Template(term) {
+      var _this = this;
+
+      classCallCheck(this, Template);
+
+      this.term = term;
+      this.$container = term.options.container;
+      errorHandle(term.constructor.instances.every(function (ins) {
+        return ins.options.container !== _this.$container;
+      }), 'Cannot mount multiple instances on the same dom element, please destroy the previous instance first.');
+      this.$canvas = document.createElement('canvas');
+      this.$container.appendChild(this.$canvas);
+      this.update();
+    }
+
+    createClass(Template, [{
+      key: "update",
+      value: function update() {
+        var _this$term$options = this.term.options,
+            width = _this$term$options.width,
+            height = _this$term$options.height,
+            pixelRatio = _this$term$options.pixelRatio,
+            borderRadius = _this$term$options.borderRadius,
+            boxShadow = _this$term$options.boxShadow;
+        this.$canvas.style.width = "".concat(width, "px");
+        this.$canvas.style.height = "".concat(height, "px");
+        this.$canvas.width = width * pixelRatio;
+        this.$canvas.height = height * pixelRatio;
+        this.$canvas.style.borderRadius = "".concat(borderRadius, "px");
+        this.$canvas.style.boxShadow = boxShadow;
+      }
+    }, {
+      key: "destroy",
+      value: function destroy() {
+        this.$container.innerHTML = '';
+      }
+    }]);
+
+    return Template;
+  }();
+
+  var Drawer = /*#__PURE__*/function () {
+    function Drawer(term) {
+      classCallCheck(this, Drawer);
+
+      this.term = term;
+      var pixelRatio = term.options.pixelRatio;
+      this.fontSize = 12 * pixelRatio;
+      this.padding = [50, 20, 20, 20].map(function (item) {
+        return item * pixelRatio;
+      });
+      this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
+      this.btnSize = 6 * pixelRatio;
+      this.titleColor = '#fff';
+      this.$canvas = term.template.$canvas;
+      this.ctx = this.$canvas.getContext('2d');
+      this.ctx.font = "".concat(this.fontSize, "px Arial");
+      this.update();
+    }
+
+    createClass(Drawer, [{
+      key: "update",
+      value: function update() {
+        this.drawBackground();
+        this.drawTopbar();
+        this.drawWelcome();
+        this.drawBody();
+      }
+    }, {
+      key: "drawBackground",
+      value: function drawBackground() {
+        var backgroundColor = this.term.options.backgroundColor;
+        var _this$$canvas = this.$canvas,
+            width = _this$$canvas.width,
+            height = _this$$canvas.height;
+        this.ctx.clearRect(0, 0, width, height);
+        this.ctx.fillStyle = backgroundColor;
+        this.ctx.fillRect(0, 0, width, height);
+      }
+    }, {
+      key: "drawTopbar",
+      value: function drawTopbar() {
+        var _this = this;
+
+        var title = this.term.options.title;
+        this.ctx.fillStyle = this.titleColor;
+
+        var _this$ctx$measureText = this.ctx.measureText(title),
+            width = _this$ctx$measureText.width;
+
+        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] * 1.2);
+        this.btnColor.forEach(function (item, index) {
+          _this.ctx.beginPath();
+
+          _this.ctx.arc(_this.padding[3] + index * _this.btnSize * 3.6, _this.padding[1], _this.btnSize, 0, 360, false);
+
+          _this.ctx.fillStyle = item;
+
+          _this.ctx.fill();
+
+          _this.ctx.closePath();
+        });
+      }
+    }, {
+      key: "drawWelcome",
+      value: function drawWelcome() {//
+      }
+    }, {
+      key: "drawBody",
+      value: function drawBody() {//
+      }
+    }]);
+
+    return Drawer;
+  }();
+
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+  function _createSuper$1(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct$2()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
+
+  function _isNativeReflectConstruct$2() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
   var id = 0;
   var instances = [];
 
   var Term = /*#__PURE__*/function (_Emitter) {
     inherits(Term, _Emitter);
 
-    var _super = _createSuper(Term);
+    var _super = _createSuper$1(Term);
 
     createClass(Term, null, [{
       key: "instances",
@@ -262,22 +509,49 @@
     }, {
       key: "default",
       get: function get() {
-        return {};
+        return {
+          container: '#term',
+          title: 'Term UI',
+          width: 400,
+          height: 300,
+          borderRadius: 5,
+          font: 'Arial',
+          boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
+          backgroundColor: 'rgb(42, 39, 52)',
+          pixelRatio: window.devicePixelRatio
+        };
       }
     }, {
       key: "scheme",
       get: function get() {
-        return {};
+        return {
+          container: 'string|htmldivelement',
+          width: 'number',
+          height: 'number',
+          borderRadius: 'number',
+          font: 'string',
+          boxShadow: 'string',
+          backgroundColor: 'string',
+          pixelRatio: 'number'
+        };
       }
     }]);
 
     function Term() {
       var _this;
 
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
       classCallCheck(this, Term);
 
       _this = _super.call(this);
+      _this.options = {};
+
+      _this.setOptions(options);
+
       _this.events = new Events(assertThisInitialized(_this));
+      _this.template = new Template(assertThisInitialized(_this));
+      _this.drawer = new Drawer(assertThisInitialized(_this));
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
@@ -285,10 +559,39 @@
     }
 
     createClass(Term, [{
+      key: "setOptions",
+      value: function setOptions() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        if (typeof options.container === 'string') {
+          options.container = document.querySelector(options.container);
+        }
+
+        this.options = optionValidator(_objectSpread({}, Term.default, {}, this.options, {}, options), Term.scheme);
+        this.emit('options', this.options);
+        return this;
+      }
+    }, {
+      key: "exportPng",
+      value: function exportPng() {
+        return this;
+      }
+    }, {
+      key: "exportGif",
+      value: function exportGif() {
+        return this;
+      }
+    }, {
+      key: "exportVideo",
+      value: function exportVideo() {
+        return this;
+      }
+    }, {
       key: "destroy",
       value: function destroy() {
         this.isDestroy = true;
         this.events.destroy();
+        this.template.destroy();
         instances.splice(instances.indexOf(this), 1);
       }
     }]);
