@@ -75,10 +75,12 @@ export default class Term extends Emitter {
         this.id = id;
         instances.push(this);
 
-        this.draw({
+        this.drawer.draw({
             type: OUTPUT,
             text: this.options.welcome,
-        }).draw({
+        });
+
+        this.drawer.draw({
             type: INPUT,
             text: '',
         });
@@ -98,11 +100,6 @@ export default class Term extends Emitter {
             Term.scheme,
         );
 
-        return this;
-    }
-
-    draw(data) {
-        this.drawer.draw(data);
         return this;
     }
 

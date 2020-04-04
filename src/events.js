@@ -3,32 +3,14 @@ export default class Events {
         this.destroyEvents = [];
         this.proxy = this.proxy.bind(this);
 
-        const { $canvas, $textarea } = term.template;
-
+        const { $canvas } = term.template;
         this.proxy(document, ['click', 'contextmenu'], (event) => {
             if (event.composedPath && event.composedPath().indexOf($canvas) > -1) {
-                $textarea.focus();
                 term.isFocus = true;
                 term.emit('focus');
             } else {
                 term.isFocus = false;
                 term.emit('blur');
-            }
-        });
-
-        this.proxy($textarea, 'input', () => {
-            const val = $textarea.value.trim();
-            term.emit('input', val);
-        });
-
-        this.proxy($textarea, 'keypress', (event) => {
-            const key = event.keyCode;
-            if (key === 13) {
-                const val = $textarea.value.trim();
-                setTimeout(() => {
-                    if (val) term.emit('enter', val);
-                    $textarea.value = '';
-                });
             }
         });
     }

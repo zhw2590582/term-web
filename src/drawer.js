@@ -1,4 +1,4 @@
-import { INPUT } from './constant';
+import { INPUT, OUTPUT } from './constant';
 
 export default class Drawer {
     constructor(term) {
@@ -30,14 +30,16 @@ export default class Drawer {
             );
         });
 
+        // 走匹配流程
         term.on('enter', (text) => {
-            this.draw(
-                {
-                    type: INPUT,
-                    text,
-                },
-                true,
-            );
+            this.draw({
+                type: OUTPUT,
+                text: `输入命令：${text}`,
+            });
+            this.draw({
+                type: INPUT,
+                text: '',
+            });
         });
 
         this.cursor = false;
