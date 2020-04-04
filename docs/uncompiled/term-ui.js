@@ -486,8 +486,14 @@
       value: function decode(data) {
         if (!data) return [];
         optionValidator(data, {
-          type: 'string',
-          text: 'undefined|string',
+          type: function type(val) {
+            if (![INPUT, OUTPUT].includes(val)) {
+              return "The type must be \"".concat(INPUT, "\" or \"").concat(OUTPUT, "\"");
+            }
+
+            return true;
+          },
+          text: 'string',
           color: 'undefined|string',
           style: 'undefined|string'
         });
@@ -499,7 +505,6 @@
             _this$term$options = _this$term.options,
             prefix = _this$term$options.prefix,
             fontColor = _this$term$options.fontColor;
-        if (!data.text) return [];
 
         if (data.type === INPUT) {
           data.text = prefix + data.text;
@@ -617,15 +622,21 @@
       this.ctx.font = "".concat(this.fontSize, "px Arial");
       this.ctx.textBaseline = 'top';
       this.startIndex = 0;
+      this.inputs = [];
       this.logs = [];
       this.draw();
-      this.cursorOn = false; // (function loop() {
-      //     this.timer = setTimeout(() => {
-      //         this.cursorOn = !this.cursorOn;
-      //         this.drawCursor();
-      //         loop.call(this);
-      //     }, 600);
-      // }.call(this));
+      this.cursor = false;
+      (function loop() {
+        var _this = this;
+
+        this.timer = setTimeout(function () {
+          _this.cursor = !_this.cursor;
+
+          _this.drawCursor();
+
+          loop.call(_this);
+        }, 500);
+      }).call(this);
     }
 
     createClass(Drawer, [{
@@ -657,7 +668,7 @@
     }, {
       key: "drawTopbar",
       value: function drawTopbar() {
-        var _this = this;
+        var _this2 = this;
 
         var _this$term$options = this.term.options,
             title = _this$term$options.title,
@@ -669,15 +680,15 @@
 
         this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
-          _this.ctx.beginPath();
+          _this2.ctx.beginPath();
 
-          _this.ctx.arc(_this.padding[3] + _this.btnSize + index * _this.btnSize * 3.6, _this.padding[1] + _this.btnSize, _this.btnSize, 0, 360, false);
+          _this2.ctx.arc(_this2.padding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.padding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
 
-          _this.ctx.fillStyle = item;
+          _this2.ctx.fillStyle = item;
 
-          _this.ctx.fill();
+          _this2.ctx.fill();
 
-          _this.ctx.closePath();
+          _this2.ctx.closePath();
         });
       }
     }, {
@@ -688,6 +699,7 @@
         var backgroundColor = this.term.options.backgroundColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
+        if (data) this.inputs.push(data);
         var result = this.term.decoder.decode(data);
 
         (_this$logs = this.logs).push.apply(_this$logs, toConsumableArray(result));
@@ -708,38 +720,27 @@
     }, {
       key: "drawCursor",
       value: function drawCursor() {
+        clearTimeout(this.timer);
         var _this$term$options2 = this.term.options,
             pixelRatio = _this$term$options2.pixelRatio,
             backgroundColor = _this$term$options2.backgroundColor;
+        var lastInput = this.inputs[this.inputs.length - 1];
+        var lastlog = this.logs[this.logs.length - 1];
 
-        if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
+        if (lastInput && lastInput.type === INPUT && lastlog && lastlog.length) {
           this.draw();
-          var left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
-          var top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
+          var lastLine = lastlog[lastlog.length - 1];
+          var left = lastLine.left + lastLine.width + pixelRatio * 5;
+          var top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - 1 - this.startIndex);
 
           if (this.term.isFocus) {
-            this.ctx.fillStyle = this.cursorOn ? this.cursorColor : backgroundColor;
+            this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
           } else {
             this.ctx.fillStyle = this.cursorColor;
           }
 
           this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
-      }
-    }, {
-      key: "destroy",
-      value: function destroy() {
-        clearTimeout(this.timer);
-      }
-    }, {
-      key: "lastLog",
-      get: function get() {
-        return this.logs[this.logs.length - 1];
-      }
-    }, {
-      key: "lastLine",
-      get: function get() {
-        return this.lastLog.lines[this.lastLog.lines.length - 1];
       }
     }]);
 
@@ -788,7 +789,7 @@
           borderRadius: 5,
           font: 'Arial',
           fontColor: '#b0b2b6',
-          welcome: '🎉 Welcome to use the Term UI'.repeat(10),
+          welcome: 'Last login: Sat Apr  4 11:06:08 on ttys002',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio
@@ -836,18 +837,12 @@
       _this.id = id;
       instances.push(assertThisInitialized(_this));
 
-      var color = function color() {
-        return Math.floor(Math.random() * 16777215).toString(16);
-      };
-
       _this.draw({
-        type: INPUT,
+        type: OUTPUT,
         text: _this.options.welcome
       }).draw({
-        type: OUTPUT,
-        text: Array(10).fill().map(function (_, i) {
-          return "<d color=\"#".concat(color(), "\">").concat(String(i).repeat(5), "</d>");
-        }).join('')
+        type: INPUT,
+        text: ''
       });
 
       return _this;
@@ -867,8 +862,7 @@
       }
     }, {
       key: "draw",
-      value: function draw() {
-        var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      value: function draw(data) {
         this.drawer.draw(data);
         return this;
       }
@@ -893,7 +887,6 @@
         this.isDestroy = true;
         this.events.destroy();
         this.template.destroy();
-        this.drawer.destroy();
         instances.splice(instances.indexOf(this), 1);
       }
     }]);

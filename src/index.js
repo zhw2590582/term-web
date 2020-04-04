@@ -31,7 +31,7 @@ export default class Term extends Emitter {
             borderRadius: 5,
             font: 'Arial',
             fontColor: '#b0b2b6',
-            welcome: '🎉 Welcome to use the Term UI'.repeat(10),
+            welcome: 'Last login: Sat Apr  4 11:06:08 on ttys002',
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
@@ -73,17 +73,12 @@ export default class Term extends Emitter {
         this.id = id;
         instances.push(this);
 
-        const color = () => Math.floor(Math.random() * 16777215).toString(16);
-
         this.draw({
-            type: INPUT,
+            type: OUTPUT,
             text: this.options.welcome,
         }).draw({
-            type: OUTPUT,
-            text: Array(10)
-                .fill()
-                .map((_, i) => `<d color="#${color()}">${String(i).repeat(5)}</d>`)
-                .join(''),
+            type: INPUT,
+            text: '',
         });
     }
 
@@ -104,7 +99,7 @@ export default class Term extends Emitter {
         return this;
     }
 
-    draw(data = {}) {
+    draw(data) {
         this.drawer.draw(data);
         return this;
     }
@@ -125,7 +120,6 @@ export default class Term extends Emitter {
         this.isDestroy = true;
         this.events.destroy();
         this.template.destroy();
-        this.drawer.destroy();
         instances.splice(instances.indexOf(this), 1);
     }
 }

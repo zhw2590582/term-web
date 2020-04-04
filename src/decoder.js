@@ -1,5 +1,5 @@
 import validator from 'option-validator';
-import { INPUT } from './constant';
+import { INPUT, OUTPUT } from './constant';
 
 export default class Decoder {
     constructor(term) {
@@ -9,8 +9,13 @@ export default class Decoder {
     decode(data) {
         if (!data) return [];
         validator(data, {
-            type: 'string',
-            text: 'undefined|string',
+            type: (val) => {
+                if (![INPUT, OUTPUT].includes(val)) {
+                    return `The type must be "${INPUT}" or "${OUTPUT}"`;
+                }
+                return true;
+            },
+            text: 'string',
             color: 'undefined|string',
             style: 'undefined|string',
         });
@@ -19,8 +24,6 @@ export default class Decoder {
             drawer: { ctx, width, padding },
             options: { prefix, fontColor },
         } = this.term;
-
-        if (!data.text) return [];
 
         if (data.type === INPUT) {
             data.text = prefix + data.text;

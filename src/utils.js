@@ -15,3 +15,7 @@ export function errorHandle(condition, msg) {
 export function clamp(num, a, b) {
     return Math.max(Math.min(num, Math.max(a, b)), Math.min(a, b));
 }
+
+export function randomColor() {
+    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+}

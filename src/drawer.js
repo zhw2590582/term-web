@@ -15,26 +15,19 @@ export default class Drawer {
         this.ctx.font = `${this.fontSize}px Arial`;
         this.ctx.textBaseline = 'top';
         this.startIndex = 0;
+        this.inputs = [];
         this.logs = [];
 
         this.draw();
 
-        this.cursorOn = false;
-        // (function loop() {
-        //     this.timer = setTimeout(() => {
-        //         this.cursorOn = !this.cursorOn;
-        //         this.drawCursor();
-        //         loop.call(this);
-        //     }, 600);
-        // }.call(this));
-    }
-
-    get lastLog() {
-        return this.logs[this.logs.length - 1];
-    }
-
-    get lastLine() {
-        return this.lastLog.lines[this.lastLog.lines.length - 1];
+        this.cursor = false;
+        (function loop() {
+            this.timer = setTimeout(() => {
+                this.cursor = !this.cursor;
+                this.drawCursor();
+                loop.call(this);
+            }, 500);
+        }.call(this));
     }
 
     draw(data) {
@@ -83,6 +76,7 @@ export default class Drawer {
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
 
+        if (data) this.inputs.push(data);
         const result = this.term.decoder.decode(data);
         this.logs.push(...result);
         const renderLogs = this.logs.slice(this.startIndex, this.totalLine);
@@ -99,21 +93,21 @@ export default class Drawer {
     }
 
     drawCursor() {
+        clearTimeout(this.timer);
         const { pixelRatio, backgroundColor } = this.term.options;
-        if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
+        const lastInput = this.inputs[this.inputs.length - 1];
+        const lastlog = this.logs[this.logs.length - 1];
+        if (lastInput && lastInput.type === INPUT && lastlog && lastlog.length) {
             this.draw();
-            const left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
-            const top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
+            const lastLine = lastlog[lastlog.length - 1];
+            const left = lastLine.left + lastLine.width + pixelRatio * 5;
+            const top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - 1 - this.startIndex);
             if (this.term.isFocus) {
-                this.ctx.fillStyle = this.cursorOn ? this.cursorColor : backgroundColor;
+                this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
             } else {
                 this.ctx.fillStyle = this.cursorColor;
             }
             this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
-    }
-
-    destroy() {
-        clearTimeout(this.timer);
     }
 }
