@@ -45,13 +45,14 @@ export default class Decoder {
                 const wordSize = ctx.measureText(word).width;
                 const color = child.getAttribute ? child.getAttribute('color') || fontColor : fontColor;
 
-                if (wordSize > width) {
+                const nextWordWidth = left + wordSize;
+                if (nextWordWidth > width) {
                     const letters = [...word];
                     for (let k = 0; k < letters.length; k += 1) {
                         const letter = letters[k];
                         const letterSize = ctx.measureText(letter).width;
-                        const nextWidth = left + letterSize;
-                        if (nextWidth < width) {
+                        const nextLetterWidth = left + letterSize;
+                        if (nextLetterWidth < width) {
                             const log = {
                                 width: letterSize,
                                 text: letter,
@@ -63,7 +64,7 @@ export default class Decoder {
                             } else {
                                 result[index] = [log];
                             }
-                            left = nextWidth;
+                            left = nextLetterWidth;
                         } else {
                             index += 1;
                             left = padding[3] + letterSize;
@@ -78,32 +79,18 @@ export default class Decoder {
                         }
                     }
                 } else {
-                    const nextWidth = left + wordSize;
-                    if (nextWidth < width) {
-                        const log = {
-                            width: wordSize,
-                            text: word,
-                            left,
-                            color,
-                        };
-                        if (result[index]) {
-                            result[index].push(log);
-                        } else {
-                            result[index] = [log];
-                        }
-                        left = nextWidth;
+                    const log = {
+                        width: wordSize,
+                        text: word,
+                        left,
+                        color,
+                    };
+                    if (result[index]) {
+                        result[index].push(log);
                     } else {
-                        index += 1;
-                        left = padding[3] + wordSize;
-                        result[index] = [
-                            {
-                                width: wordSize,
-                                text: word,
-                                left: padding[3],
-                                color,
-                            },
-                        ];
+                        result[index] = [log];
                     }
+                    left = nextWordWidth;
                 }
             }
             index = 0;

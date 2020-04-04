@@ -544,16 +544,17 @@
             var word = child.textContent;
             var wordSize = ctx.measureText(word).width;
             var color = child.getAttribute ? child.getAttribute('color') || fontColor : fontColor;
+            var nextWordWidth = left + wordSize;
 
-            if (wordSize > width) {
+            if (nextWordWidth > width) {
               var letters = toConsumableArray(word);
 
               for (var k = 0; k < letters.length; k += 1) {
                 var letter = letters[k];
                 var letterSize = ctx.measureText(letter).width;
-                var nextWidth = left + letterSize;
+                var nextLetterWidth = left + letterSize;
 
-                if (nextWidth < width) {
+                if (nextLetterWidth < width) {
                   var log = {
                     width: letterSize,
                     text: letter,
@@ -567,7 +568,7 @@
                     result[index] = [log];
                   }
 
-                  left = nextWidth;
+                  left = nextLetterWidth;
                 } else {
                   index += 1;
                   left = padding[3] + letterSize;
@@ -580,33 +581,20 @@
                 }
               }
             } else {
-              var _nextWidth = left + wordSize;
+              var _log = {
+                width: wordSize,
+                text: word,
+                left: left,
+                color: color
+              };
 
-              if (_nextWidth < width) {
-                var _log = {
-                  width: wordSize,
-                  text: word,
-                  left: left,
-                  color: color
-                };
-
-                if (result[index]) {
-                  result[index].push(_log);
-                } else {
-                  result[index] = [_log];
-                }
-
-                left = _nextWidth;
+              if (result[index]) {
+                result[index].push(_log);
               } else {
-                index += 1;
-                left = padding[3] + wordSize;
-                result[index] = [{
-                  width: wordSize,
-                  text: word,
-                  left: padding[3],
-                  color: color
-                }];
+                result[index] = [_log];
               }
+
+              left = nextWordWidth;
             }
           }
 
@@ -662,7 +650,7 @@
 
     createClass(Drawer, [{
       key: "draw",
-      value: function draw(data) {
+      value: function draw(input) {
         var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         this.lineEndIndex = 0;
         var _this$$canvas = this.$canvas,
@@ -673,7 +661,7 @@
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(data, replace);
+        this.drawContent(input, replace);
         return this;
       }
     }, {
@@ -715,32 +703,48 @@
       }
     }, {
       key: "drawContent",
-      value: function drawContent(data, replace) {
-        var _this$logs;
+      value: function drawContent(input, replace) {
+        var _this3 = this;
 
         var _this$term$options2 = this.term.options,
             pixelRatio = _this$term$options2.pixelRatio,
             backgroundColor = _this$term$options2.backgroundColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-        if (data) this.inputs.push(data);
-        if (replace) this.logs.pop();
-        var result = this.term.decoder.decode(data);
 
-        (_this$logs = this.logs).push.apply(_this$logs, toConsumableArray(result));
+        if (replace) {
+          var lastInput = this.inputs[this.inputs.length - 1];
 
+          if (lastInput) {
+            this.logs = this.logs.filter(function (item) {
+              return item.input !== lastInput;
+            });
+          }
+        }
+
+        if (input) {
+          this.inputs.push(input);
+        }
+
+        this.term.decoder.decode(input).forEach(function (item) {
+          item.input = input;
+
+          _this3.logs.push(item);
+        });
         var renderLogs = this.logs.slice(this.startIndex, this.totalLine);
 
         for (var i = 0; i < renderLogs.length; i += 1) {
           var logs = renderLogs[i];
 
-          for (var j = 0; j < logs.length; j += 1) {
-            var log = logs[j];
-            this.ctx.fillStyle = log.color;
+          if (logs) {
+            for (var j = 0; j < logs.length; j += 1) {
+              var log = logs[j];
+              this.ctx.fillStyle = log.color;
 
-            var _top = this.padding[0] + (this.fontSize + this.gap) * i;
+              var _top = this.padding[0] + (this.fontSize + this.gap) * i;
 
-            this.ctx.fillText(log.text, log.left, _top);
+              this.ctx.fillText(log.text, log.left, _top);
+            }
           }
         }
 

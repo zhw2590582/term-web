@@ -49,7 +49,7 @@ export default class Drawer {
         return { left: 0, top: 0 };
     }
 
-    draw(data, replace = false) {
+    draw(input, replace = false) {
         this.lineEndIndex = 0;
         const { width, height } = this.$canvas;
         this.height = height - this.padding[0] - this.padding[2];
@@ -57,7 +57,7 @@ export default class Drawer {
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(data, replace);
+        this.drawContent(input, replace);
         return this;
     }
 
@@ -90,24 +90,37 @@ export default class Drawer {
         });
     }
 
-    drawContent(data, replace) {
+    drawContent(input, replace) {
         const { pixelRatio, backgroundColor } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
 
-        if (data) this.inputs.push(data);
-        if (replace) this.logs.pop();
-        const result = this.term.decoder.decode(data);
-        this.logs.push(...result);
-        const renderLogs = this.logs.slice(this.startIndex, this.totalLine);
+        if (replace) {
+            const lastInput = this.inputs[this.inputs.length - 1];
+            if (lastInput) {
+                this.logs = this.logs.filter((item) => item.input !== lastInput);
+            }
+        }
 
+        if (input) {
+            this.inputs.push(input);
+        }
+
+        this.term.decoder.decode(input).forEach((item) => {
+            item.input = input;
+            this.logs.push(item);
+        });
+
+        const renderLogs = this.logs.slice(this.startIndex, this.totalLine);
         for (let i = 0; i < renderLogs.length; i += 1) {
             const logs = renderLogs[i];
-            for (let j = 0; j < logs.length; j += 1) {
-                const log = logs[j];
-                this.ctx.fillStyle = log.color;
-                const top = this.padding[0] + (this.fontSize + this.gap) * i;
-                this.ctx.fillText(log.text, log.left, top);
+            if (logs) {
+                for (let j = 0; j < logs.length; j += 1) {
+                    const log = logs[j];
+                    this.ctx.fillStyle = log.color;
+                    const top = this.padding[0] + (this.fontSize + this.gap) * i;
+                    this.ctx.fillText(log.text, log.left, top);
+                }
             }
         }
 
