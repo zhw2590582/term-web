@@ -17,6 +17,8 @@ export default class Template {
         this.$textarea = document.createElement('textarea');
         this.$textarea.classList.add('term-textarea');
         this.$textarea.style.position = 'absolute';
+        this.$textarea.style.width = '20px';
+        this.$textarea.style.height = '20px';
         this.$textarea.style.top = '0';
         this.$textarea.style.left = '0';
         this.$textarea.style.opacity = '0';

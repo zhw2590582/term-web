@@ -387,6 +387,8 @@
       this.$textarea = document.createElement('textarea');
       this.$textarea.classList.add('term-textarea');
       this.$textarea.style.position = 'absolute';
+      this.$textarea.style.width = '20px';
+      this.$textarea.style.height = '20px';
       this.$textarea.style.top = '0';
       this.$textarea.style.left = '0';
       this.$textarea.style.opacity = '0';
@@ -810,13 +812,23 @@
     proxy($textarea, 'input', function () {
       term.emit('input', $textarea.value.trim());
     });
-    proxy($textarea, 'keypress', function (event) {
+    proxy($textarea, 'paste', function () {
+      term.emit('input', $textarea.value.trim());
+    });
+    proxy($textarea, 'keydown', function (event) {
       var key = event.keyCode;
 
       if (key === 13) {
         setTimeout(function () {
           term.emit('enter', $textarea.value.trim());
           $textarea.value = '';
+        });
+      }
+
+      if ([37, 38, 39, 40].includes(key)) {
+        $textarea.blur();
+        setTimeout(function () {
+          return $textarea.focus();
         });
       }
     });
