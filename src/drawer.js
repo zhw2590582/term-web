@@ -33,14 +33,14 @@ export default class Drawer {
 
     get editable() {
         const lastInput = this.inputs[this.inputs.length - 1];
-        const lastlog = this.logs[this.logs.length - 1];
+        const lastlog = this.renderLogs[this.renderLogs.length - 1];
         return this.term.isFocus && lastInput && lastInput.type === INPUT && lastlog && lastlog.length;
     }
 
     get cursorPos() {
         if (this.editable) {
             const { pixelRatio } = this.term.options;
-            const lastlog = this.logs[this.logs.length - 1];
+            const lastlog = this.renderLogs[this.renderLogs.length - 1];
             const lastLine = lastlog[lastlog.length - 1];
             const left = lastLine.left + lastLine.width + pixelRatio * 5;
             const top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
@@ -91,10 +91,6 @@ export default class Drawer {
     }
 
     drawContent(input) {
-        const { pixelRatio, backgroundColor } = this.term.options;
-        this.ctx.fillStyle = backgroundColor;
-        this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-
         if (input) {
             if (input.replace) {
                 const lastInput = this.inputs[this.inputs.length - 1];
@@ -110,10 +106,16 @@ export default class Drawer {
             this.logs.push(item);
         });
 
-        this.renderLogs = this.logs.slice(-this.totalLine);
+        const renderLogs = this.logs.slice(-this.totalLine);
+        this.render(renderLogs);
+    }
 
-        for (let i = 0; i < this.renderLogs.length; i += 1) {
-            const logs = this.renderLogs[i];
+    render(renderLogs) {
+        const { pixelRatio } = this.term.options;
+
+        this.renderLogs = renderLogs;
+        for (let i = 0; i < renderLogs.length; i += 1) {
+            const logs = renderLogs[i];
             if (logs) {
                 for (let j = 0; j < logs.length; j += 1) {
                     const log = logs[j];

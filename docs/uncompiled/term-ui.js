@@ -716,12 +716,6 @@
       value: function drawContent(input) {
         var _this3 = this;
 
-        var _this$term$options2 = this.term.options,
-            pixelRatio = _this$term$options2.pixelRatio,
-            backgroundColor = _this$term$options2.backgroundColor;
-        this.ctx.fillStyle = backgroundColor;
-        this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
-
         if (input) {
           if (input.replace) {
             var lastInput = this.inputs[this.inputs.length - 1];
@@ -741,10 +735,17 @@
 
           _this3.logs.push(item);
         });
-        this.renderLogs = this.logs.slice(-this.totalLine);
+        var renderLogs = this.logs.slice(-this.totalLine);
+        this.render(renderLogs);
+      }
+    }, {
+      key: "render",
+      value: function render(renderLogs) {
+        var pixelRatio = this.term.options.pixelRatio;
+        this.renderLogs = renderLogs;
 
-        for (var i = 0; i < this.renderLogs.length; i += 1) {
-          var logs = this.renderLogs[i];
+        for (var i = 0; i < renderLogs.length; i += 1) {
+          var logs = renderLogs[i];
 
           if (logs) {
             for (var j = 0; j < logs.length; j += 1) {
@@ -773,9 +774,9 @@
         var _this$cursorPos2 = this.cursorPos,
             left = _this$cursorPos2.left,
             top = _this$cursorPos2.top;
-        var _this$term$options3 = this.term.options,
-            pixelRatio = _this$term$options3.pixelRatio,
-            backgroundColor = _this$term$options3.backgroundColor;
+        var _this$term$options2 = this.term.options,
+            pixelRatio = _this$term$options2.pixelRatio,
+            backgroundColor = _this$term$options2.backgroundColor;
 
         if (this.editable) {
           this.draw();
@@ -787,7 +788,7 @@
       key: "editable",
       get: function get() {
         var lastInput = this.inputs[this.inputs.length - 1];
-        var lastlog = this.logs[this.logs.length - 1];
+        var lastlog = this.renderLogs[this.renderLogs.length - 1];
         return this.term.isFocus && lastInput && lastInput.type === INPUT && lastlog && lastlog.length;
       }
     }, {
@@ -795,7 +796,7 @@
       get: function get() {
         if (this.editable) {
           var pixelRatio = this.term.options.pixelRatio;
-          var lastlog = this.logs[this.logs.length - 1];
+          var lastlog = this.renderLogs[this.renderLogs.length - 1];
           var lastLine = lastlog[lastlog.length - 1];
           var left = lastLine.left + lastLine.width + pixelRatio * 5;
           var top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
