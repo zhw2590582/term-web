@@ -509,7 +509,6 @@
           },
           text: 'string',
           color: 'undefined|string',
-          style: 'undefined|string',
           replace: 'undefined|boolean'
         });
         var _this$term = this.term,
@@ -912,6 +911,7 @@
           prefix: 'root@linux: ~ $ ',
           width: 600,
           height: 500,
+          action: [],
           borderRadius: 5,
           fontFamily: 'Arial',
           fontColor: '#b0b2b6',
@@ -933,6 +933,7 @@
           prefix: 'string',
           width: 'number',
           height: 'number',
+          action: 'array',
           borderRadius: 'number',
           fontFamily: 'string',
           fontColor: 'string',

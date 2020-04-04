@@ -17,7 +17,6 @@ export default class Decoder {
             },
             text: 'string',
             color: 'undefined|string',
-            style: 'undefined|string',
             replace: 'undefined|boolean',
         });
 
