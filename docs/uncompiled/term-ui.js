@@ -218,14 +218,32 @@
 
       this.destroyEvents = [];
       this.proxy = this.proxy.bind(this);
-      var $canvas = term.template.$canvas;
+      var _term$template = term.template,
+          $canvas = _term$template.$canvas,
+          $textarea = _term$template.$textarea;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
         if (event.composedPath && event.composedPath().indexOf($canvas) > -1) {
+          $textarea.focus();
           term.isFocus = true;
           term.emit('focus');
         } else {
           term.isFocus = false;
           term.emit('blur');
+        }
+      });
+      this.proxy($textarea, 'input', function () {
+        var val = $textarea.value.trim();
+        term.emit('input', val);
+      });
+      this.proxy($textarea, 'keypress', function (event) {
+        var key = event.keyCode;
+
+        if (key === 13) {
+          var val = $textarea.value.trim();
+          setTimeout(function () {
+            if (val) term.emit('enter', val);
+            $textarea.value = '';
+          });
         }
       });
     }
@@ -380,9 +398,25 @@
       errorHandle(term.constructor.instances.every(function (ins) {
         return ins.options.container !== _this.$container;
       }), 'Cannot mount multiple instances on the same dom element, please destroy the previous instance first.');
+      this.$container.style.position = 'relative';
       this.$canvas = document.createElement('canvas');
       this.$canvas.classList.add('term-canvas');
       this.$container.appendChild(this.$canvas);
+      this.$textarea = document.createElement('textarea');
+      this.$textarea.classList.add('term-textarea');
+      this.$textarea.style.position = 'absolute';
+      this.$textarea.style.top = '0';
+      this.$textarea.style.left = '0';
+      this.$textarea.style.opacity = '0';
+      this.$textarea.style.pointerEvents = 'none';
+      this.$textarea.style.userSelect = 'none';
+      this.$container.appendChild(this.$textarea);
+      term.on('editable', function (_ref) {
+        var left = _ref.left,
+            top = _ref.top;
+        _this.$textarea.style.top = "".concat(top, "px");
+        _this.$textarea.style.left = "".concat(left, "px");
+      });
 
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
@@ -605,6 +639,8 @@
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
+      var _this = this;
+
       classCallCheck(this, Drawer);
 
       this.term = term;
@@ -627,16 +663,28 @@
       this.inputs = [];
       this.logs = [];
       this.draw();
+      term.on('input', function (text) {
+        _this.draw({
+          type: INPUT,
+          text: text
+        }, true);
+      });
+      term.on('enter', function (text) {
+        _this.draw({
+          type: INPUT,
+          text: text
+        }, true);
+      });
       this.cursor = false;
       (function loop() {
-        var _this = this;
+        var _this2 = this;
 
         this.timer = setTimeout(function () {
-          _this.cursor = !_this.cursor;
+          _this2.cursor = !_this2.cursor;
 
-          _this.drawCursor();
+          _this2.drawCursor();
 
-          loop.call(_this);
+          loop.call(_this2);
         }, 500);
       }).call(this);
     }
@@ -644,6 +692,7 @@
     createClass(Drawer, [{
       key: "draw",
       value: function draw(data) {
+        var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         this.lineEndIndex = 0;
         var _this$$canvas = this.$canvas,
             width = _this$$canvas.width,
@@ -653,7 +702,7 @@
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(data);
+        this.drawContent(data, replace);
         return this;
       }
     }, {
@@ -670,7 +719,7 @@
     }, {
       key: "drawTopbar",
       value: function drawTopbar() {
-        var _this2 = this;
+        var _this3 = this;
 
         var _this$term$options = this.term.options,
             title = _this$term$options.title,
@@ -682,26 +731,29 @@
 
         this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
-          _this2.ctx.beginPath();
+          _this3.ctx.beginPath();
 
-          _this2.ctx.arc(_this2.padding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.padding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
+          _this3.ctx.arc(_this3.padding[3] + _this3.btnSize + index * _this3.btnSize * 3.6, _this3.padding[1] + _this3.btnSize, _this3.btnSize, 0, 360, false);
 
-          _this2.ctx.fillStyle = item;
+          _this3.ctx.fillStyle = item;
 
-          _this2.ctx.fill();
+          _this3.ctx.fill();
 
-          _this2.ctx.closePath();
+          _this3.ctx.closePath();
         });
       }
     }, {
       key: "drawContent",
-      value: function drawContent(data) {
+      value: function drawContent(data, replace) {
         var _this$logs;
 
-        var backgroundColor = this.term.options.backgroundColor;
+        var _this$term$options2 = this.term.options,
+            pixelRatio = _this$term$options2.pixelRatio,
+            backgroundColor = _this$term$options2.backgroundColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
         if (data) this.inputs.push(data);
+        if (replace) this.logs.pop();
         var result = this.term.decoder.decode(data);
 
         (_this$logs = this.logs).push.apply(_this$logs, toConsumableArray(result));
@@ -714,35 +766,64 @@
           for (var j = 0; j < logs.length; j += 1) {
             var log = logs[j];
             this.ctx.fillStyle = log.color;
-            var top = this.padding[0] + (this.fontSize + this.gap) * i;
-            this.ctx.fillText(log.text, log.left, top);
+
+            var _top = this.padding[0] + (this.fontSize + this.gap) * i;
+
+            this.ctx.fillText(log.text, log.left, _top);
           }
         }
+
+        var _this$cursorPos = this.cursorPos,
+            left = _this$cursorPos.left,
+            top = _this$cursorPos.top;
+        this.term.emit('editable', {
+          left: left / pixelRatio,
+          top: top / pixelRatio
+        });
       }
     }, {
       key: "drawCursor",
       value: function drawCursor() {
         clearTimeout(this.timer);
-        var _this$term$options2 = this.term.options,
-            pixelRatio = _this$term$options2.pixelRatio,
-            backgroundColor = _this$term$options2.backgroundColor;
+        var _this$cursorPos2 = this.cursorPos,
+            left = _this$cursorPos2.left,
+            top = _this$cursorPos2.top;
+        var _this$term$options3 = this.term.options,
+            pixelRatio = _this$term$options3.pixelRatio,
+            backgroundColor = _this$term$options3.backgroundColor;
+
+        if (this.editable) {
+          this.draw();
+          this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
+          this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
+        }
+      }
+    }, {
+      key: "editable",
+      get: function get() {
         var lastInput = this.inputs[this.inputs.length - 1];
         var lastlog = this.logs[this.logs.length - 1];
-
-        if (lastInput && lastInput.type === INPUT && lastlog && lastlog.length) {
-          this.draw();
+        return this.term.isFocus && lastInput && lastInput.type === INPUT && lastlog && lastlog.length;
+      }
+    }, {
+      key: "cursorPos",
+      get: function get() {
+        if (this.editable) {
+          var pixelRatio = this.term.options.pixelRatio;
+          var lastlog = this.logs[this.logs.length - 1];
           var lastLine = lastlog[lastlog.length - 1];
           var left = lastLine.left + lastLine.width + pixelRatio * 5;
           var top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - 1 - this.startIndex);
-
-          if (this.term.isFocus) {
-            this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
-          } else {
-            this.ctx.fillStyle = this.cursorColor;
-          }
-
-          this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
+          return {
+            left: left,
+            top: top
+          };
         }
+
+        return {
+          left: 0,
+          top: 0
+        };
       }
     }]);
 
@@ -1299,7 +1380,7 @@
   var Keyboard = function Keyboard(term) {
     classCallCheck(this, Keyboard);
 
-    hotkeys('alt+x', function (event, handler) {
+    hotkeys('space', function (event, handler) {
       if (term.isFocus) {
         event.preventDefault();
         console.log(handler);

@@ -20,6 +20,26 @@ export default class Drawer {
 
         this.draw();
 
+        term.on('input', (text) => {
+            this.draw(
+                {
+                    type: INPUT,
+                    text,
+                },
+                true,
+            );
+        });
+
+        term.on('enter', (text) => {
+            this.draw(
+                {
+                    type: INPUT,
+                    text,
+                },
+                true,
+            );
+        });
+
         this.cursor = false;
         (function loop() {
             this.timer = setTimeout(() => {
@@ -30,7 +50,25 @@ export default class Drawer {
         }.call(this));
     }
 
-    draw(data) {
+    get editable() {
+        const lastInput = this.inputs[this.inputs.length - 1];
+        const lastlog = this.logs[this.logs.length - 1];
+        return this.term.isFocus && lastInput && lastInput.type === INPUT && lastlog && lastlog.length;
+    }
+
+    get cursorPos() {
+        if (this.editable) {
+            const { pixelRatio } = this.term.options;
+            const lastlog = this.logs[this.logs.length - 1];
+            const lastLine = lastlog[lastlog.length - 1];
+            const left = lastLine.left + lastLine.width + pixelRatio * 5;
+            const top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - 1 - this.startIndex);
+            return { left, top };
+        }
+        return { left: 0, top: 0 };
+    }
+
+    draw(data, replace = false) {
         this.lineEndIndex = 0;
         const { width, height } = this.$canvas;
         this.height = height - this.padding[0] - this.padding[2];
@@ -38,7 +76,7 @@ export default class Drawer {
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(data);
+        this.drawContent(data, replace);
         return this;
     }
 
@@ -71,12 +109,13 @@ export default class Drawer {
         });
     }
 
-    drawContent(data) {
-        const { backgroundColor } = this.term.options;
+    drawContent(data, replace) {
+        const { pixelRatio, backgroundColor } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
 
         if (data) this.inputs.push(data);
+        if (replace) this.logs.pop();
         const result = this.term.decoder.decode(data);
         this.logs.push(...result);
         const renderLogs = this.logs.slice(this.startIndex, this.totalLine);
@@ -90,23 +129,21 @@ export default class Drawer {
                 this.ctx.fillText(log.text, log.left, top);
             }
         }
+
+        const { left, top } = this.cursorPos;
+        this.term.emit('editable', {
+            left: left / pixelRatio,
+            top: top / pixelRatio,
+        });
     }
 
     drawCursor() {
         clearTimeout(this.timer);
+        const { left, top } = this.cursorPos;
         const { pixelRatio, backgroundColor } = this.term.options;
-        const lastInput = this.inputs[this.inputs.length - 1];
-        const lastlog = this.logs[this.logs.length - 1];
-        if (lastInput && lastInput.type === INPUT && lastlog && lastlog.length) {
+        if (this.editable) {
             this.draw();
-            const lastLine = lastlog[lastlog.length - 1];
-            const left = lastLine.left + lastLine.width + pixelRatio * 5;
-            const top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - 1 - this.startIndex);
-            if (this.term.isFocus) {
-                this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
-            } else {
-                this.ctx.fillStyle = this.cursorColor;
-            }
+            this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
             this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
     }
