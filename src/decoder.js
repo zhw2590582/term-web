@@ -29,12 +29,12 @@ export default class Decoder {
             data.text = prefix + data.text;
         }
 
-        let index = 0;
-        let left = padding[3];
         const result = [];
         const lines = data.text.split(/\r?\n/);
         const scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
 
+        let index = 0;
+        let left = padding[3];
         for (let i = 0; i < lines.length; i += 1) {
             const line = lines[i];
             const span = document.createElement('span');
@@ -47,36 +47,49 @@ export default class Decoder {
 
                 const nextWordWidth = left + wordSize;
                 if (nextWordWidth > width) {
+                    let textTmp = '';
+                    let isNewLine = false;
+                    const lastLeft = left;
                     const letters = [...word];
                     for (let k = 0; k < letters.length; k += 1) {
                         const letter = letters[k];
                         const letterSize = ctx.measureText(letter).width;
                         const nextLetterWidth = left + letterSize;
                         if (nextLetterWidth < width) {
+                            textTmp += letter;
+                            left = nextLetterWidth;
+                        } else {
                             const log = {
-                                width: letterSize,
-                                text: letter,
-                                left,
+                                width: ctx.measureText(textTmp).width,
+                                left: isNewLine ? padding[3] : lastLeft,
+                                text: textTmp,
                                 color,
                             };
+
                             if (result[index]) {
                                 result[index].push(log);
                             } else {
                                 result[index] = [log];
                             }
-                            left = nextLetterWidth;
-                        } else {
+
                             index += 1;
+                            textTmp = letter;
+                            isNewLine = true;
                             left = padding[3] + letterSize;
-                            result[index] = [
-                                {
-                                    width: letterSize,
-                                    text: letter,
-                                    left: padding[3],
-                                    color,
-                                },
-                            ];
                         }
+                    }
+
+                    const log = {
+                        width: ctx.measureText(textTmp).width,
+                        left: padding[3],
+                        text: textTmp,
+                        color,
+                    };
+
+                    if (result[index]) {
+                        result[index].push(log);
+                    } else {
+                        result[index] = [log];
                     }
                 } else {
                     const log = {

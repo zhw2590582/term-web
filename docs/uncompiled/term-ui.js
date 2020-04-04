@@ -528,11 +528,11 @@
           data.text = prefix + data.text;
         }
 
-        var index = 0;
-        var left = padding[3];
         var result = [];
         var lines = data.text.split(/\r?\n/);
         var scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+        var index = 0;
+        var left = padding[3];
 
         for (var i = 0; i < lines.length; i += 1) {
           var line = lines[i];
@@ -547,6 +547,10 @@
             var nextWordWidth = left + wordSize;
 
             if (nextWordWidth > width) {
+              var textTmp = '';
+              var isNewLine = false;
+              var lastLeft = left;
+
               var letters = toConsumableArray(word);
 
               for (var k = 0; k < letters.length; k += 1) {
@@ -555,33 +559,43 @@
                 var nextLetterWidth = left + letterSize;
 
                 if (nextLetterWidth < width) {
-                  var log = {
-                    width: letterSize,
-                    text: letter,
-                    left: left,
+                  textTmp += letter;
+                  left = nextLetterWidth;
+                } else {
+                  var _log = {
+                    width: ctx.measureText(textTmp).width,
+                    left: isNewLine ? padding[3] : lastLeft,
+                    text: textTmp,
                     color: color
                   };
 
                   if (result[index]) {
-                    result[index].push(log);
+                    result[index].push(_log);
                   } else {
-                    result[index] = [log];
+                    result[index] = [_log];
                   }
 
-                  left = nextLetterWidth;
-                } else {
                   index += 1;
+                  textTmp = letter;
+                  isNewLine = true;
                   left = padding[3] + letterSize;
-                  result[index] = [{
-                    width: letterSize,
-                    text: letter,
-                    left: padding[3],
-                    color: color
-                  }];
                 }
               }
+
+              var log = {
+                width: ctx.measureText(textTmp).width,
+                left: padding[3],
+                text: textTmp,
+                color: color
+              };
+
+              if (result[index]) {
+                result[index].push(log);
+              } else {
+                result[index] = [log];
+              }
             } else {
-              var _log = {
+              var _log2 = {
                 width: wordSize,
                 text: word,
                 left: left,
@@ -589,9 +603,9 @@
               };
 
               if (result[index]) {
-                result[index].push(_log);
+                result[index].push(_log2);
               } else {
-                result[index] = [_log];
+                result[index] = [_log2];
               }
 
               left = nextWordWidth;
