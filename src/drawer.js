@@ -14,9 +14,9 @@ export default class Drawer {
         this.ctx = this.$canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px ${fontFamily}`;
         this.ctx.textBaseline = 'top';
-        this.startIndex = 0;
         this.inputs = [];
         this.logs = [];
+        this.renderLogs = [];
 
         this.draw();
         this.draw = this.draw.bind(this);
@@ -43,13 +43,13 @@ export default class Drawer {
             const lastlog = this.logs[this.logs.length - 1];
             const lastLine = lastlog[lastlog.length - 1];
             const left = lastLine.left + lastLine.width + pixelRatio * 5;
-            const top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - this.startIndex - 1);
+            const top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
             return { left, top };
         }
         return { left: 0, top: 0 };
     }
 
-    draw(input, replace = false) {
+    draw(input) {
         this.lineEndIndex = 0;
         const { width, height } = this.$canvas;
         this.height = height - this.padding[0] - this.padding[2];
@@ -57,7 +57,7 @@ export default class Drawer {
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(input, replace);
+        this.drawContent(input);
         return this;
     }
 
@@ -90,19 +90,18 @@ export default class Drawer {
         });
     }
 
-    drawContent(input, replace) {
+    drawContent(input) {
         const { pixelRatio, backgroundColor } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
 
-        if (replace) {
-            const lastInput = this.inputs[this.inputs.length - 1];
-            if (lastInput) {
-                this.logs = this.logs.filter((item) => item.input !== lastInput);
-            }
-        }
-
         if (input) {
+            if (input.replace) {
+                const lastInput = this.inputs[this.inputs.length - 1];
+                if (lastInput) {
+                    this.logs = this.logs.filter((item) => item.input !== lastInput);
+                }
+            }
             this.inputs.push(input);
         }
 
@@ -111,9 +110,10 @@ export default class Drawer {
             this.logs.push(item);
         });
 
-        const renderLogs = this.logs.slice(this.startIndex, this.totalLine);
-        for (let i = 0; i < renderLogs.length; i += 1) {
-            const logs = renderLogs[i];
+        this.renderLogs = this.logs.slice(-this.totalLine);
+
+        for (let i = 0; i < this.renderLogs.length; i += 1) {
+            const logs = this.renderLogs[i];
             if (logs) {
                 for (let j = 0; j < logs.length; j += 1) {
                     const log = logs[j];
@@ -125,7 +125,7 @@ export default class Drawer {
         }
 
         const { left, top } = this.cursorPos;
-        this.term.emit('editable', {
+        this.term.emit('cursor', {
             left: left / pixelRatio,
             top: top / pixelRatio,
         });

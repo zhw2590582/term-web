@@ -26,7 +26,7 @@ export default class Template {
         this.$textarea.style.userSelect = 'none';
         this.$container.appendChild(this.$textarea);
 
-        term.on('editable', ({ left, top }) => {
+        term.on('cursor', ({ left, top }) => {
             this.$textarea.style.top = `${top}px`;
             this.$textarea.style.left = `${left}px`;
         });
@@ -52,9 +52,6 @@ export default class Template {
     }
 
     destroy() {
-        if (this.$style) {
-            document.head.removeChild(this.$style);
-        }
         this.$container.innerHTML = '';
     }
 }

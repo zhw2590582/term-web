@@ -395,7 +395,7 @@
       this.$textarea.style.pointerEvents = 'none';
       this.$textarea.style.userSelect = 'none';
       this.$container.appendChild(this.$textarea);
-      term.on('editable', function (_ref) {
+      term.on('cursor', function (_ref) {
         var left = _ref.left,
             top = _ref.top;
         _this.$textarea.style.top = "".concat(top, "px");
@@ -431,10 +431,6 @@
     }, {
       key: "destroy",
       value: function destroy() {
-        if (this.$style) {
-          document.head.removeChild(this.$style);
-        }
-
         this.$container.innerHTML = '';
       }
     }]);
@@ -513,7 +509,8 @@
           },
           text: 'string',
           color: 'undefined|string',
-          style: 'undefined|string'
+          style: 'undefined|string',
+          replace: 'undefined|boolean'
         });
         var _this$term = this.term,
             _this$term$drawer = _this$term.drawer,
@@ -643,9 +640,9 @@
       this.ctx = this.$canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
       this.ctx.textBaseline = 'top';
-      this.startIndex = 0;
       this.inputs = [];
       this.logs = [];
+      this.renderLogs = [];
       this.draw();
       this.draw = this.draw.bind(this);
       this.cursor = false;
@@ -665,7 +662,6 @@
     createClass(Drawer, [{
       key: "draw",
       value: function draw(input) {
-        var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         this.lineEndIndex = 0;
         var _this$$canvas = this.$canvas,
             width = _this$$canvas.width,
@@ -675,7 +671,7 @@
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(input, replace);
+        this.drawContent(input);
         return this;
       }
     }, {
@@ -717,7 +713,7 @@
       }
     }, {
       key: "drawContent",
-      value: function drawContent(input, replace) {
+      value: function drawContent(input) {
         var _this3 = this;
 
         var _this$term$options2 = this.term.options,
@@ -726,17 +722,17 @@
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
 
-        if (replace) {
-          var lastInput = this.inputs[this.inputs.length - 1];
-
-          if (lastInput) {
-            this.logs = this.logs.filter(function (item) {
-              return item.input !== lastInput;
-            });
-          }
-        }
-
         if (input) {
+          if (input.replace) {
+            var lastInput = this.inputs[this.inputs.length - 1];
+
+            if (lastInput) {
+              this.logs = this.logs.filter(function (item) {
+                return item.input !== lastInput;
+              });
+            }
+          }
+
           this.inputs.push(input);
         }
 
@@ -745,10 +741,10 @@
 
           _this3.logs.push(item);
         });
-        var renderLogs = this.logs.slice(this.startIndex, this.totalLine);
+        this.renderLogs = this.logs.slice(-this.totalLine);
 
-        for (var i = 0; i < renderLogs.length; i += 1) {
-          var logs = renderLogs[i];
+        for (var i = 0; i < this.renderLogs.length; i += 1) {
+          var logs = this.renderLogs[i];
 
           if (logs) {
             for (var j = 0; j < logs.length; j += 1) {
@@ -765,7 +761,7 @@
         var _this$cursorPos = this.cursorPos,
             left = _this$cursorPos.left,
             top = _this$cursorPos.top;
-        this.term.emit('editable', {
+        this.term.emit('cursor', {
           left: left / pixelRatio,
           top: top / pixelRatio
         });
@@ -802,7 +798,7 @@
           var lastlog = this.logs[this.logs.length - 1];
           var lastLine = lastlog[lastlog.length - 1];
           var left = lastLine.left + lastLine.width + pixelRatio * 5;
-          var top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - this.startIndex - 1);
+          var top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
           return {
             left: left,
             top: top
@@ -855,17 +851,19 @@
   var Commander = function Commander(term) {
     classCallCheck(this, Commander);
 
-    var draw = term.drawer.draw;
+    var notFound = term.options.notFound,
+        draw = term.drawer.draw;
     term.on('input', function (text) {
       draw({
         type: INPUT,
+        replace: true,
         text: text
-      }, true);
+      });
     });
     term.on('enter', function (text) {
       draw({
         type: OUTPUT,
-        text: "\u8F93\u5165\u547D\u4EE4\uFF1A".concat(text)
+        text: notFound(text)
       });
       draw({
         type: INPUT,
@@ -919,7 +917,10 @@
           welcome: "Last login: ".concat(new Date()),
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
-          pixelRatio: window.devicePixelRatio
+          pixelRatio: window.devicePixelRatio,
+          notFound: function notFound(val) {
+            return "-bash: <d color='red'>".concat(val, "</d>: command not found");
+          }
         };
       }
     }, {
@@ -937,7 +938,8 @@
           welcome: 'string',
           boxShadow: 'string',
           backgroundColor: 'string',
-          pixelRatio: 'number'
+          pixelRatio: 'number',
+          notFound: 'function'
         };
       }
     }]);

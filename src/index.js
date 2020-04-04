@@ -37,6 +37,7 @@ export default class Term extends Emitter {
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
+            notFound: (val) => `-bash: <d color='red'>${val}</d>: command not found`,
         };
     }
 
@@ -54,6 +55,7 @@ export default class Term extends Emitter {
             boxShadow: 'string',
             backgroundColor: 'string',
             pixelRatio: 'number',
+            notFound: 'function',
         };
     }
 
