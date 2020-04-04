@@ -4,6 +4,7 @@ import Events from './events';
 import Template from './template';
 import Decoder from './decoder';
 import Drawer from './drawer';
+import Keyboard from './keyboard';
 import { INPUT, OUTPUT } from './constant';
 
 let id = 0;
@@ -29,9 +30,9 @@ export default class Term extends Emitter {
             width: 600,
             height: 500,
             borderRadius: 5,
-            font: 'Arial',
+            fontFamily: 'Arial',
             fontColor: '#b0b2b6',
-            welcome: 'Last login: Sat Apr  4 11:06:08 on ttys002',
+            welcome: `Last login: ${new Date()}`,
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
@@ -46,7 +47,7 @@ export default class Term extends Emitter {
             width: 'number',
             height: 'number',
             borderRadius: 'number',
-            font: 'string',
+            fontFamily: 'string',
             fontColor: 'string',
             welcome: 'string',
             boxShadow: 'string',
@@ -65,6 +66,7 @@ export default class Term extends Emitter {
         this.events = new Events(this);
         this.decoder = new Decoder(this);
         this.drawer = new Drawer(this);
+        this.keyboard = new Keyboard(this);
 
         this.isFocus = false;
         this.isDestroy = false;

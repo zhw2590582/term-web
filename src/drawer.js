@@ -3,7 +3,7 @@ import { INPUT } from './constant';
 export default class Drawer {
     constructor(term) {
         this.term = term;
-        const { pixelRatio } = term.options;
+        const { pixelRatio, fontFamily } = term.options;
         this.gap = 10 * pixelRatio;
         this.fontSize = 14 * pixelRatio;
         this.padding = [45, 15, 15, 15].map((item) => item * pixelRatio);
@@ -12,7 +12,7 @@ export default class Drawer {
         this.btnSize = 6 * pixelRatio;
         this.$canvas = term.template.$canvas;
         this.ctx = this.$canvas.getContext('2d');
-        this.ctx.font = `${this.fontSize}px Arial`;
+        this.ctx.font = `${this.fontSize}px ${fontFamily}`;
         this.ctx.textBaseline = 'top';
         this.startIndex = 0;
         this.inputs = [];
