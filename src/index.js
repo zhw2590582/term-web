@@ -2,7 +2,7 @@ import validator from 'option-validator';
 import Emitter from './emitter';
 import Events from './events';
 import Template from './template';
-import Translate from './translate';
+import Decoder from './decoder';
 import Drawer from './drawer';
 import { INPUT, OUTPUT } from './constant';
 
@@ -25,13 +25,13 @@ export default class Term extends Emitter {
         return {
             container: '#term',
             title: 'Term UI',
-            prefix: 'root@linux: ~ $',
+            prefix: 'root@linux: ~ $ ',
             width: 600,
             height: 500,
             borderRadius: 5,
             font: 'Arial',
             fontColor: '#b0b2b6',
-            welcome: '🎉 Welcome to use the Term UI',
+            welcome: '🎉 Welcome to use the Term UI'.repeat(10),
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
@@ -47,6 +47,7 @@ export default class Term extends Emitter {
             height: 'number',
             borderRadius: 'number',
             font: 'string',
+            fontColor: 'string',
             welcome: 'string',
             boxShadow: 'string',
             backgroundColor: 'string',
@@ -62,7 +63,7 @@ export default class Term extends Emitter {
 
         this.template = new Template(this);
         this.events = new Events(this);
-        this.translate = new Translate(this);
+        this.decoder = new Decoder(this);
         this.drawer = new Drawer(this);
 
         this.isFocus = false;
@@ -72,11 +73,17 @@ export default class Term extends Emitter {
         this.id = id;
         instances.push(this);
 
-        this.input({
-            type: OUTPUT,
-            text: this.options.welcome,
-        }).input({
+        const color = () => Math.floor(Math.random() * 16777215).toString(16);
+
+        this.draw({
             type: INPUT,
+            text: this.options.welcome,
+        }).draw({
+            type: OUTPUT,
+            text: Array(10)
+                .fill()
+                .map((_, i) => `<d color="#${color()}">${String(i).repeat(5)}</d>`)
+                .join(''),
         });
     }
 
@@ -97,15 +104,8 @@ export default class Term extends Emitter {
         return this;
     }
 
-    input(data = {}) {
-        this.drawer.update(
-            validator(data, {
-                type: 'string',
-                text: 'undefined|string',
-                color: 'undefined|string',
-                style: 'undefined|string',
-            }),
-        );
+    draw(data = {}) {
+        this.drawer.draw(data);
         return this;
     }
 

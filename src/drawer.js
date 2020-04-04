@@ -1,12 +1,12 @@
-import { INPUT, CHECKBOX, RADIO } from './constant';
+import { INPUT } from './constant';
 
 export default class Drawer {
     constructor(term) {
         this.term = term;
         const { pixelRatio } = term.options;
-        this.gap = 15 * pixelRatio;
+        this.gap = 10 * pixelRatio;
         this.fontSize = 14 * pixelRatio;
-        this.padding = [45, 15, 15, 15].map(item => item * pixelRatio);
+        this.padding = [45, 15, 15, 15].map((item) => item * pixelRatio);
         this.cursorColor = '#FFF';
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
         this.btnSize = 6 * pixelRatio;
@@ -14,18 +14,19 @@ export default class Drawer {
         this.ctx = this.$canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px Arial`;
         this.ctx.textBaseline = 'top';
+        this.startIndex = 0;
         this.logs = [];
 
-        this.update();
+        this.draw();
 
         this.cursorOn = false;
-        (function loop() {
-            this.timer = setTimeout(() => {
-                this.cursorOn = !this.cursorOn;
-                this.drawCursor();
-                loop.call(this);
-            }, 600);
-        }.call(this));
+        // (function loop() {
+        //     this.timer = setTimeout(() => {
+        //         this.cursorOn = !this.cursorOn;
+        //         this.drawCursor();
+        //         loop.call(this);
+        //     }, 600);
+        // }.call(this));
     }
 
     get lastLog() {
@@ -36,8 +37,7 @@ export default class Drawer {
         return this.lastLog.lines[this.lastLog.lines.length - 1];
     }
 
-    update(data) {
-        this.lineStartIndex = 0;
+    draw(data) {
         this.lineEndIndex = 0;
         const { width, height } = this.$canvas;
         this.height = height - this.padding[0] - this.padding[2];
@@ -46,6 +46,7 @@ export default class Drawer {
         this.drawBackground();
         this.drawTopbar();
         this.drawContent(data);
+        return this;
     }
 
     drawBackground() {
@@ -78,35 +79,21 @@ export default class Drawer {
     }
 
     drawContent(data) {
-        const { backgroundColor, fontColor } = this.term.options;
+        const { backgroundColor } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
 
-        if (data) {
-            switch (data.style) {
-                case CHECKBOX:
-                    this.logs.push(this.getLogCheckbox(data));
-                    break;
-                case RADIO:
-                    this.logs.push(this.getLogRadio(data));
-                    break;
-                default:
-                    this.logs.push(this.getLogNormal(data));
-                    break;
-            }
-        }
+        const result = this.term.decoder.decode(data);
+        this.logs.push(...result);
+        const renderLogs = this.logs.slice(this.startIndex, this.totalLine);
 
-        let lineIndex = 0;
-        for (let j = 0; j < this.logs.length; j += 1) {
-            for (let k = 0; k < this.logs[j].lines.length; k += 1) {
-                lineIndex += 1;
-                if (this.lineStartIndex < lineIndex && this.lineStartIndex + this.totalLine > lineIndex) {
-                    const text = this.logs[j].lines[k];
-                    const top = this.padding[0] + (this.fontSize + this.gap) * (lineIndex - 1);
-                    this.ctx.fillStyle = this.logs[j].color || fontColor;
-                    this.ctx.fillText(text, this.padding[3], top);
-                    this.lineEndIndex += 1;
-                }
+        for (let i = 0; i < renderLogs.length; i += 1) {
+            const logs = renderLogs[i];
+            for (let j = 0; j < logs.length; j += 1) {
+                const log = logs[j];
+                this.ctx.fillStyle = log.color;
+                const top = this.padding[0] + (this.fontSize + this.gap) * i;
+                this.ctx.fillText(log.text, log.left, top);
             }
         }
     }
@@ -114,7 +101,7 @@ export default class Drawer {
     drawCursor() {
         const { pixelRatio, backgroundColor } = this.term.options;
         if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
-            this.update();
+            this.draw();
             const left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
             const top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
             if (this.term.isFocus) {
@@ -124,47 +111,6 @@ export default class Drawer {
             }
             this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
-    }
-
-    getLogNormal(data) {
-        const { prefix } = this.term.options;
-        let temp = data.type === INPUT ? prefix : '';
-
-        if (!data.text) {
-            return {
-                ...data,
-                lines: [temp],
-            };
-        }
-
-        const lines = [];
-        const temps = (data.text || '').split(/\r?\n/).filter(item => item.trim());
-        for (let i = 0; i < temps.length; i += 1) {
-            for (let j = 0; j < temps[i].length; j += 1) {
-                const char = temp + temps[i][j];
-                if (this.ctx.measureText(char).width > this.width) {
-                    lines.push(temp);
-                    temp = '';
-                } else {
-                    temp = char;
-                }
-            }
-            lines.push(temp);
-            temp = '';
-        }
-
-        return {
-            ...data,
-            lines,
-        };
-    }
-
-    getLogCheckbox(data) {
-        //
-    }
-
-    getLogRadio(data) {
-        //
     }
 
     destroy() {

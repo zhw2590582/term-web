@@ -424,20 +424,179 @@
     return Template;
   }();
 
-  var Translate = function Translate(term) {
-    classCallCheck(this, Translate);
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
 
-    this.term = term;
-  };
+    for (var i = 0, arr2 = new Array(len); i < len; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+
+  var arrayLikeToArray = _arrayLikeToArray;
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return arrayLikeToArray(arr);
+  }
+
+  var arrayWithoutHoles = _arrayWithoutHoles;
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  }
+
+  var iterableToArray = _iterableToArray;
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(n);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+  }
+
+  var unsupportedIterableToArray = _unsupportedIterableToArray;
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var nonIterableSpread = _nonIterableSpread;
+
+  function _toConsumableArray(arr) {
+    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
+  }
+
+  var toConsumableArray = _toConsumableArray;
 
   var INPUT = 'input';
   var OUTPUT = 'output';
-  var CHECKBOX = 'checkbox';
-  var RADIO = 'radio';
 
-  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+  var Decoder = /*#__PURE__*/function () {
+    function Decoder(term) {
+      classCallCheck(this, Decoder);
 
-  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+      this.term = term;
+    }
+
+    createClass(Decoder, [{
+      key: "decode",
+      value: function decode(data) {
+        if (!data) return [];
+        optionValidator(data, {
+          type: 'string',
+          text: 'undefined|string',
+          color: 'undefined|string',
+          style: 'undefined|string'
+        });
+        var _this$term = this.term,
+            _this$term$drawer = _this$term.drawer,
+            ctx = _this$term$drawer.ctx,
+            width = _this$term$drawer.width,
+            padding = _this$term$drawer.padding,
+            _this$term$options = _this$term.options,
+            prefix = _this$term$options.prefix,
+            fontColor = _this$term$options.fontColor;
+        if (!data.text) return [];
+
+        if (data.type === INPUT) {
+          data.text = prefix + data.text;
+        }
+
+        var index = 0;
+        var left = padding[3];
+        var result = [];
+        var lines = data.text.split(/\r?\n/);
+        var scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+
+        for (var i = 0; i < lines.length; i += 1) {
+          var line = lines[i];
+          var span = document.createElement('span');
+          span.innerHTML = line.replace(scriptReg, '');
+
+          for (var j = 0; j < span.childNodes.length; j += 1) {
+            var child = span.childNodes[j];
+            var word = child.textContent;
+            var wordSize = ctx.measureText(word).width;
+            var color = child.getAttribute ? child.getAttribute('color') || fontColor : fontColor;
+
+            if (wordSize > width) {
+              var letters = toConsumableArray(word);
+
+              for (var k = 0; k < letters.length; k += 1) {
+                var letter = letters[k];
+                var letterSize = ctx.measureText(letter).width;
+                var nextWidth = left + letterSize;
+
+                if (nextWidth < width) {
+                  var log = {
+                    width: letterSize,
+                    text: letter,
+                    left: left,
+                    color: color
+                  };
+
+                  if (result[index]) {
+                    result[index].push(log);
+                  } else {
+                    result[index] = [log];
+                  }
+
+                  left = nextWidth;
+                } else {
+                  index += 1;
+                  left = padding[3] + letterSize;
+                  result[index] = [{
+                    width: letterSize,
+                    text: letter,
+                    left: padding[3],
+                    color: color
+                  }];
+                }
+              }
+            } else {
+              var _nextWidth = left + wordSize;
+
+              if (_nextWidth < width) {
+                var _log = {
+                  width: wordSize,
+                  text: word,
+                  left: left,
+                  color: color
+                };
+
+                if (result[index]) {
+                  result[index].push(_log);
+                } else {
+                  result[index] = [_log];
+                }
+
+                left = _nextWidth;
+              } else {
+                index += 1;
+                left = padding[3] + wordSize;
+                result[index] = [{
+                  width: wordSize,
+                  text: word,
+                  left: padding[3],
+                  color: color
+                }];
+              }
+            }
+          }
+
+          index = 0;
+          left = padding[3];
+        }
+
+        return result;
+      }
+    }]);
+
+    return Decoder;
+  }();
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
@@ -445,7 +604,7 @@
 
       this.term = term;
       var pixelRatio = term.options.pixelRatio;
-      this.gap = 15 * pixelRatio;
+      this.gap = 10 * pixelRatio;
       this.fontSize = 14 * pixelRatio;
       this.padding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
@@ -457,26 +616,21 @@
       this.ctx = this.$canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px Arial");
       this.ctx.textBaseline = 'top';
+      this.startIndex = 0;
       this.logs = [];
-      this.update();
-      this.cursorOn = false;
-      (function loop() {
-        var _this = this;
-
-        this.timer = setTimeout(function () {
-          _this.cursorOn = !_this.cursorOn;
-
-          _this.drawCursor();
-
-          loop.call(_this);
-        }, 600);
-      }).call(this);
+      this.draw();
+      this.cursorOn = false; // (function loop() {
+      //     this.timer = setTimeout(() => {
+      //         this.cursorOn = !this.cursorOn;
+      //         this.drawCursor();
+      //         loop.call(this);
+      //     }, 600);
+      // }.call(this));
     }
 
     createClass(Drawer, [{
-      key: "update",
-      value: function update(data) {
-        this.lineStartIndex = 0;
+      key: "draw",
+      value: function draw(data) {
         this.lineEndIndex = 0;
         var _this$$canvas = this.$canvas,
             width = _this$$canvas.width,
@@ -487,6 +641,7 @@
         this.drawBackground();
         this.drawTopbar();
         this.drawContent(data);
+        return this;
       }
     }, {
       key: "drawBackground",
@@ -502,7 +657,7 @@
     }, {
       key: "drawTopbar",
       value: function drawTopbar() {
-        var _this2 = this;
+        var _this = this;
 
         var _this$term$options = this.term.options,
             title = _this$term$options.title,
@@ -514,67 +669,51 @@
 
         this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
-          _this2.ctx.beginPath();
+          _this.ctx.beginPath();
 
-          _this2.ctx.arc(_this2.padding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.padding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
+          _this.ctx.arc(_this.padding[3] + _this.btnSize + index * _this.btnSize * 3.6, _this.padding[1] + _this.btnSize, _this.btnSize, 0, 360, false);
 
-          _this2.ctx.fillStyle = item;
+          _this.ctx.fillStyle = item;
 
-          _this2.ctx.fill();
+          _this.ctx.fill();
 
-          _this2.ctx.closePath();
+          _this.ctx.closePath();
         });
       }
     }, {
       key: "drawContent",
       value: function drawContent(data) {
-        var _this$term$options2 = this.term.options,
-            backgroundColor = _this$term$options2.backgroundColor,
-            fontColor = _this$term$options2.fontColor;
+        var _this$logs;
+
+        var backgroundColor = this.term.options.backgroundColor;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(this.padding[3], this.padding[0], this.width, this.height);
+        var result = this.term.decoder.decode(data);
 
-        if (data) {
-          switch (data.style) {
-            case CHECKBOX:
-              this.logs.push(this.getLogCheckbox(data));
-              break;
+        (_this$logs = this.logs).push.apply(_this$logs, toConsumableArray(result));
 
-            case RADIO:
-              this.logs.push(this.getLogRadio(data));
-              break;
+        var renderLogs = this.logs.slice(this.startIndex, this.totalLine);
 
-            default:
-              this.logs.push(this.getLogNormal(data));
-              break;
-          }
-        }
+        for (var i = 0; i < renderLogs.length; i += 1) {
+          var logs = renderLogs[i];
 
-        var lineIndex = 0;
-
-        for (var j = 0; j < this.logs.length; j += 1) {
-          for (var k = 0; k < this.logs[j].lines.length; k += 1) {
-            lineIndex += 1;
-
-            if (this.lineStartIndex < lineIndex && this.lineStartIndex + this.totalLine > lineIndex) {
-              var text = this.logs[j].lines[k];
-              var top = this.padding[0] + (this.fontSize + this.gap) * (lineIndex - 1);
-              this.ctx.fillStyle = this.logs[j].color || fontColor;
-              this.ctx.fillText(text, this.padding[3], top);
-              this.lineEndIndex += 1;
-            }
+          for (var j = 0; j < logs.length; j += 1) {
+            var log = logs[j];
+            this.ctx.fillStyle = log.color;
+            var top = this.padding[0] + (this.fontSize + this.gap) * i;
+            this.ctx.fillText(log.text, log.left, top);
           }
         }
       }
     }, {
       key: "drawCursor",
       value: function drawCursor() {
-        var _this$term$options3 = this.term.options,
-            pixelRatio = _this$term$options3.pixelRatio,
-            backgroundColor = _this$term$options3.backgroundColor;
+        var _this$term$options2 = this.term.options,
+            pixelRatio = _this$term$options2.pixelRatio,
+            backgroundColor = _this$term$options2.backgroundColor;
 
         if (this.lastLog && this.lastLog.type === INPUT && this.lastLine) {
-          this.update();
+          this.draw();
           var left = this.ctx.measureText(this.lastLine).width + this.padding[3] + pixelRatio * 5;
           var top = this.padding[0] + (this.fontSize + this.gap) * (this.lineEndIndex - 1);
 
@@ -586,51 +725,6 @@
 
           this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
-      }
-    }, {
-      key: "getLogNormal",
-      value: function getLogNormal(data) {
-        var prefix = this.term.options.prefix;
-        var temp = data.type === INPUT ? prefix : '';
-
-        if (!data.text) {
-          return _objectSpread({}, data, {
-            lines: [temp]
-          });
-        }
-
-        var lines = [];
-        var temps = (data.text || '').split(/\r?\n/).filter(function (item) {
-          return item.trim();
-        });
-
-        for (var i = 0; i < temps.length; i += 1) {
-          for (var j = 0; j < temps[i].length; j += 1) {
-            var char = temp + temps[i][j];
-
-            if (this.ctx.measureText(char).width > this.width) {
-              lines.push(temp);
-              temp = '';
-            } else {
-              temp = char;
-            }
-          }
-
-          lines.push(temp);
-          temp = '';
-        }
-
-        return _objectSpread({}, data, {
-          lines: lines
-        });
-      }
-    }, {
-      key: "getLogCheckbox",
-      value: function getLogCheckbox(data) {//
-      }
-    }, {
-      key: "getLogRadio",
-      value: function getLogRadio(data) {//
       }
     }, {
       key: "destroy",
@@ -652,9 +746,9 @@
     return Drawer;
   }();
 
-  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
   function _createSuper$1(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct$2()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
 
@@ -688,13 +782,13 @@
         return {
           container: '#term',
           title: 'Term UI',
-          prefix: 'root@linux: ~ $',
+          prefix: 'root@linux: ~ $ ',
           width: 600,
           height: 500,
           borderRadius: 5,
           font: 'Arial',
           fontColor: '#b0b2b6',
-          welcome: '🎉 Welcome to use the Term UI',
+          welcome: '🎉 Welcome to use the Term UI'.repeat(10),
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio
@@ -711,6 +805,7 @@
           height: 'number',
           borderRadius: 'number',
           font: 'string',
+          fontColor: 'string',
           welcome: 'string',
           boxShadow: 'string',
           backgroundColor: 'string',
@@ -733,7 +828,7 @@
 
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));
-      _this.translate = new Translate(assertThisInitialized(_this));
+      _this.decoder = new Decoder(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
       _this.isFocus = false;
       _this.isDestroy = false;
@@ -741,11 +836,18 @@
       _this.id = id;
       instances.push(assertThisInitialized(_this));
 
-      _this.input({
-        type: OUTPUT,
+      var color = function color() {
+        return Math.floor(Math.random() * 16777215).toString(16);
+      };
+
+      _this.draw({
+        type: INPUT,
         text: _this.options.welcome
-      }).input({
-        type: INPUT
+      }).draw({
+        type: OUTPUT,
+        text: Array(10).fill().map(function (_, i) {
+          return "<d color=\"#".concat(color(), "\">").concat(String(i).repeat(5), "</d>");
+        }).join('')
       });
 
       return _this;
@@ -760,19 +862,14 @@
           options.container = document.querySelector(options.container);
         }
 
-        this.options = optionValidator(_objectSpread$1({}, Term.default, {}, this.options, {}, options), Term.scheme);
+        this.options = optionValidator(_objectSpread({}, Term.default, {}, this.options, {}, options), Term.scheme);
         return this;
       }
     }, {
-      key: "input",
-      value: function input() {
+      key: "draw",
+      value: function draw() {
         var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        this.drawer.update(optionValidator(data, {
-          type: 'string',
-          text: 'undefined|string',
-          color: 'undefined|string',
-          style: 'undefined|string'
-        }));
+        this.drawer.draw(data);
         return this;
       }
     }, {
