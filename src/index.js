@@ -5,6 +5,7 @@ import Template from './template';
 import Decoder from './decoder';
 import Drawer from './drawer';
 import Keyboard from './keyboard';
+import Commander from './commander';
 import { INPUT, OUTPUT } from './constant';
 
 let id = 0;
@@ -66,6 +67,7 @@ export default class Term extends Emitter {
         this.events = new Events(this);
         this.decoder = new Decoder(this);
         this.drawer = new Drawer(this);
+        this.commander = new Commander(this);
         this.keyboard = new Keyboard(this);
 
         this.isFocus = false;

@@ -10,16 +10,14 @@ export default class Keyboard {
         });
 
         proxy($textarea, 'input', () => {
-            const val = $textarea.value.trim();
-            term.emit('input', val);
+            term.emit('input', $textarea.value.trim());
         });
 
         proxy($textarea, 'keypress', (event) => {
             const key = event.keyCode;
             if (key === 13) {
-                const val = $textarea.value.trim();
                 setTimeout(() => {
-                    if (val) term.emit('enter', val);
+                    term.emit('enter', $textarea.value.trim());
                     $textarea.value = '';
                 });
             }

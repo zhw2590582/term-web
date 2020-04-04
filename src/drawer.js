@@ -1,4 +1,4 @@
-import { INPUT, OUTPUT } from './constant';
+import { INPUT } from './constant';
 
 export default class Drawer {
     constructor(term) {
@@ -19,28 +19,7 @@ export default class Drawer {
         this.logs = [];
 
         this.draw();
-
-        term.on('input', (text) => {
-            this.draw(
-                {
-                    type: INPUT,
-                    text,
-                },
-                true,
-            );
-        });
-
-        // 走匹配流程
-        term.on('enter', (text) => {
-            this.draw({
-                type: OUTPUT,
-                text: `输入命令：${text}`,
-            });
-            this.draw({
-                type: INPUT,
-                text: '',
-            });
-        });
+        this.draw = this.draw.bind(this);
 
         this.cursor = false;
         (function loop() {
@@ -64,7 +43,7 @@ export default class Drawer {
             const lastlog = this.logs[this.logs.length - 1];
             const lastLine = lastlog[lastlog.length - 1];
             const left = lastLine.left + lastLine.width + pixelRatio * 5;
-            const top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - 1 - this.startIndex);
+            const top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - this.startIndex - 1);
             return { left, top };
         }
         return { left: 0, top: 0 };

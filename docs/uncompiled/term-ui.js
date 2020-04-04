@@ -621,8 +621,6 @@
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
-      var _this = this;
-
       classCallCheck(this, Drawer);
 
       this.term = term;
@@ -645,34 +643,17 @@
       this.inputs = [];
       this.logs = [];
       this.draw();
-      term.on('input', function (text) {
-        _this.draw({
-          type: INPUT,
-          text: text
-        }, true);
-      }); // 走匹配流程
-
-      term.on('enter', function (text) {
-        _this.draw({
-          type: OUTPUT,
-          text: "\u8F93\u5165\u547D\u4EE4\uFF1A".concat(text)
-        });
-
-        _this.draw({
-          type: INPUT,
-          text: ''
-        });
-      });
+      this.draw = this.draw.bind(this);
       this.cursor = false;
       (function loop() {
-        var _this2 = this;
+        var _this = this;
 
         this.timer = setTimeout(function () {
-          _this2.cursor = !_this2.cursor;
+          _this.cursor = !_this.cursor;
 
-          _this2.drawCursor();
+          _this.drawCursor();
 
-          loop.call(_this2);
+          loop.call(_this);
         }, 500);
       }).call(this);
     }
@@ -707,7 +688,7 @@
     }, {
       key: "drawTopbar",
       value: function drawTopbar() {
-        var _this3 = this;
+        var _this2 = this;
 
         var _this$term$options = this.term.options,
             title = _this$term$options.title,
@@ -719,15 +700,15 @@
 
         this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
-          _this3.ctx.beginPath();
+          _this2.ctx.beginPath();
 
-          _this3.ctx.arc(_this3.padding[3] + _this3.btnSize + index * _this3.btnSize * 3.6, _this3.padding[1] + _this3.btnSize, _this3.btnSize, 0, 360, false);
+          _this2.ctx.arc(_this2.padding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.padding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
 
-          _this3.ctx.fillStyle = item;
+          _this2.ctx.fillStyle = item;
 
-          _this3.ctx.fill();
+          _this2.ctx.fill();
 
-          _this3.ctx.closePath();
+          _this2.ctx.closePath();
         });
       }
     }, {
@@ -801,7 +782,7 @@
           var lastlog = this.logs[this.logs.length - 1];
           var lastLine = lastlog[lastlog.length - 1];
           var left = lastLine.left + lastLine.width + pixelRatio * 5;
-          var top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - 1 - this.startIndex);
+          var top = this.padding[0] + (this.fontSize + this.gap) * (this.logs.length - this.startIndex - 1);
           return {
             left: left,
             top: top
@@ -827,19 +808,39 @@
       $textarea.focus();
     });
     proxy($textarea, 'input', function () {
-      var val = $textarea.value.trim();
-      term.emit('input', val);
+      term.emit('input', $textarea.value.trim());
     });
     proxy($textarea, 'keypress', function (event) {
       var key = event.keyCode;
 
       if (key === 13) {
-        var val = $textarea.value.trim();
         setTimeout(function () {
-          if (val) term.emit('enter', val);
+          term.emit('enter', $textarea.value.trim());
           $textarea.value = '';
         });
       }
+    });
+  };
+
+  var Commander = function Commander(term) {
+    classCallCheck(this, Commander);
+
+    var draw = term.drawer.draw;
+    term.on('input', function (text) {
+      draw({
+        type: INPUT,
+        text: text
+      }, true);
+    });
+    term.on('enter', function (text) {
+      draw({
+        type: OUTPUT,
+        text: "\u8F93\u5165\u547D\u4EE4\uFF1A".concat(text)
+      });
+      draw({
+        type: INPUT,
+        text: ''
+      });
     });
   };
 
@@ -927,6 +928,7 @@
       _this.events = new Events(assertThisInitialized(_this));
       _this.decoder = new Decoder(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
+      _this.commander = new Commander(assertThisInitialized(_this));
       _this.keyboard = new Keyboard(assertThisInitialized(_this));
       _this.isFocus = false;
       _this.isDestroy = false;
