@@ -11,9 +11,12 @@ export default class Template {
         );
 
         this.$container.style.position = 'relative';
+        this.$container.classList.add('term-container');
+
         this.$canvas = document.createElement('canvas');
         this.$canvas.classList.add('term-canvas');
         this.$container.appendChild(this.$canvas);
+
         this.$textarea = document.createElement('textarea');
         this.$textarea.classList.add('term-textarea');
         this.$textarea.style.position = 'absolute';
@@ -26,15 +29,31 @@ export default class Template {
         this.$textarea.style.userSelect = 'none';
         this.$container.appendChild(this.$textarea);
 
-        term.on('cursor', ({ left, top }) => {
-            this.$textarea.style.top = `${top}px`;
-            this.$textarea.style.left = `${left}px`;
-        });
+        this.$scrollbar = document.createElement('div');
+        this.$textarea.classList.add('term-scrollbar');
+        this.$scrollbar.style.position = 'absolute';
+        this.$scrollbar.style.width = '100%';
+        this.$scrollbar.style.height = '100%';
+        this.$scrollbar.style.top = '0';
+        this.$scrollbar.style.right = '0';
+        this.$scrollbar.style.bottom = '0';
+        this.$scrollbar.style.left = '0';
+        this.$scrollbar.style.overflow = 'auto';
+        this.$container.appendChild(this.$scrollbar);
+
+        this.$inner = document.createElement('div');
+        this.$inner.style.height = '0';
+        this.$scrollbar.appendChild(this.$inner);
 
         if (!document.getElementById('term-ui-style')) {
             this.$style = document.createElement('style');
             this.$style.id = 'term-ui-style';
-            this.$style.textContent = '.term-canvas:hover{cursor: text}';
+            this.$style.textContent = [
+                '.term-container:hover{cursor: text}',
+                '.term-container ::-webkit-scrollbar{width: 5px;}',
+                '.term-container ::-webkit-scrollbar-thumb{background-color: #666;border-radius: 5px;}',
+                '.term-container ::-webkit-scrollbar-thumb:hover{background-color: #ccc;}',
+            ].join('');
             document.head.appendChild(this.$style);
         }
 

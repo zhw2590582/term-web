@@ -218,15 +218,62 @@
 
       this.destroyEvents = [];
       this.proxy = this.proxy.bind(this);
-      var $canvas = term.template.$canvas;
+      var _term$template = term.template,
+          $container = _term$template.$container,
+          $textarea = _term$template.$textarea,
+          $scrollbar = _term$template.$scrollbar,
+          $inner = _term$template.$inner;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
-        if (event.composedPath && event.composedPath().indexOf($canvas) > -1) {
+        if (event.composedPath && event.composedPath().indexOf($container) > -1) {
           term.isFocus = true;
           term.emit('focus');
         } else {
           term.isFocus = false;
           term.emit('blur');
         }
+      });
+      this.proxy($textarea, 'input', function () {
+        term.emit('input', $textarea.value.trim());
+      });
+      this.proxy($textarea, 'paste', function () {
+        term.emit('input', $textarea.value.trim());
+      });
+      this.proxy($textarea, 'keydown', function (event) {
+        var key = event.keyCode;
+
+        if (key === 13) {
+          setTimeout(function () {
+            term.emit('enter', $textarea.value.trim());
+            $textarea.value = '';
+          });
+        }
+
+        if ([37, 38, 39, 40].includes(key)) {
+          $textarea.blur();
+          setTimeout(function () {
+            return $textarea.focus();
+          });
+        }
+      });
+      this.proxy($scrollbar, 'scroll', function () {
+        if (term.drawer.scrollTop > $scrollbar.scrollTop) {
+          console.log($scrollbar.scrollTop);
+        }
+      });
+      term.on('cursor', function (_ref) {
+        var left = _ref.left,
+            top = _ref.top;
+        $textarea.style.top = "".concat(top, "px");
+        $textarea.style.left = "".concat(left, "px");
+      });
+      term.on('scroll', function (_ref2) {
+        var scrollHeight = _ref2.scrollHeight,
+            scrollTop = _ref2.scrollTop;
+        $inner.style.height = "".concat(scrollHeight, "px");
+        $scrollbar.scrollTo(0, scrollTop);
+      });
+      term.on('focus', function () {
+        $textarea.focus();
       });
     }
 
@@ -381,6 +428,7 @@
         return ins.options.container !== _this.$container;
       }), 'Cannot mount multiple instances on the same dom element, please destroy the previous instance first.');
       this.$container.style.position = 'relative';
+      this.$container.classList.add('term-container');
       this.$canvas = document.createElement('canvas');
       this.$canvas.classList.add('term-canvas');
       this.$container.appendChild(this.$canvas);
@@ -395,17 +443,25 @@
       this.$textarea.style.pointerEvents = 'none';
       this.$textarea.style.userSelect = 'none';
       this.$container.appendChild(this.$textarea);
-      term.on('cursor', function (_ref) {
-        var left = _ref.left,
-            top = _ref.top;
-        _this.$textarea.style.top = "".concat(top, "px");
-        _this.$textarea.style.left = "".concat(left, "px");
-      });
+      this.$scrollbar = document.createElement('div');
+      this.$textarea.classList.add('term-scrollbar');
+      this.$scrollbar.style.position = 'absolute';
+      this.$scrollbar.style.width = '100%';
+      this.$scrollbar.style.height = '100%';
+      this.$scrollbar.style.top = '0';
+      this.$scrollbar.style.right = '0';
+      this.$scrollbar.style.bottom = '0';
+      this.$scrollbar.style.left = '0';
+      this.$scrollbar.style.overflow = 'auto';
+      this.$container.appendChild(this.$scrollbar);
+      this.$inner = document.createElement('div');
+      this.$inner.style.height = '0';
+      this.$scrollbar.appendChild(this.$inner);
 
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = '.term-canvas:hover{cursor: text}';
+        this.$style.textContent = ['.term-container:hover{cursor: text}', '.term-container ::-webkit-scrollbar{width: 5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color: #666;border-radius: 5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color: #ccc;}'].join('');
         document.head.appendChild(this.$style);
       }
 
@@ -632,7 +688,7 @@
       this.padding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
-      this.cursorColor = '#FFF';
+      this.cursorColor = ['#FFF', '#666'];
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
       this.btnSize = 6 * pixelRatio;
       this.$canvas = term.template.$canvas;
@@ -765,30 +821,33 @@
           left: left / pixelRatio,
           top: top / pixelRatio
         });
+        this.scrollHeight = (this.padding[0] + this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
+        var lastlog = this.renderLogs[this.renderLogs.length - 1];
+        var lastIndex = this.logs.indexOf(lastlog);
+        this.scrollTop = (this.padding[0] + (lastIndex + 1) * (this.fontSize + this.gap) - this.$canvas.height) / pixelRatio;
+        this.term.emit('scroll', {
+          scrollHeight: this.scrollHeight,
+          scrollTop: this.scrollTop
+        });
       }
     }, {
       key: "drawCursor",
       value: function drawCursor() {
-        clearTimeout(this.timer);
         var _this$cursorPos2 = this.cursorPos,
             left = _this$cursorPos2.left,
             top = _this$cursorPos2.top;
-        var _this$term$options2 = this.term.options,
-            pixelRatio = _this$term$options2.pixelRatio,
-            backgroundColor = _this$term$options2.backgroundColor;
+        var pixelRatio = this.term.options.pixelRatio;
 
         if (this.editable) {
-          this.draw();
-          this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
+          this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
           this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
       }
     }, {
       key: "editable",
       get: function get() {
-        var lastInput = this.inputs[this.inputs.length - 1];
         var lastlog = this.renderLogs[this.renderLogs.length - 1];
-        return this.term.isFocus && lastInput && lastInput.type === INPUT && lastlog && lastlog.length;
+        return this.term.isFocus && lastlog && lastlog.length && lastlog.input.type === INPUT;
       }
     }, {
       key: "cursorPos",
@@ -797,7 +856,7 @@
           var pixelRatio = this.term.options.pixelRatio;
           var lastlog = this.renderLogs[this.renderLogs.length - 1];
           var lastLine = lastlog[lastlog.length - 1];
-          var left = lastLine.left + lastLine.width + pixelRatio * 5;
+          var left = lastLine.left + lastLine.width + pixelRatio * 4;
           var top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
           return {
             left: left,
@@ -818,57 +877,34 @@
   var Keyboard = function Keyboard(term) {
     classCallCheck(this, Keyboard);
 
-    var $textarea = term.template.$textarea,
-        proxy = term.events.proxy;
-    term.on('focus', function () {
-      $textarea.focus();
-    });
-    proxy($textarea, 'input', function () {
-      term.emit('input', $textarea.value.trim());
-    });
-    proxy($textarea, 'paste', function () {
-      term.emit('input', $textarea.value.trim());
-    });
-    proxy($textarea, 'keydown', function (event) {
-      var key = event.keyCode;
-
-      if (key === 13) {
-        setTimeout(function () {
-          term.emit('enter', $textarea.value.trim());
-          $textarea.value = '';
-        });
-      }
-
-      if ([37, 38, 39, 40].includes(key)) {
-        $textarea.blur();
-        setTimeout(function () {
-          return $textarea.focus();
-        });
-      }
-    });
+    this.term = term;
   };
 
   var Commander = function Commander(term) {
     classCallCheck(this, Commander);
 
     var notFound = term.options.notFound,
-        draw = term.drawer.draw;
+        drawer = term.drawer;
     term.on('input', function (text) {
-      draw({
-        type: INPUT,
-        replace: true,
-        text: text
-      });
+      if (drawer.editable) {
+        drawer.draw({
+          type: INPUT,
+          replace: true,
+          text: text
+        });
+      }
     });
     term.on('enter', function (text) {
-      draw({
-        type: OUTPUT,
-        text: notFound(text)
-      });
-      draw({
-        type: INPUT,
-        text: ''
-      });
+      if (drawer.editable) {
+        drawer.draw({
+          type: OUTPUT,
+          text: notFound(text)
+        });
+        drawer.draw({
+          type: INPUT,
+          text: ''
+        });
+      }
     });
   };
 

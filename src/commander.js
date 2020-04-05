@@ -4,26 +4,30 @@ export default class Commander {
     constructor(term) {
         const {
             options: { notFound },
-            drawer: { draw },
+            drawer,
         } = term;
 
         term.on('input', (text) => {
-            draw({
-                type: INPUT,
-                replace: true,
-                text,
-            });
+            if (drawer.editable) {
+                drawer.draw({
+                    type: INPUT,
+                    replace: true,
+                    text,
+                });
+            }
         });
 
         term.on('enter', (text) => {
-            draw({
-                type: OUTPUT,
-                text: notFound(text),
-            });
-            draw({
-                type: INPUT,
-                text: '',
-            });
+            if (drawer.editable) {
+                drawer.draw({
+                    type: OUTPUT,
+                    text: notFound(text),
+                });
+                drawer.draw({
+                    type: INPUT,
+                    text: '',
+                });
+            }
         });
     }
 }

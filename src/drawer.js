@@ -7,7 +7,7 @@ export default class Drawer {
         this.gap = 10 * pixelRatio;
         this.fontSize = 14 * pixelRatio;
         this.padding = [45, 15, 15, 15].map((item) => item * pixelRatio);
-        this.cursorColor = '#FFF';
+        this.cursorColor = ['#FFF', '#666'];
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
         this.btnSize = 6 * pixelRatio;
         this.$canvas = term.template.$canvas;
@@ -32,9 +32,8 @@ export default class Drawer {
     }
 
     get editable() {
-        const lastInput = this.inputs[this.inputs.length - 1];
         const lastlog = this.renderLogs[this.renderLogs.length - 1];
-        return this.term.isFocus && lastInput && lastInput.type === INPUT && lastlog && lastlog.length;
+        return this.term.isFocus && lastlog && lastlog.length && lastlog.input.type === INPUT;
     }
 
     get cursorPos() {
@@ -42,7 +41,7 @@ export default class Drawer {
             const { pixelRatio } = this.term.options;
             const lastlog = this.renderLogs[this.renderLogs.length - 1];
             const lastLine = lastlog[lastlog.length - 1];
-            const left = lastLine.left + lastLine.width + pixelRatio * 5;
+            const left = lastLine.left + lastLine.width + pixelRatio * 4;
             const top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
             return { left, top };
         }
@@ -131,15 +130,23 @@ export default class Drawer {
             left: left / pixelRatio,
             top: top / pixelRatio,
         });
+
+        this.scrollHeight = (this.padding[0] + this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
+        const lastlog = this.renderLogs[this.renderLogs.length - 1];
+        const lastIndex = this.logs.indexOf(lastlog);
+        this.scrollTop =
+            (this.padding[0] + (lastIndex + 1) * (this.fontSize + this.gap) - this.$canvas.height) / pixelRatio;
+        this.term.emit('scroll', {
+            scrollHeight: this.scrollHeight,
+            scrollTop: this.scrollTop,
+        });
     }
 
     drawCursor() {
-        clearTimeout(this.timer);
         const { left, top } = this.cursorPos;
-        const { pixelRatio, backgroundColor } = this.term.options;
+        const { pixelRatio } = this.term.options;
         if (this.editable) {
-            this.draw();
-            this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
+            this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
             this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
     }
