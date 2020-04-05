@@ -705,9 +705,10 @@
       this.term = term;
       var _term$options = term.options,
           pixelRatio = _term$options.pixelRatio,
+          fontSize = _term$options.fontSize,
           fontFamily = _term$options.fontFamily;
       this.gap = 10 * pixelRatio;
-      this.fontSize = 14 * pixelRatio;
+      this.fontSize = fontSize * pixelRatio;
       this.padding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
@@ -1016,6 +1017,7 @@
           height: 500,
           action: action,
           borderRadius: 5,
+          fontSize: 13,
           fontFamily: 'Arial',
           fontColor: '#b0b2b6',
           welcome: "Last login: ".concat(new Date()),
@@ -1041,6 +1043,7 @@
             output: 'string|function'
           }],
           borderRadius: 'number',
+          fontSize: 'number',
           fontFamily: 'string',
           fontColor: 'string',
           welcome: 'string',

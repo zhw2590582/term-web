@@ -3,9 +3,9 @@ import { INPUT } from './constant';
 export default class Drawer {
     constructor(term) {
         this.term = term;
-        const { pixelRatio, fontFamily } = term.options;
+        const { pixelRatio, fontSize, fontFamily } = term.options;
         this.gap = 10 * pixelRatio;
-        this.fontSize = 14 * pixelRatio;
+        this.fontSize = fontSize * pixelRatio;
         this.padding = [45, 15, 15, 15].map((item) => item * pixelRatio);
         this.cursorColor = ['#FFF', '#666'];
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
