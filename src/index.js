@@ -6,6 +6,8 @@ import Decoder from './decoder';
 import Drawer from './drawer';
 import Keyboard from './keyboard';
 import Commander from './commander';
+import action from './action';
+import { mergeDeep } from './utils';
 import { INPUT, OUTPUT } from './constant';
 
 let id = 0;
@@ -30,7 +32,7 @@ export default class Term extends Emitter {
             prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
             width: 600,
             height: 500,
-            action: [],
+            action,
             borderRadius: 5,
             fontFamily: 'Arial',
             fontColor: '#b0b2b6',
@@ -49,7 +51,12 @@ export default class Term extends Emitter {
             prefix: 'string',
             width: 'number',
             height: 'number',
-            action: 'array',
+            action: [
+                {
+                    input: 'string|regexp',
+                    output: 'string|function',
+                },
+            ],
             borderRadius: 'number',
             fontFamily: 'string',
             fontColor: 'string',
@@ -93,19 +100,7 @@ export default class Term extends Emitter {
     }
 
     setOptions(options = {}) {
-        if (typeof options.container === 'string') {
-            options.container = document.querySelector(options.container);
-        }
-
-        this.options = validator(
-            {
-                ...Term.default,
-                ...this.options,
-                ...options,
-            },
-            Term.scheme,
-        );
-
+        this.options = validator(mergeDeep(Term.default, this.options, options), Term.scheme);
         return this;
     }
 

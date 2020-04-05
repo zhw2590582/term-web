@@ -5,8 +5,12 @@ export default class Template {
         this.term = term;
 
         this.$container = term.options.container;
+        if (typeof term.options.container === 'string') {
+            this.$container = document.querySelector(term.options.container);
+        }
+
         errorHandle(
-            term.constructor.instances.every((ins) => ins.options.container !== this.$container),
+            term.constructor.instances.every((ins) => ins.template.$container !== this.$container),
             'Cannot mount multiple instances on the same dom element, please destroy the previous instance first.',
         );
 
