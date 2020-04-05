@@ -257,7 +257,7 @@
       });
       this.proxy($scrollbar, 'scroll', function () {
         if (term.drawer.scrollTop > $scrollbar.scrollTop) {
-          console.log($scrollbar.scrollTop);
+          term.drawer.renderByTop($scrollbar.scrollTop);
         }
       });
       term.on('cursor', function (_ref) {
@@ -267,8 +267,12 @@
         $textarea.style.left = "".concat(left, "px");
       });
       term.on('scroll', function (_ref2) {
-        var scrollHeight = _ref2.scrollHeight,
+        var top = _ref2.top,
+            height = _ref2.height,
+            scrollHeight = _ref2.scrollHeight,
             scrollTop = _ref2.scrollTop;
+        $scrollbar.style.top = "".concat(top, "px");
+        $scrollbar.style.height = "".concat(height, "px");
         $inner.style.height = "".concat(scrollHeight, "px");
         $scrollbar.scrollTo(0, scrollTop);
       });
@@ -716,7 +720,7 @@
 
     createClass(Drawer, [{
       key: "draw",
-      value: function draw(input) {
+      value: function draw(input, startIndex) {
         this.lineEndIndex = 0;
         var _this$$canvas = this.$canvas,
             width = _this$$canvas.width,
@@ -726,7 +730,7 @@
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(input);
+        this.drawContent(input, startIndex);
         return this;
       }
     }, {
@@ -768,7 +772,7 @@
       }
     }, {
       key: "drawContent",
-      value: function drawContent(input) {
+      value: function drawContent(input, startIndex) {
         var _this3 = this;
 
         if (input) {
@@ -783,15 +787,29 @@
           }
 
           this.inputs.push(input);
+          this.term.decoder.decode(input).forEach(function (item) {
+            item.input = input;
+
+            _this3.logs.push(item);
+          });
         }
 
-        this.term.decoder.decode(input).forEach(function (item) {
-          item.input = input;
+        if (startIndex) {
+          var renderLogs = this.logs.slice(startIndex || 0, this.totalLine);
+          this.render(renderLogs);
+        } else {
+          var _renderLogs = this.logs.slice(-this.totalLine);
 
-          _this3.logs.push(item);
-        });
-        var renderLogs = this.logs.slice(-this.totalLine);
-        this.render(renderLogs);
+          this.render(_renderLogs);
+        }
+      }
+    }, {
+      key: "renderByTop",
+      value: function renderByTop(top) {
+        var pixelRatio = this.term.options.pixelRatio;
+        var length = Math.floor(top * pixelRatio / (this.fontSize + this.gap));
+        var renderLogs = this.logs.slice(length, this.totalLine);
+        console.log(top, length, renderLogs);
       }
     }, {
       key: "render",
@@ -821,11 +839,13 @@
           left: left / pixelRatio,
           top: top / pixelRatio
         });
-        this.scrollHeight = (this.padding[0] + this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
+        this.scrollHeight = this.logs.length * (this.fontSize + this.gap) / pixelRatio;
         var lastlog = this.renderLogs[this.renderLogs.length - 1];
         var lastIndex = this.logs.indexOf(lastlog);
-        this.scrollTop = (this.padding[0] + (lastIndex + 1) * (this.fontSize + this.gap) - this.$canvas.height) / pixelRatio;
+        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
         this.term.emit('scroll', {
+          top: this.padding[0] / pixelRatio,
+          height: this.height / pixelRatio,
           scrollHeight: this.scrollHeight,
           scrollTop: this.scrollTop
         });

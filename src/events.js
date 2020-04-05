@@ -41,7 +41,7 @@ export default class Events {
 
         this.proxy($scrollbar, 'scroll', () => {
             if (term.drawer.scrollTop > $scrollbar.scrollTop) {
-                console.log($scrollbar.scrollTop);
+                term.drawer.renderByTop($scrollbar.scrollTop);
             }
         });
 
@@ -50,7 +50,9 @@ export default class Events {
             $textarea.style.left = `${left}px`;
         });
 
-        term.on('scroll', ({ scrollHeight, scrollTop }) => {
+        term.on('scroll', ({ top, height, scrollHeight, scrollTop }) => {
+            $scrollbar.style.top = `${top}px`;
+            $scrollbar.style.height = `${height}px`;
             $inner.style.height = `${scrollHeight}px`;
             $scrollbar.scrollTo(0, scrollTop);
         });

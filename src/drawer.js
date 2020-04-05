@@ -48,7 +48,7 @@ export default class Drawer {
         return { left: 0, top: 0 };
     }
 
-    draw(input) {
+    draw(input, startIndex) {
         this.lineEndIndex = 0;
         const { width, height } = this.$canvas;
         this.height = height - this.padding[0] - this.padding[2];
@@ -56,7 +56,7 @@ export default class Drawer {
         this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
-        this.drawContent(input);
+        this.drawContent(input, startIndex);
         return this;
     }
 
@@ -89,7 +89,7 @@ export default class Drawer {
         });
     }
 
-    drawContent(input) {
+    drawContent(input, startIndex) {
         if (input) {
             if (input.replace) {
                 const lastInput = this.inputs[this.inputs.length - 1];
@@ -98,15 +98,26 @@ export default class Drawer {
                 }
             }
             this.inputs.push(input);
+            this.term.decoder.decode(input).forEach((item) => {
+                item.input = input;
+                this.logs.push(item);
+            });
         }
 
-        this.term.decoder.decode(input).forEach((item) => {
-            item.input = input;
-            this.logs.push(item);
-        });
+        if (startIndex) {
+            const renderLogs = this.logs.slice(startIndex || 0, this.totalLine);
+            this.render(renderLogs);
+        } else {
+            const renderLogs = this.logs.slice(-this.totalLine);
+            this.render(renderLogs);
+        }
+    }
 
-        const renderLogs = this.logs.slice(-this.totalLine);
-        this.render(renderLogs);
+    renderByTop(top) {
+        const { pixelRatio } = this.term.options;
+        const length = Math.floor((top * pixelRatio) / (this.fontSize + this.gap));
+        const renderLogs = this.logs.slice(length, this.totalLine);
+        console.log(top, length, renderLogs);
     }
 
     render(renderLogs) {
@@ -131,12 +142,13 @@ export default class Drawer {
             top: top / pixelRatio,
         });
 
-        this.scrollHeight = (this.padding[0] + this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
+        this.scrollHeight = (this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
         const lastlog = this.renderLogs[this.renderLogs.length - 1];
         const lastIndex = this.logs.indexOf(lastlog);
-        this.scrollTop =
-            (this.padding[0] + (lastIndex + 1) * (this.fontSize + this.gap) - this.$canvas.height) / pixelRatio;
+        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
         this.term.emit('scroll', {
+            top: this.padding[0] / pixelRatio,
+            height: this.height / pixelRatio,
             scrollHeight: this.scrollHeight,
             scrollTop: this.scrollTop,
         });
