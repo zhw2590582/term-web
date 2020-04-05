@@ -32,12 +32,24 @@ export default class Drawer {
     }
 
     get editable() {
-        const lastlog = this.renderLogs[this.renderLogs.length - 1];
+        const lastlog = this.logs[this.logs.length - 1];
         return this.term.isFocus && lastlog && lastlog.length && lastlog.input.type === INPUT;
     }
 
+    get renderEditable() {
+        const lastlogInInput = this.logs[this.logs.length - 1];
+        const lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
+        return (
+            lastlogInInput === lastlogInRender &&
+            this.term.isFocus &&
+            lastlogInRender &&
+            lastlogInRender.length &&
+            lastlogInRender.input.type === INPUT
+        );
+    }
+
     get cursorPos() {
-        if (this.editable) {
+        if (this.renderEditable) {
             const { pixelRatio } = this.term.options;
             const lastlog = this.renderLogs[this.renderLogs.length - 1];
             const lastLine = lastlog[lastlog.length - 1];
@@ -104,8 +116,8 @@ export default class Drawer {
             });
         }
 
-        if (startIndex) {
-            const renderLogs = this.logs.slice(startIndex || 0, this.totalLine);
+        if (typeof startIndex === 'number') {
+            const renderLogs = this.logs.slice(startIndex, startIndex + this.totalLine);
             this.render(renderLogs);
         } else {
             const renderLogs = this.logs.slice(-this.totalLine);
@@ -115,9 +127,8 @@ export default class Drawer {
 
     renderByTop(top) {
         const { pixelRatio } = this.term.options;
-        const length = Math.floor((top * pixelRatio) / (this.fontSize + this.gap));
-        const renderLogs = this.logs.slice(length, this.totalLine);
-        console.log(top, length, renderLogs);
+        const startIndex = Math.ceil((top * pixelRatio) / (this.fontSize + this.gap));
+        this.draw(null, startIndex);
     }
 
     render(renderLogs) {
@@ -142,22 +153,29 @@ export default class Drawer {
             top: top / pixelRatio,
         });
 
-        this.scrollHeight = (this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
-        const lastlog = this.renderLogs[this.renderLogs.length - 1];
-        const lastIndex = this.logs.indexOf(lastlog);
-        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
-        this.term.emit('scroll', {
+        this.term.emit('size', {
             top: this.padding[0] / pixelRatio,
             height: this.height / pixelRatio,
-            scrollHeight: this.scrollHeight,
-            scrollTop: this.scrollTop,
         });
+
+        const lastlogInInput = this.logs[this.logs.length - 1];
+        const lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
+        if (lastlogInInput === lastlogInRender) {
+            this.scrollHeight = (this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
+            const lastlog = this.renderLogs[this.renderLogs.length - 1];
+            const lastIndex = this.logs.indexOf(lastlog);
+            this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
+            this.term.emit('scroll', {
+                scrollHeight: this.scrollHeight,
+                scrollTop: this.scrollTop,
+            });
+        }
     }
 
     drawCursor() {
         const { left, top } = this.cursorPos;
         const { pixelRatio } = this.term.options;
-        if (this.editable) {
+        if (this.renderEditable) {
             this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
             this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }

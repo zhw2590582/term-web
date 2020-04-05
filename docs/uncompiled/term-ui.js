@@ -255,26 +255,32 @@
           });
         }
       });
+      var canRenderByTop = false;
       this.proxy($scrollbar, 'scroll', function () {
-        if (term.drawer.scrollTop > $scrollbar.scrollTop) {
+        if (canRenderByTop) {
           term.drawer.renderByTop($scrollbar.scrollTop);
+        } else {
+          canRenderByTop = true;
         }
       });
-      term.on('cursor', function (_ref) {
-        var left = _ref.left,
-            top = _ref.top;
+      term.on('scroll', function (_ref) {
+        var scrollHeight = _ref.scrollHeight,
+            scrollTop = _ref.scrollTop;
+        $inner.style.height = "".concat(scrollHeight, "px");
+        canRenderByTop = false;
+        $scrollbar.scrollTo(0, scrollTop);
+      });
+      term.on('cursor', function (_ref2) {
+        var left = _ref2.left,
+            top = _ref2.top;
         $textarea.style.top = "".concat(top, "px");
         $textarea.style.left = "".concat(left, "px");
       });
-      term.on('scroll', function (_ref2) {
-        var top = _ref2.top,
-            height = _ref2.height,
-            scrollHeight = _ref2.scrollHeight,
-            scrollTop = _ref2.scrollTop;
+      term.on('size', function (_ref3) {
+        var top = _ref3.top,
+            height = _ref3.height;
         $scrollbar.style.top = "".concat(top, "px");
         $scrollbar.style.height = "".concat(height, "px");
-        $inner.style.height = "".concat(scrollHeight, "px");
-        $scrollbar.scrollTo(0, scrollTop);
       });
       term.on('focus', function () {
         $textarea.focus();
@@ -794,8 +800,8 @@
           });
         }
 
-        if (startIndex) {
-          var renderLogs = this.logs.slice(startIndex || 0, this.totalLine);
+        if (typeof startIndex === 'number') {
+          var renderLogs = this.logs.slice(startIndex, startIndex + this.totalLine);
           this.render(renderLogs);
         } else {
           var _renderLogs = this.logs.slice(-this.totalLine);
@@ -807,9 +813,8 @@
       key: "renderByTop",
       value: function renderByTop(top) {
         var pixelRatio = this.term.options.pixelRatio;
-        var length = Math.floor(top * pixelRatio / (this.fontSize + this.gap));
-        var renderLogs = this.logs.slice(length, this.totalLine);
-        console.log(top, length, renderLogs);
+        var startIndex = Math.ceil(top * pixelRatio / (this.fontSize + this.gap));
+        this.draw(null, startIndex);
       }
     }, {
       key: "render",
@@ -839,16 +844,23 @@
           left: left / pixelRatio,
           top: top / pixelRatio
         });
-        this.scrollHeight = this.logs.length * (this.fontSize + this.gap) / pixelRatio;
-        var lastlog = this.renderLogs[this.renderLogs.length - 1];
-        var lastIndex = this.logs.indexOf(lastlog);
-        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
-        this.term.emit('scroll', {
+        this.term.emit('size', {
           top: this.padding[0] / pixelRatio,
-          height: this.height / pixelRatio,
-          scrollHeight: this.scrollHeight,
-          scrollTop: this.scrollTop
+          height: this.height / pixelRatio
         });
+        var lastlogInInput = this.logs[this.logs.length - 1];
+        var lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
+
+        if (lastlogInInput === lastlogInRender) {
+          this.scrollHeight = this.logs.length * (this.fontSize + this.gap) / pixelRatio;
+          var lastlog = this.renderLogs[this.renderLogs.length - 1];
+          var lastIndex = this.logs.indexOf(lastlog);
+          this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
+          this.term.emit('scroll', {
+            scrollHeight: this.scrollHeight,
+            scrollTop: this.scrollTop
+          });
+        }
       }
     }, {
       key: "drawCursor",
@@ -858,7 +870,7 @@
             top = _this$cursorPos2.top;
         var pixelRatio = this.term.options.pixelRatio;
 
-        if (this.editable) {
+        if (this.renderEditable) {
           this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
           this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
         }
@@ -866,13 +878,20 @@
     }, {
       key: "editable",
       get: function get() {
-        var lastlog = this.renderLogs[this.renderLogs.length - 1];
+        var lastlog = this.logs[this.logs.length - 1];
         return this.term.isFocus && lastlog && lastlog.length && lastlog.input.type === INPUT;
+      }
+    }, {
+      key: "renderEditable",
+      get: function get() {
+        var lastlogInInput = this.logs[this.logs.length - 1];
+        var lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
+        return lastlogInInput === lastlogInRender && this.term.isFocus && lastlogInRender && lastlogInRender.length && lastlogInRender.input.type === INPUT;
       }
     }, {
       key: "cursorPos",
       get: function get() {
-        if (this.editable) {
+        if (this.renderEditable) {
           var pixelRatio = this.term.options.pixelRatio;
           var lastlog = this.renderLogs[this.renderLogs.length - 1];
           var lastLine = lastlog[lastlog.length - 1];
@@ -964,7 +983,7 @@
         return {
           container: '#term',
           title: 'Term UI',
-          prefix: 'root@linux: ~ $ ',
+          prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
           width: 600,
           height: 500,
           action: [],

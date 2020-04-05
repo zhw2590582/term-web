@@ -27,7 +27,7 @@ export default class Term extends Emitter {
         return {
             container: '#term',
             title: 'Term UI',
-            prefix: 'root@linux: ~ $ ',
+            prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
             width: 600,
             height: 500,
             action: [],

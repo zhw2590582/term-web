@@ -39,10 +39,19 @@ export default class Events {
             }
         });
 
+        let canRenderByTop = false;
         this.proxy($scrollbar, 'scroll', () => {
-            if (term.drawer.scrollTop > $scrollbar.scrollTop) {
+            if (canRenderByTop) {
                 term.drawer.renderByTop($scrollbar.scrollTop);
+            } else {
+                canRenderByTop = true;
             }
+        });
+
+        term.on('scroll', ({ scrollHeight, scrollTop }) => {
+            $inner.style.height = `${scrollHeight}px`;
+            canRenderByTop = false;
+            $scrollbar.scrollTo(0, scrollTop);
         });
 
         term.on('cursor', ({ left, top }) => {
@@ -50,11 +59,9 @@ export default class Events {
             $textarea.style.left = `${left}px`;
         });
 
-        term.on('scroll', ({ top, height, scrollHeight, scrollTop }) => {
+        term.on('size', ({ top, height }) => {
             $scrollbar.style.top = `${top}px`;
             $scrollbar.style.height = `${height}px`;
-            $inner.style.height = `${scrollHeight}px`;
-            $scrollbar.scrollTo(0, scrollTop);
         });
 
         term.on('focus', () => {
