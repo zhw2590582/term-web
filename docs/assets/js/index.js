@@ -10,7 +10,7 @@ var mirror = CodeMirror(document.querySelector('.code'), {
 
 var url = '/assets/js/sample.js';
 if (window.location.href.includes('github.io')) {
-    url = '/term-ui/assets/js/sample.js';
+    url = '/term-web/assets/js/sample.js';
 }
 
 fetch(url)
