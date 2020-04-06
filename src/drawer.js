@@ -11,6 +11,10 @@ export default class Drawer {
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
         this.btnSize = 6 * pixelRatio;
         this.$canvas = term.template.$canvas;
+        const { width, height } = this.$canvas;
+        this.height = height - this.padding[0] - this.padding[2];
+        this.width = width - this.padding[1] - this.padding[3];
+        this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.ctx = this.$canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px ${fontFamily}`;
         this.ctx.textBaseline = 'top';
@@ -61,11 +65,6 @@ export default class Drawer {
     }
 
     draw(input, startIndex) {
-        this.lineEndIndex = 0;
-        const { width, height } = this.$canvas;
-        this.height = height - this.padding[0] - this.padding[2];
-        this.width = width - this.padding[1] - this.padding[3];
-        this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
         this.drawContent(input, startIndex);

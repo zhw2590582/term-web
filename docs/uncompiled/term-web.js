@@ -751,6 +751,12 @@
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
       this.btnSize = 6 * pixelRatio;
       this.$canvas = term.template.$canvas;
+      var _this$$canvas = this.$canvas,
+          width = _this$$canvas.width,
+          height = _this$$canvas.height;
+      this.height = height - this.padding[0] - this.padding[2];
+      this.width = width - this.padding[1] - this.padding[3];
+      this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
       this.ctx = this.$canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
       this.ctx.textBaseline = 'top';
@@ -776,13 +782,6 @@
     createClass(Drawer, [{
       key: "draw",
       value: function draw(input, startIndex) {
-        this.lineEndIndex = 0;
-        var _this$$canvas = this.$canvas,
-            width = _this$$canvas.width,
-            height = _this$$canvas.height;
-        this.height = height - this.padding[0] - this.padding[2];
-        this.width = width - this.padding[1] - this.padding[3];
-        this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
         this.drawBackground();
         this.drawTopbar();
         this.drawContent(input, startIndex);
