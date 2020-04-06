@@ -1326,7 +1326,6 @@
       classCallCheck(this, Recorder);
 
       this.term = term;
-      this.recording = false;
       this.blobs = [];
     }
 
@@ -1343,7 +1342,7 @@
         this.recorder = new MediaRecorder(this.stream, recorderOptions);
 
         this.recorder.ondataavailable = function (event) {
-          if (event.data && event.data.size > 0) {
+          if (_this.recording && event.data && event.data.size > 0) {
             _this.blobs.push(event.data);
 
             _this.term.emit('recording', {
@@ -1354,8 +1353,6 @@
         };
 
         this.recorder.onstart = function () {
-          _this.recording = true;
-
           _this.term.emit('start');
         };
 
@@ -1364,12 +1361,17 @@
     }, {
       key: "end",
       value: function end() {
+        this.recorder.stop();
         var url = URL.createObjectURL(new Blob(this.blobs));
         download(url, "".concat(Date.now(), ".webm"));
         URL.revokeObjectURL(url);
         this.blobs = [];
-        this.recording = false;
         this.term.emit('end');
+      }
+    }, {
+      key: "recording",
+      get: function get() {
+        return this.recorder && this.recorder.state === 'recording';
       }
     }, {
       key: "size",

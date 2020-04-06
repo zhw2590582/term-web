@@ -4,8 +4,11 @@ import { recorderOptions } from './constant';
 export default class Recorder {
     constructor(term) {
         this.term = term;
-        this.recording = false;
         this.blobs = [];
+    }
+
+    get recording() {
+        return this.recorder && this.recorder.state === 'recording';
     }
 
     get size() {
@@ -30,7 +33,7 @@ export default class Recorder {
 
         this.recorder = new MediaRecorder(this.stream, recorderOptions);
         this.recorder.ondataavailable = (event) => {
-            if (event.data && event.data.size > 0) {
+            if (this.recording && event.data && event.data.size > 0) {
                 this.blobs.push(event.data);
                 this.term.emit('recording', {
                     size: this.size,
@@ -39,18 +42,17 @@ export default class Recorder {
             }
         };
         this.recorder.onstart = () => {
-            this.recording = true;
             this.term.emit('start');
         };
         this.recorder.start(1000);
     }
 
     end() {
+        this.recorder.stop();
         const url = URL.createObjectURL(new Blob(this.blobs));
         download(url, `${Date.now()}.webm`);
         URL.revokeObjectURL(url);
         this.blobs = [];
-        this.recording = false;
         this.term.emit('end');
     }
 }

@@ -1,7 +1,7 @@
 {
   "name": "term-web",
-  "version": "1.0.0",
-  "description": ":pager: A Simple Terminal UI That Run On The Web",
+  "version": "1.0.1",
+  "description": ":pager: A simple Terminal UI that run on the web",
   "main": "dist/term-web.js",
   "scripts": {
     "dev": "npx cross-env NODE_ENV=development rollup -c -m -w",
