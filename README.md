@@ -1,49 +1,49 @@
-# Term-UI
+# Term-Web
 
 > :pager: A Simple Terminal UI That Run On The Web
 
-[![Build Status](https://www.travis-ci.org/zhw2590582/term-ui.svg?branch=master)](https://www.travis-ci.org/zhw2590582/term-ui)
-![version](https://badgen.net/npm/v/term-ui)
-![license](https://badgen.net/npm/license/term-ui)
-![size](https://badgen.net/bundlephobia/minzip/term-ui)
-[![npm Downloads](https://img.shields.io/npm/dt/term-ui.svg)](https://www.npmjs.com/package/term-ui)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/354e9953b70a4791a5a46194d587c707)](https://www.codacy.com/app/zhw2590582/term-ui?utm_source=github.com&utm_medium=referral&utm_content=zhw2590582/term-ui&utm_campaign=Badge_Grade)
-[![dependencies Status](https://david-dm.org/zhw2590582/term-ui/status.svg)](https://david-dm.org/zhw2590582/term-ui)
+[![Build Status](https://www.travis-ci.org/zhw2590582/term-web.svg?branch=master)](https://www.travis-ci.org/zhw2590582/term-web)
+![version](https://badgen.net/npm/v/term-web)
+![license](https://badgen.net/npm/license/term-web)
+![size](https://badgen.net/bundlephobia/minzip/term-web)
+[![npm Downloads](https://img.shields.io/npm/dt/term-web.svg)](https://www.npmjs.com/package/term-web)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/354e9953b70a4791a5a46194d587c707)](https://www.codacy.com/app/zhw2590582/term-web?utm_source=github.com&utm_medium=referral&utm_content=zhw2590582/term-web&utm_campaign=Badge_Grade)
+[![dependencies Status](https://david-dm.org/zhw2590582/term-web/status.svg)](https://david-dm.org/zhw2590582/term-web)
 
 ![Screenshot](./images/screenshot.png)
 
 ## Demo
 
-[Checkout the demo](https://zhw2590582.github.io/term-ui/) from Github Pages
+[Checkout the demo](https://zhw2590582.github.io/term-web/) from Github Pages
 
 ## Install
 
 Install with `npm`:
 
 ```bash
-$ npm install term-ui
+$ npm install term-web
 ```
 
 Or install with `yarn`:
 
 ```bash
-$ yarn add term-ui
+$ yarn add term-web
 ```
 
 ```js
-import Term from 'term-ui';
+import Term from 'term-web';
 ```
 
 Or umd builds are also available:
 
 ```html
-<script src="path/to/term-ui.js"></script>
+<script src="path/to/term-web.js"></script>
 ```
 
 Or from jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/term-ui/dist/term-ui.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/term-web/dist/term-web.js"></script>
 ```
 
 Will expose the global variable to `window.Term`.
@@ -101,7 +101,7 @@ var term = new Term({
     backgroundColor: 'rgb(42, 39, 52)',
 
     // Title on the topbar
-    title: 'Term UI',
+    title: 'Term Web',
 
     // Entered prefix
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',

@@ -1,8 +1,8 @@
 {
-  "name": "term-ui",
+  "name": "term-web",
   "version": "1.0.0",
   "description": ":pager: A Simple Terminal UI That Run On The Web",
-  "main": "dist/term-ui.js",
+  "main": "dist/term-web.js",
   "scripts": {
     "dev": "npx cross-env NODE_ENV=development rollup -c -m -w",
     "build": "npx cross-env NODE_ENV=production rollup -c",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zhw2590582/term-ui.git"
+    "url": "git+https://github.com/zhw2590582/term-web.git"
   },
   "keywords": [
     "Terminal",
@@ -20,9 +20,9 @@
   "author": "Harvey Zack <laozhaochaguan@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zhw2590582/term-ui/issues"
+    "url": "https://github.com/zhw2590582/term-web/issues"
   },
-  "homepage": "https://github.com/zhw2590582/term-ui#readme",
+  "homepage": "https://github.com/zhw2590582/term-web#readme",
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "@babel/plugin-external-helpers": "^7.8.3",

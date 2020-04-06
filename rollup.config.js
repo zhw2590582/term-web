@@ -12,7 +12,7 @@ export default {
     input: 'src/index.js',
     output: {
         name: 'Term',
-        file: isProd ? 'dist/term-ui.js' : 'docs/uncompiled/term-ui.js',
+        file: isProd ? 'dist/term-web.js' : 'docs/uncompiled/term-web.js',
         format: 'umd',
         sourcemap: !isProd,
     },
@@ -40,12 +40,20 @@ export default {
             __ENV__: JSON.stringify(process.env.NODE_ENV || 'development'),
             __VERSION__: version,
         }),
+        isProd && {
+            name: 'removeHtmlSpace',
+            transform(code) {
+                return {
+                    code: code.replace(/\\n*\s*</g, '<').replace(/>\\n*\s*/g, '>'),
+                };
+            },
+        },
         isProd &&
             uglify({
                 output: {
                     preamble:
                         '/*!\n' +
-                        ` * term-ui.js v${version}\n` +
+                        ` * term-web.js v${version}\n` +
                         ` * Github: ${homepage}\n` +
                         ` * (c) 2017-${new Date().getFullYear()} Harvey Zack\n` +
                         ' * Released under the MIT License.\n' +

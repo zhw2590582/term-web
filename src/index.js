@@ -30,7 +30,7 @@ export default class Term extends Emitter {
             fontSize: 13,
             fontFamily: 'Arial',
             fontColor: '#b0b2b6',
-            title: 'Term UI',
+            title: 'Term Web',
             prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
             welcome: `Last login: ${new Date()}`,
             loading: '<d color="yellow">Loading...</d>',

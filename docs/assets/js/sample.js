@@ -1,12 +1,12 @@
 // For more instructions, please visit github
-// https://github.com/zhw2590582/term-ui
+// https://github.com/zhw2590582/term-web
 
 var term = new Term({
     container: '#term',
     fontFamily: 'monospace',
-    title: 'Term UI',
+    title: 'Term Web',
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
-    welcome: '🎉 Hello, welcome to use <d color="yellow">Term UI</d>',
+    welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>',
     loading: '<d color="yellow">Please wait...</d>',
     notFound: (val) => `🐶 : <d color='red'>${val}</d>: command not found`,
     actions: [
