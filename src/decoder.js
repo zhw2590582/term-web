@@ -5,6 +5,7 @@ import { escape } from './utils';
 export default class Decoder {
     constructor(term) {
         this.term = term;
+        this.span = document.createElement('span');
     }
 
     decode(data) {
@@ -38,10 +39,9 @@ export default class Decoder {
         let left = padding[3];
         for (let i = 0; i < lines.length; i += 1) {
             const line = lines[i];
-            const span = document.createElement('span');
-            span.innerHTML = line.replace(scriptReg, '');
-            for (let j = 0; j < span.childNodes.length; j += 1) {
-                const child = span.childNodes[j];
+            this.span.innerHTML = line.replace(scriptReg, '');
+            for (let j = 0; j < this.span.childNodes.length; j += 1) {
+                const child = this.span.childNodes[j];
                 const word = child.textContent;
                 const wordSize = ctx.measureText(word).width;
                 const color = child.getAttribute ? child.getAttribute('color') || fontColor : fontColor;

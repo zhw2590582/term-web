@@ -617,6 +617,7 @@
       classCallCheck(this, Decoder);
 
       this.term = term;
+      this.span = document.createElement('span');
     }
 
     createClass(Decoder, [{
@@ -656,11 +657,10 @@
 
         for (var i = 0; i < lines.length; i += 1) {
           var line = lines[i];
-          var span = document.createElement('span');
-          span.innerHTML = line.replace(scriptReg, '');
+          this.span.innerHTML = line.replace(scriptReg, '');
 
-          for (var j = 0; j < span.childNodes.length; j += 1) {
-            var child = span.childNodes[j];
+          for (var j = 0; j < this.span.childNodes.length; j += 1) {
+            var child = this.span.childNodes[j];
             var word = child.textContent;
             var wordSize = ctx.measureText(word).width;
             var color = child.getAttribute ? child.getAttribute('color') || fontColor : fontColor;
