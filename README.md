@@ -11,7 +11,7 @@
 
 ## Demo
 
-[Checkout the demo](https://zhw2590582.github.io/term-web/) from Github Pages
+[Checkout the demo](https://term-web.js.org) from Github Pages
 
 ## Install
 
