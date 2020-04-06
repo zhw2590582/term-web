@@ -7,7 +7,7 @@ var term = new Term({
             output: 'test1',
         },
         {
-            input: 'test2',
+            input: /test2/gi,
             output(input) {
                 return input.repeat(10);
             },
