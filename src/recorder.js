@@ -14,6 +14,10 @@ export default class Recorder {
         }, 0);
     }
 
+    get duration() {
+        return this.blobs.length;
+    }
+
     start() {
         errorHandle(!this.recording, 'The recorder is recording...');
         const { $canvas } = this.term.template;
@@ -28,7 +32,10 @@ export default class Recorder {
         this.recorder.ondataavailable = (event) => {
             if (event.data && event.data.size > 0) {
                 this.blobs.push(event.data);
-                this.term.emit('recording', this.size);
+                this.term.emit('recording', {
+                    size: this.size,
+                    duration: this.duration,
+                });
             }
         };
         this.recorder.onstart = () => {
