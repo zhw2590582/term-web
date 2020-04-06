@@ -6,6 +6,7 @@ import Decoder from './decoder';
 import Drawer from './drawer';
 import Commander from './commander';
 import Recorder from './recorder';
+import * as utils from './utils';
 
 let id = 0;
 const instances = [];
@@ -16,6 +17,10 @@ export default class Term extends Emitter {
 
     static get version() {
         return '__VERSION__';
+    }
+
+    static get utils() {
+        return utils;
     }
 
     static get default() {

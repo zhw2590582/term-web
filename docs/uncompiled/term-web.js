@@ -479,6 +479,26 @@
       }[tag] || tag;
     });
   }
+  function unescape(str) {
+    return str.replace(/&amp;|&lt;|&gt;|&#39;|&quot;/g, function (tag) {
+      return {
+        '&amp;': '&',
+        '&lt;': '<',
+        '&gt;': '>',
+        '&#39;': "'",
+        '&quot;': '"'
+      }[tag] || tag;
+    });
+  }
+
+  var utils = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    TermError: TermError,
+    errorHandle: errorHandle,
+    download: download,
+    escape: escape,
+    unescape: unescape
+  });
 
   var Template = /*#__PURE__*/function () {
     function Template(term) {
@@ -1434,6 +1454,11 @@
       key: "version",
       get: function get() {
         return '1.0.1';
+      }
+    }, {
+      key: "utils",
+      get: function get() {
+        return utils;
       }
     }, {
       key: "default",
