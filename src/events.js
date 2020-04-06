@@ -6,11 +6,11 @@ export default class Events {
         const {
             options: { recorder },
             template: { $recorder, $recorderSize, $recorderDuration, $recorderBtn },
-            template: { $container, $textarea, $main, $scrollbar },
+            template: { $textarea, $main, $scrollbar },
         } = term;
 
         this.proxy(document, ['click', 'contextmenu'], (event) => {
-            if (event.composedPath && event.composedPath().indexOf($container) > -1) {
+            if (event.composedPath && event.composedPath().indexOf($main) > -1) {
                 term.isFocus = true;
                 term.emit('focus');
             } else {

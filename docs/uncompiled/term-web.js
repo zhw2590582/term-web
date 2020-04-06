@@ -225,12 +225,11 @@
           $recorderDuration = _term$template.$recorderDuration,
           $recorderBtn = _term$template.$recorderBtn,
           _term$template2 = term.template,
-          $container = _term$template2.$container,
           $textarea = _term$template2.$textarea,
           $main = _term$template2.$main,
           $scrollbar = _term$template2.$scrollbar;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
-        if (event.composedPath && event.composedPath().indexOf($container) > -1) {
+        if (event.composedPath && event.composedPath().indexOf($main) > -1) {
           term.isFocus = true;
           term.emit('focus');
         } else {
