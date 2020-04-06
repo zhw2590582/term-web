@@ -3,7 +3,7 @@ import { errorHandle } from './utils';
 export default class Template {
     constructor(term) {
         this.term = term;
-        const { container, width, height, pixelRatio, borderRadius, boxShadow } = term.options;
+        const { container, width, height, pixelRatio, borderRadius, boxShadow, recorder } = term.options;
 
         this.$container = container;
         if (typeof term.options.container === 'string') {
@@ -38,6 +38,26 @@ export default class Template {
         this.$scrollbar.style.height = '0';
         this.$main.appendChild(this.$scrollbar);
 
+        if (recorder) {
+            this.$recorder = document.createElement('div');
+            this.$recorder.classList.add('term-recorder');
+            this.$recorder.innerHTML = `
+                <div class="term-recorder-l">
+                    <div class="term-size">0m</div>
+                    <div class="term-duration">0s</div>
+                </div>
+                <div class="term-recorder-r">
+                    <div class="term-start"></div>
+                    <div class="term-end"></div> 
+                </div>
+            `;
+            this.Size = this.$recorder.querySelector('.term-size');
+            this.duration = this.$recorder.querySelector('.term-duration');
+            this.start = this.$recorder.querySelector('.term-start');
+            this.end = this.$recorder.querySelector('.term-end');
+            this.$container.appendChild(this.$recorder);
+        }
+
         if (!document.getElementById('term-ui-style')) {
             this.$style = document.createElement('style');
             this.$style.id = 'term-ui-style';
@@ -50,6 +70,7 @@ export default class Template {
                 '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}',
                 '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}',
                 '.term-main:hover{cursor:text}',
+                '.term-recorder{position:absolute;right:0;top:0;}',
             ].join('');
             document.head.appendChild(this.$style);
         }
