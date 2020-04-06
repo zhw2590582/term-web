@@ -21,3 +21,31 @@ export function download(url, name) {
     elink.click();
     document.body.removeChild(elink);
 }
+
+export function escape(str) {
+    return str.replace(
+        /[&<>'"]/g,
+        (tag) =>
+            ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;',
+            }[tag] || tag),
+    );
+}
+
+export function unescape(str) {
+    return str.replace(
+        /&amp;|&lt;|&gt;|&#39;|&quot;/g,
+        (tag) =>
+            ({
+                '&amp;': '&',
+                '&lt;': '<',
+                '&gt;': '>',
+                '&#39;': "'",
+                '&quot;': '"',
+            }[tag] || tag),
+    );
+}

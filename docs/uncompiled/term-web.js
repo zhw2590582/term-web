@@ -468,6 +468,17 @@
     elink.click();
     document.body.removeChild(elink);
   }
+  function escape(str) {
+    return str.replace(/[&<>'"]/g, function (tag) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag;
+    });
+  }
 
   var Template = /*#__PURE__*/function () {
     function Template(term) {
@@ -634,7 +645,7 @@
             fontColor = _this$term$options.fontColor;
 
         if (data.type === INPUT) {
-          data.text = prefix + data.text;
+          data.text = prefix + escape(data.text);
         }
 
         var result = [];

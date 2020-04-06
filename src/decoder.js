@@ -1,5 +1,6 @@
 import validator from 'option-validator';
 import { INPUT, OUTPUT } from './constant';
+import { escape } from './utils';
 
 export default class Decoder {
     constructor(term) {
@@ -26,7 +27,7 @@ export default class Decoder {
         } = this.term;
 
         if (data.type === INPUT) {
-            data.text = prefix + data.text;
+            data.text = prefix + escape(data.text);
         }
 
         const result = [];
