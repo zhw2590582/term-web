@@ -5,7 +5,6 @@ import Template from './template';
 import Decoder from './decoder';
 import Drawer from './drawer';
 import Commander from './commander';
-import actions from './actions';
 import * as utils from './utils';
 
 let id = 0;
@@ -34,7 +33,7 @@ export default class Term extends Emitter {
             prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
             width: 600,
             height: 500,
-            actions,
+            actions: [],
             parseOpt: {},
             borderRadius: 5,
             fontSize: 13,
@@ -68,6 +67,7 @@ export default class Term extends Emitter {
             fontFamily: 'string',
             fontColor: 'string',
             welcome: 'string',
+            loading: 'string',
             boxShadow: 'string',
             backgroundColor: 'string',
             pixelRatio: 'number',
@@ -78,8 +78,13 @@ export default class Term extends Emitter {
     constructor(options = {}) {
         super();
 
-        this.options = {};
-        this.setOptions(options);
+        this.options = validator(
+            {
+                ...Term.default,
+                ...options,
+            },
+            Term.scheme,
+        );
 
         this.template = new Template(this);
         this.events = new Events(this);
@@ -98,11 +103,6 @@ export default class Term extends Emitter {
         instances.push(this);
     }
 
-    setOptions(options = {}) {
-        this.options = validator(utils.mergeDeep(Term.default, this.options, options), Term.scheme);
-        return this;
-    }
-
     exportPng() {
         return this;
     }
@@ -116,9 +116,9 @@ export default class Term extends Emitter {
     }
 
     destroy() {
+        instances.splice(instances.indexOf(this), 1);
         this.isDestroy = true;
         this.events.destroy();
         this.template.destroy();
-        instances.splice(instances.indexOf(this), 1);
     }
 }

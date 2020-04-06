@@ -4,6 +4,23 @@
   (global = global || self, global.Term = factory());
 }(this, (function () { 'use strict';
 
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  var defineProperty = _defineProperty;
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -204,8 +221,8 @@
       var _term$template = term.template,
           $container = _term$template.$container,
           $textarea = _term$template.$textarea,
-          $scrollbar = _term$template.$scrollbar,
-          $inner = _term$template.$inner;
+          $main = _term$template.$main,
+          $scrollbar = _term$template.$scrollbar;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
         if (event.composedPath && event.composedPath().indexOf($container) > -1) {
           term.isFocus = true;
@@ -241,9 +258,9 @@
         term.emit('keydown', event);
       });
       var canRenderByTop = false;
-      this.proxy($scrollbar, 'scroll', function () {
+      this.proxy($main, 'scroll', function () {
         if (canRenderByTop) {
-          term.drawer.renderByTop($scrollbar.scrollTop);
+          term.drawer.renderByTop($main.scrollTop);
         } else {
           canRenderByTop = true;
         }
@@ -251,9 +268,9 @@
       term.on('scroll', function (_ref) {
         var scrollHeight = _ref.scrollHeight,
             scrollTop = _ref.scrollTop;
-        $inner.style.height = "".concat(scrollHeight, "px");
+        $scrollbar.style.height = "".concat(scrollHeight, "px");
         canRenderByTop = false;
-        $scrollbar.scrollTo(0, scrollTop);
+        $main.scrollTo(0, scrollTop);
       });
       term.on('cursor', function (_ref2) {
         var left = _ref2.left,
@@ -264,8 +281,8 @@
       term.on('size', function (_ref3) {
         var top = _ref3.top,
             height = _ref3.height;
-        $scrollbar.style.top = "".concat(top, "px");
-        $scrollbar.style.height = "".concat(height, "px");
+        $main.style.top = "".concat(top, "px");
+        $main.style.height = "".concat(height, "px");
       });
       term.on('focus', function () {
         $textarea.focus();
@@ -301,53 +318,6 @@
 
     return Events;
   }();
-
-  function _arrayLikeToArray(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-
-    for (var i = 0, arr2 = new Array(len); i < len; i++) {
-      arr2[i] = arr[i];
-    }
-
-    return arr2;
-  }
-
-  var arrayLikeToArray = _arrayLikeToArray;
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) return arrayLikeToArray(arr);
-  }
-
-  var arrayWithoutHoles = _arrayWithoutHoles;
-
-  function _iterableToArray(iter) {
-    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
-  }
-
-  var iterableToArray = _iterableToArray;
-
-  function _unsupportedIterableToArray(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return arrayLikeToArray(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(n);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
-  }
-
-  var unsupportedIterableToArray = _unsupportedIterableToArray;
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  var nonIterableSpread = _nonIterableSpread;
-
-  function _toConsumableArray(arr) {
-    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
-  }
-
-  var toConsumableArray = _toConsumableArray;
 
   function _isNativeFunction(fn) {
     return Function.toString.call(fn).indexOf("[native code]") !== -1;
@@ -457,45 +427,11 @@
 
     return condition;
   }
-  function mergeDeep() {
-    var isObject = function isObject(item) {
-      return item && _typeof_1(item) === 'object' && !Array.isArray(item);
-    };
-
-    for (var _len = arguments.length, objects = new Array(_len), _key = 0; _key < _len; _key++) {
-      objects[_key] = arguments[_key];
-    }
-
-    return objects.reduce(function (prev, obj) {
-      Object.keys(obj).forEach(function (key) {
-        var pVal = prev[key];
-        var oVal = obj[key];
-
-        if (Array.isArray(pVal) && Array.isArray(oVal)) {
-          prev[key] = pVal.concat.apply(pVal, toConsumableArray(oVal));
-        } else if (isObject(pVal) && isObject(oVal) && !(oVal instanceof Element)) {
-          prev[key] = mergeDeep(pVal, oVal);
-        } else {
-          prev[key] = oVal;
-        }
-      });
-      return prev;
-    }, {});
-  }
-  function clamp(num, a, b) {
-    return Math.max(Math.min(num, Math.max(a, b)), Math.min(a, b));
-  }
-  function randomColor() {
-    return "#".concat(Math.floor(Math.random() * 16777215).toString(16));
-  }
 
   var utils = /*#__PURE__*/Object.freeze({
     __proto__: null,
     TermError: TermError,
-    errorHandle: errorHandle,
-    mergeDeep: mergeDeep,
-    clamp: clamp,
-    randomColor: randomColor
+    errorHandle: errorHandle
   });
 
   var Template = /*#__PURE__*/function () {
@@ -505,7 +441,14 @@
       classCallCheck(this, Template);
 
       this.term = term;
-      this.$container = term.options.container;
+      var _term$options = term.options,
+          container = _term$options.container,
+          width = _term$options.width,
+          height = _term$options.height,
+          pixelRatio = _term$options.pixelRatio,
+          borderRadius = _term$options.borderRadius,
+          boxShadow = _term$options.boxShadow;
+      this.$container = container;
 
       if (typeof term.options.container === 'string') {
         this.$container = document.querySelector(term.options.container);
@@ -518,6 +461,12 @@
       this.$container.classList.add('term-container');
       this.$canvas = document.createElement('canvas');
       this.$canvas.classList.add('term-canvas');
+      this.$canvas.style.width = "".concat(width, "px");
+      this.$canvas.style.height = "".concat(height, "px");
+      this.$canvas.width = width * pixelRatio;
+      this.$canvas.height = height * pixelRatio;
+      this.$canvas.style.borderRadius = "".concat(borderRadius, "px");
+      this.$canvas.style.boxShadow = boxShadow;
       this.$container.appendChild(this.$canvas);
       this.$textarea = document.createElement('textarea');
       this.$textarea.classList.add('term-textarea');
@@ -530,56 +479,89 @@
       this.$textarea.style.pointerEvents = 'none';
       this.$textarea.style.userSelect = 'none';
       this.$container.appendChild(this.$textarea);
+      this.$main = document.createElement('div');
+      this.$main.classList.add('term-main');
+      this.$main.style.position = 'absolute';
+      this.$main.style.width = '100%';
+      this.$main.style.height = '100%';
+      this.$main.style.top = '0';
+      this.$main.style.right = '0';
+      this.$main.style.bottom = '0';
+      this.$main.style.left = '0';
+      this.$main.style.overflow = 'auto';
+      this.$container.appendChild(this.$main);
       this.$scrollbar = document.createElement('div');
-      this.$textarea.classList.add('term-scrollbar');
-      this.$scrollbar.style.position = 'absolute';
-      this.$scrollbar.style.width = '100%';
-      this.$scrollbar.style.height = '100%';
-      this.$scrollbar.style.top = '0';
-      this.$scrollbar.style.right = '0';
-      this.$scrollbar.style.bottom = '0';
-      this.$scrollbar.style.left = '0';
-      this.$scrollbar.style.overflow = 'auto';
-      this.$container.appendChild(this.$scrollbar);
-      this.$inner = document.createElement('div');
-      this.$inner.style.height = '0';
-      this.$scrollbar.appendChild(this.$inner);
+      this.$scrollbar.style.height = '0';
+      this.$main.appendChild(this.$scrollbar);
 
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = ['.term-container:hover{cursor: text}', '.term-container ::-webkit-scrollbar{width: 5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color: #666;border-radius: 5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color: #ccc;}'].join('');
+        this.$style.textContent = ['.term-main:hover{cursor: text}', '.term-container ::-webkit-scrollbar{width: 5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color: #666;border-radius: 5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color: #ccc;}'].join('');
         document.head.appendChild(this.$style);
       }
-
-      this.update();
     }
 
     createClass(Template, [{
-      key: "update",
-      value: function update() {
-        var _this$term$options = this.term.options,
-            width = _this$term$options.width,
-            height = _this$term$options.height,
-            pixelRatio = _this$term$options.pixelRatio,
-            borderRadius = _this$term$options.borderRadius,
-            boxShadow = _this$term$options.boxShadow;
-        this.$canvas.style.width = "".concat(width, "px");
-        this.$canvas.style.height = "".concat(height, "px");
-        this.$canvas.width = width * pixelRatio;
-        this.$canvas.height = height * pixelRatio;
-        this.$canvas.style.borderRadius = "".concat(borderRadius, "px");
-        this.$canvas.style.boxShadow = boxShadow;
-      }
-    }, {
       key: "destroy",
       value: function destroy() {
         this.$container.innerHTML = '';
+
+        if (!this.term.constructor.instances.length) {
+          document.head.removeChild(this.$style);
+        }
       }
     }]);
 
     return Template;
   }();
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+
+  var arrayLikeToArray = _arrayLikeToArray;
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return arrayLikeToArray(arr);
+  }
+
+  var arrayWithoutHoles = _arrayWithoutHoles;
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  }
+
+  var iterableToArray = _iterableToArray;
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(n);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+  }
+
+  var unsupportedIterableToArray = _unsupportedIterableToArray;
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var nonIterableSpread = _nonIterableSpread;
+
+  function _toConsumableArray(arr) {
+    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
+  }
+
+  var toConsumableArray = _toConsumableArray;
 
   var INPUT = 'input';
   var OUTPUT = 'output';
@@ -1307,24 +1289,9 @@
     return Commander;
   }();
 
-  var actions = [{
-    input: 'test',
-    output: 'test1'
-  }, {
-    input: 'test2',
-    output: function output(input) {
-      return input.repeat(10);
-    }
-  }, {
-    input: 'test3',
-    output: function output(input) {
-      return new Promise(function (resolve) {
-        setTimeout(function () {
-          resolve(input);
-        }, 1000);
-      });
-    }
-  }];
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
   function _createSuper$1(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct$2()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
 
@@ -1366,7 +1333,7 @@
           prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
           width: 600,
           height: 500,
-          actions: actions,
+          actions: [],
           parseOpt: {},
           borderRadius: 5,
           fontSize: 13,
@@ -1401,6 +1368,7 @@
           fontFamily: 'string',
           fontColor: 'string',
           welcome: 'string',
+          loading: 'string',
           boxShadow: 'string',
           backgroundColor: 'string',
           pixelRatio: 'number',
@@ -1417,10 +1385,7 @@
       classCallCheck(this, Term);
 
       _this = _super.call(this);
-      _this.options = {};
-
-      _this.setOptions(options);
-
+      _this.options = optionValidator(_objectSpread({}, Term.default, {}, options), Term.scheme);
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));
       _this.decoder = new Decoder(assertThisInitialized(_this));
@@ -1437,13 +1402,6 @@
     }
 
     createClass(Term, [{
-      key: "setOptions",
-      value: function setOptions() {
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        this.options = optionValidator(mergeDeep(Term.default, this.options, options), Term.scheme);
-        return this;
-      }
-    }, {
       key: "exportPng",
       value: function exportPng() {
         return this;
@@ -1461,10 +1419,10 @@
     }, {
       key: "destroy",
       value: function destroy() {
+        instances.splice(instances.indexOf(this), 1);
         this.isDestroy = true;
         this.events.destroy();
         this.template.destroy();
-        instances.splice(instances.indexOf(this), 1);
       }
     }]);
 

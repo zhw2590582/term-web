@@ -3,8 +3,9 @@ import { errorHandle } from './utils';
 export default class Template {
     constructor(term) {
         this.term = term;
+        const { container, width, height, pixelRatio, borderRadius, boxShadow } = term.options;
 
-        this.$container = term.options.container;
+        this.$container = container;
         if (typeof term.options.container === 'string') {
             this.$container = document.querySelector(term.options.container);
         }
@@ -19,6 +20,12 @@ export default class Template {
 
         this.$canvas = document.createElement('canvas');
         this.$canvas.classList.add('term-canvas');
+        this.$canvas.style.width = `${width}px`;
+        this.$canvas.style.height = `${height}px`;
+        this.$canvas.width = width * pixelRatio;
+        this.$canvas.height = height * pixelRatio;
+        this.$canvas.style.borderRadius = `${borderRadius}px`;
+        this.$canvas.style.boxShadow = boxShadow;
         this.$container.appendChild(this.$canvas);
 
         this.$textarea = document.createElement('textarea');
@@ -33,48 +40,39 @@ export default class Template {
         this.$textarea.style.userSelect = 'none';
         this.$container.appendChild(this.$textarea);
 
-        this.$scrollbar = document.createElement('div');
-        this.$textarea.classList.add('term-scrollbar');
-        this.$scrollbar.style.position = 'absolute';
-        this.$scrollbar.style.width = '100%';
-        this.$scrollbar.style.height = '100%';
-        this.$scrollbar.style.top = '0';
-        this.$scrollbar.style.right = '0';
-        this.$scrollbar.style.bottom = '0';
-        this.$scrollbar.style.left = '0';
-        this.$scrollbar.style.overflow = 'auto';
-        this.$container.appendChild(this.$scrollbar);
+        this.$main = document.createElement('div');
+        this.$main.classList.add('term-main');
+        this.$main.style.position = 'absolute';
+        this.$main.style.width = '100%';
+        this.$main.style.height = '100%';
+        this.$main.style.top = '0';
+        this.$main.style.right = '0';
+        this.$main.style.bottom = '0';
+        this.$main.style.left = '0';
+        this.$main.style.overflow = 'auto';
+        this.$container.appendChild(this.$main);
 
-        this.$inner = document.createElement('div');
-        this.$inner.style.height = '0';
-        this.$scrollbar.appendChild(this.$inner);
+        this.$scrollbar = document.createElement('div');
+        this.$scrollbar.style.height = '0';
+        this.$main.appendChild(this.$scrollbar);
 
         if (!document.getElementById('term-ui-style')) {
             this.$style = document.createElement('style');
             this.$style.id = 'term-ui-style';
             this.$style.textContent = [
-                '.term-container:hover{cursor: text}',
+                '.term-main:hover{cursor: text}',
                 '.term-container ::-webkit-scrollbar{width: 5px;}',
                 '.term-container ::-webkit-scrollbar-thumb{background-color: #666;border-radius: 5px;}',
                 '.term-container ::-webkit-scrollbar-thumb:hover{background-color: #ccc;}',
             ].join('');
             document.head.appendChild(this.$style);
         }
-
-        this.update();
-    }
-
-    update() {
-        const { width, height, pixelRatio, borderRadius, boxShadow } = this.term.options;
-        this.$canvas.style.width = `${width}px`;
-        this.$canvas.style.height = `${height}px`;
-        this.$canvas.width = width * pixelRatio;
-        this.$canvas.height = height * pixelRatio;
-        this.$canvas.style.borderRadius = `${borderRadius}px`;
-        this.$canvas.style.boxShadow = boxShadow;
     }
 
     destroy() {
         this.$container.innerHTML = '';
+        if (!this.term.constructor.instances.length) {
+            document.head.removeChild(this.$style);
+        }
     }
 }

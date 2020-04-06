@@ -4,7 +4,7 @@ export default class Events {
         this.proxy = this.proxy.bind(this);
 
         const {
-            template: { $container, $textarea, $scrollbar, $inner },
+            template: { $container, $textarea, $main, $scrollbar },
         } = term;
 
         this.proxy(document, ['click', 'contextmenu'], (event) => {
@@ -41,18 +41,18 @@ export default class Events {
         });
 
         let canRenderByTop = false;
-        this.proxy($scrollbar, 'scroll', () => {
+        this.proxy($main, 'scroll', () => {
             if (canRenderByTop) {
-                term.drawer.renderByTop($scrollbar.scrollTop);
+                term.drawer.renderByTop($main.scrollTop);
             } else {
                 canRenderByTop = true;
             }
         });
 
         term.on('scroll', ({ scrollHeight, scrollTop }) => {
-            $inner.style.height = `${scrollHeight}px`;
+            $scrollbar.style.height = `${scrollHeight}px`;
             canRenderByTop = false;
-            $scrollbar.scrollTo(0, scrollTop);
+            $main.scrollTo(0, scrollTop);
         });
 
         term.on('cursor', ({ left, top }) => {
@@ -61,8 +61,8 @@ export default class Events {
         });
 
         term.on('size', ({ top, height }) => {
-            $scrollbar.style.top = `${top}px`;
-            $scrollbar.style.height = `${height}px`;
+            $main.style.top = `${top}px`;
+            $main.style.height = `${height}px`;
         });
 
         term.on('focus', () => {
