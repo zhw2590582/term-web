@@ -2,13 +2,10 @@
 
 > :pager: A Simple Terminal UI That Run On The Web
 
-[![Build Status](https://www.travis-ci.org/zhw2590582/term-web.svg?branch=master)](https://www.travis-ci.org/zhw2590582/term-web)
 ![version](https://badgen.net/npm/v/term-web)
 ![license](https://badgen.net/npm/license/term-web)
 ![size](https://badgen.net/bundlephobia/minzip/term-web)
 [![npm Downloads](https://img.shields.io/npm/dt/term-web.svg)](https://www.npmjs.com/package/term-web)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/354e9953b70a4791a5a46194d587c707)](https://www.codacy.com/app/zhw2590582/term-web?utm_source=github.com&utm_medium=referral&utm_content=zhw2590582/term-web&utm_campaign=Badge_Grade)
-[![dependencies Status](https://david-dm.org/zhw2590582/term-web/status.svg)](https://david-dm.org/zhw2590582/term-web)
 
 ![Screenshot](./images/screenshot.png)
 
