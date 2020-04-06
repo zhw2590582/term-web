@@ -22,7 +22,19 @@ body {
     justify-content: center;
 }
 
-#term {
+.code {
+    width: 40%;
+    height: 100%;
+}
+
+.CodeMirror {
+    height: 100%;
+    width: calc(100% + 30px);
+    padding: 10px 30px 10px 0;
+}
+
+.demo {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -1429,7 +1429,7 @@
           fontFamily: 'Arial',
           fontColor: '#b0b2b6',
           title: 'Term UI',
-          prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
+          prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
           welcome: "Last login: ".concat(new Date()),
           loading: '<d color="yellow">Loading...</d>',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',

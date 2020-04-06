@@ -1,26 +1,26 @@
-var term = new Term({
-    container: '#term',
-    fontFamily: 'monospace',
-    actions: [
-        {
-            input: 'test',
-            output: 'test1',
-        },
-        {
-            input: /test2/gi,
-            output(input) {
-                return input.repeat(10);
-            },
-        },
-        {
-            input: 'test3',
-            output(input) {
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve(input);
-                    }, 1000);
-                });
-            },
-        },
-    ],
+var mirror = CodeMirror(document.querySelector('.code'), {
+    lineNumbers: true,
+    mode: 'javascript',
+    readOnly: true,
+    matchBrackets: true,
+    styleActiveLine: true,
+    theme: 'dracula',
+    value: '',
 });
+
+function runCode() {
+    Term.instances.forEach(function (ins) {
+        ins.destroy();
+    });
+    var code = mirror.getValue();
+    eval(code);
+}
+
+fetch(`/assets/js/sample.js`)
+    .then(function (response) {
+        return response.text();
+    })
+    .then(function (text) {
+        mirror.setValue(text);
+        runCode();
+    });
