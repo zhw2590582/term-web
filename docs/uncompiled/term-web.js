@@ -227,7 +227,9 @@
           _term$template2 = term.template,
           $textarea = _term$template2.$textarea,
           $main = _term$template2.$main,
-          $scrollbar = _term$template2.$scrollbar;
+          $scrollbar = _term$template2.$scrollbar,
+          $header = _term$template2.$header,
+          $footer = _term$template2.$footer;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
         if (event.composedPath && event.composedPath().indexOf($main) > -1) {
           term.isFocus = true;
@@ -292,7 +294,10 @@
       });
       term.on('size', function (_ref3) {
         var top = _ref3.top,
-            height = _ref3.height;
+            height = _ref3.height,
+            bottom = _ref3.bottom;
+        $header.style.height = "".concat(top, "px");
+        $footer.style.height = "".concat(bottom, "px");
         $main.style.top = "".concat(top, "px");
         $main.style.height = "".concat(height, "px");
       });
@@ -534,9 +539,9 @@
       this.$canvas.width = width * pixelRatio;
       this.$canvas.height = height * pixelRatio;
       this.$container.appendChild(this.$canvas);
-      this.$textarea = document.createElement('textarea');
-      this.$textarea.classList.add('term-textarea');
-      this.$container.appendChild(this.$textarea);
+      this.$header = document.createElement('div');
+      this.$header.classList.add('term-header');
+      this.$container.appendChild(this.$header);
       this.$main = document.createElement('div');
       this.$main.classList.add('term-main');
       this.$container.appendChild(this.$main);
@@ -544,6 +549,12 @@
       this.$scrollbar.classList.add('term-scrollbar');
       this.$scrollbar.style.height = '0';
       this.$main.appendChild(this.$scrollbar);
+      this.$footer = document.createElement('div');
+      this.$footer.classList.add('term-footer');
+      this.$container.appendChild(this.$footer);
+      this.$textarea = document.createElement('textarea');
+      this.$textarea.classList.add('term-textarea');
+      this.$container.appendChild(this.$textarea);
 
       if (recorder) {
         this.$recorder = document.createElement('div');
@@ -552,13 +563,13 @@
         this.$recorderSize = this.$recorder.querySelector('.term-recorder-size');
         this.$recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
         this.$recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
-        this.$container.appendChild(this.$recorder);
+        this.$header.appendChild(this.$recorder);
       }
 
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}'].join('');
+        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}'].join('');
         document.head.appendChild(this.$style);
       }
     }
@@ -924,7 +935,8 @@
         });
         this.term.emit('size', {
           top: this.padding[0] / pixelRatio,
-          height: this.height / pixelRatio
+          height: this.height / pixelRatio,
+          bottom: this.padding[2] / pixelRatio
         });
         var lastlogInInput = this.logs[this.logs.length - 1];
         var lastlogInRender = this.renderLogs[this.renderLogs.length - 1];

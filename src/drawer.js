@@ -155,6 +155,7 @@ export default class Drawer {
         this.term.emit('size', {
             top: this.padding[0] / pixelRatio,
             height: this.height / pixelRatio,
+            bottom: this.padding[2] / pixelRatio,
         });
 
         const lastlogInInput = this.logs[this.logs.length - 1];

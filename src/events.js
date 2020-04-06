@@ -6,7 +6,7 @@ export default class Events {
         const {
             options: { recorder },
             template: { $recorder, $recorderSize, $recorderDuration, $recorderBtn },
-            template: { $textarea, $main, $scrollbar },
+            template: { $textarea, $main, $scrollbar, $header, $footer },
         } = term;
 
         this.proxy(document, ['click', 'contextmenu'], (event) => {
@@ -70,7 +70,9 @@ export default class Events {
             $textarea.style.left = `${left}px`;
         });
 
-        term.on('size', ({ top, height }) => {
+        term.on('size', ({ top, height, bottom }) => {
+            $header.style.height = `${top}px`;
+            $footer.style.height = `${bottom}px`;
             $main.style.top = `${top}px`;
             $main.style.height = `${height}px`;
         });

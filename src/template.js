@@ -36,9 +36,9 @@ export default class Template {
         this.$canvas.height = height * pixelRatio;
         this.$container.appendChild(this.$canvas);
 
-        this.$textarea = document.createElement('textarea');
-        this.$textarea.classList.add('term-textarea');
-        this.$container.appendChild(this.$textarea);
+        this.$header = document.createElement('div');
+        this.$header.classList.add('term-header');
+        this.$container.appendChild(this.$header);
 
         this.$main = document.createElement('div');
         this.$main.classList.add('term-main');
@@ -48,6 +48,14 @@ export default class Template {
         this.$scrollbar.classList.add('term-scrollbar');
         this.$scrollbar.style.height = '0';
         this.$main.appendChild(this.$scrollbar);
+
+        this.$footer = document.createElement('div');
+        this.$footer.classList.add('term-footer');
+        this.$container.appendChild(this.$footer);
+
+        this.$textarea = document.createElement('textarea');
+        this.$textarea.classList.add('term-textarea');
+        this.$container.appendChild(this.$textarea);
 
         if (recorder) {
             this.$recorder = document.createElement('div');
@@ -60,7 +68,7 @@ export default class Template {
             this.$recorderSize = this.$recorder.querySelector('.term-recorder-size');
             this.$recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
             this.$recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
-            this.$container.appendChild(this.$recorder);
+            this.$header.appendChild(this.$recorder);
         }
 
         if (!document.getElementById('term-ui-style')) {
@@ -81,6 +89,8 @@ export default class Template {
                 '.term-recorder.recording .term-recorder-btn{background:#FFC107;}',
                 '.term-recorder.recording .term-recorder-size{display:block;}',
                 '.term-recorder.recording .term-recorder-duration{display:block;}',
+                '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}',
+                '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}',
             ].join('');
             document.head.appendChild(this.$style);
         }
