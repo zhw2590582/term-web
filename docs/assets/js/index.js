@@ -8,19 +8,18 @@ var mirror = CodeMirror(document.querySelector('.code'), {
     value: '',
 });
 
-function runCode() {
-    Term.instances.forEach(function (ins) {
-        ins.destroy();
-    });
-    var code = mirror.getValue();
-    eval(code);
+var url = '';
+if (window.location.href.includes('github.io')) {
+    url = '/term-ui/assets/js/sample.js';
+} else {
+    url = '/assets/js/sample.js';
 }
 
-fetch(`/assets/js/sample.js`)
+fetch(url)
     .then(function (response) {
         return response.text();
     })
     .then(function (text) {
         mirror.setValue(text);
-        runCode();
+        eval(text);
     });
