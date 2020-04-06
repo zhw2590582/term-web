@@ -4,10 +4,9 @@ import Events from './events';
 import Template from './template';
 import Decoder from './decoder';
 import Drawer from './drawer';
-import Keyboard from './keyboard';
 import Commander from './commander';
 import actions from './actions';
-import { mergeDeep } from './utils';
+import * as utils from './utils';
 
 let id = 0;
 const instances = [];
@@ -22,6 +21,10 @@ export default class Term extends Emitter {
 
     static get env() {
         return '__ENV__';
+    }
+
+    static get utils() {
+        return utils;
     }
 
     static get default() {
@@ -83,10 +86,12 @@ export default class Term extends Emitter {
         this.decoder = new Decoder(this);
         this.drawer = new Drawer(this);
         this.commander = new Commander(this);
-        this.keyboard = new Keyboard(this);
 
         this.isFocus = false;
         this.isDestroy = false;
+
+        this.input = this.commander.input;
+        this.output = this.commander.output;
 
         id += 1;
         this.id = id;
@@ -94,7 +99,7 @@ export default class Term extends Emitter {
     }
 
     setOptions(options = {}) {
-        this.options = validator(mergeDeep(Term.default, this.options, options), Term.scheme);
+        this.options = validator(utils.mergeDeep(Term.default, this.options, options), Term.scheme);
         return this;
     }
 

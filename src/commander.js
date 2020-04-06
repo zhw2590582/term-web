@@ -32,18 +32,18 @@ export default class Commander {
         if (!text.trim()) return this.input('');
         const { parseOpt, notFound, loading } = this.term.options;
         const action = this.findAction(text);
+        const argv = minimist(text.split(' '), parseOpt);
 
         if (action) {
             if (typeof action.output === 'function') {
                 try {
-                    const argv = minimist(text.split(' '), parseOpt);
-                    const result = action.output(text, argv);
+                    const result = action.output.call(this.term, text, argv);
                     const resultType = validator.kindOf(result);
                     if (resultType === 'promise') {
                         this.output(loading);
                         return result
                             .then((data) => {
-                                return this.output(String(data), true).input('');
+                                return this.output(data, true).input('');
                             })
                             .catch((error) => {
                                 const errorType = validator.kindOf(error);
@@ -53,16 +53,17 @@ export default class Commander {
                                 return this.output(message, true).input('');
                             });
                     }
-                    return this.output(String(result), true).input('');
+                    return this.output(result).input('');
                 } catch (error) {
-                    const message = `<d color="red">${error.message}</d>`;
+                    const message = `<d color="red">${String(error)}</d>`;
                     return this.output(message).input('');
                 }
             } else {
                 return this.output(action.output).input('');
             }
         } else {
-            return this.output(notFound(text)).input('');
+            const result = notFound.call(this.term, text, argv);
+            return this.output(result).input('');
         }
     }
 
@@ -86,7 +87,7 @@ export default class Commander {
         drawer.draw({
             type: OUTPUT,
             replace,
-            text,
+            text: String(text),
         });
         return this;
     }
@@ -96,7 +97,7 @@ export default class Commander {
         drawer.draw({
             type: INPUT,
             replace,
-            text,
+            text: String(text),
         });
         return this;
     }

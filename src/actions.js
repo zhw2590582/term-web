@@ -6,15 +6,15 @@ export default [
     {
         input: 'test2',
         output(input) {
-            return input.repeat(2);
+            return input.repeat(10);
         },
     },
     {
         input: 'test3',
         output(input) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 setTimeout(() => {
-                    resolve(input.repeat(2));
+                    resolve(input);
                 }, 1000);
             });
         },

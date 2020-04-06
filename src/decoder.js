@@ -106,7 +106,7 @@ export default class Decoder {
                     left = nextWordWidth;
                 }
             }
-            index = 0;
+            index += 1;
             left = padding[3];
         }
 

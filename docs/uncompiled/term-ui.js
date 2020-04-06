@@ -237,6 +237,8 @@
             return $textarea.focus();
           });
         }
+
+        term.emit('keydown', event);
       });
       var canRenderByTop = false;
       this.proxy($scrollbar, 'scroll', function () {
@@ -480,6 +482,21 @@
       return prev;
     }, {});
   }
+  function clamp(num, a, b) {
+    return Math.max(Math.min(num, Math.max(a, b)), Math.min(a, b));
+  }
+  function randomColor() {
+    return "#".concat(Math.floor(Math.random() * 16777215).toString(16));
+  }
+
+  var utils = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    TermError: TermError,
+    errorHandle: errorHandle,
+    mergeDeep: mergeDeep,
+    clamp: clamp,
+    randomColor: randomColor
+  });
 
   var Template = /*#__PURE__*/function () {
     function Template(term) {
@@ -687,7 +704,7 @@
             }
           }
 
-          index = 0;
+          index += 1;
           left = padding[3];
         }
 
@@ -706,13 +723,14 @@
       var _term$options = term.options,
           pixelRatio = _term$options.pixelRatio,
           fontSize = _term$options.fontSize,
-          fontFamily = _term$options.fontFamily;
+          fontFamily = _term$options.fontFamily,
+          backgroundColor = _term$options.backgroundColor;
       this.gap = 10 * pixelRatio;
       this.fontSize = fontSize * pixelRatio;
       this.padding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
-      this.cursorColor = ['#FFF', '#666'];
+      this.cursorColor = ['#FFF', backgroundColor];
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
       this.btnSize = 6 * pixelRatio;
       this.$canvas = term.template.$canvas;
@@ -926,12 +944,6 @@
 
     return Drawer;
   }();
-
-  var Keyboard = function Keyboard(term) {
-    classCallCheck(this, Keyboard);
-
-    this.term = term;
-  };
 
   var _minimist_1_2_5_minimist = function (args, opts) {
       if (!opts) opts = {};
@@ -1213,18 +1225,18 @@
             notFound = _this$term$options.notFound,
             loading = _this$term$options.loading;
         var action = this.findAction(text);
+        var argv = _minimist_1_2_5_minimist(text.split(' '), parseOpt);
 
         if (action) {
           if (typeof action.output === 'function') {
             try {
-              var argv = _minimist_1_2_5_minimist(text.split(' '), parseOpt);
-              var result = action.output(text, argv);
+              var result = action.output.call(this.term, text, argv);
               var resultType = optionValidator.kindOf(result);
 
               if (resultType === 'promise') {
                 this.output(loading);
                 return result.then(function (data) {
-                  return _this2.output(String(data), true).input('');
+                  return _this2.output(data, true).input('');
                 }).catch(function (error) {
                   var errorType = optionValidator.kindOf(error);
                   var errorText = errorType === 'error' ? "".concat(String(error)) : "Error: ".concat(String(error));
@@ -1233,16 +1245,18 @@
                 });
               }
 
-              return this.output(String(result), true).input('');
+              return this.output(result).input('');
             } catch (error) {
-              var message = "<d color=\"red\">".concat(error.message, "</d>");
+              var message = "<d color=\"red\">".concat(String(error), "</d>");
               return this.output(message).input('');
             }
           } else {
             return this.output(action.output).input('');
           }
         } else {
-          return this.output(notFound(text)).input('');
+          var _result = notFound.call(this.term, text, argv);
+
+          return this.output(_result).input('');
         }
       }
     }, {
@@ -1272,7 +1286,7 @@
         drawer.draw({
           type: OUTPUT,
           replace: replace,
-          text: text
+          text: String(text)
         });
         return this;
       }
@@ -1284,7 +1298,7 @@
         drawer.draw({
           type: INPUT,
           replace: replace,
-          text: text
+          text: String(text)
         });
         return this;
       }
@@ -1299,14 +1313,14 @@
   }, {
     input: 'test2',
     output: function output(input) {
-      return input.repeat(2);
+      return input.repeat(10);
     }
   }, {
     input: 'test3',
     output: function output(input) {
-      return new Promise(function (resolve, reject) {
+      return new Promise(function (resolve) {
         setTimeout(function () {
-          resolve(input.repeat(2));
+          resolve(input);
         }, 1000);
       });
     }
@@ -1337,6 +1351,11 @@
       key: "env",
       get: function get() {
         return '"development"';
+      }
+    }, {
+      key: "utils",
+      get: function get() {
+        return utils;
       }
     }, {
       key: "default",
@@ -1407,9 +1426,10 @@
       _this.decoder = new Decoder(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
       _this.commander = new Commander(assertThisInitialized(_this));
-      _this.keyboard = new Keyboard(assertThisInitialized(_this));
       _this.isFocus = false;
       _this.isDestroy = false;
+      _this.input = _this.commander.input;
+      _this.output = _this.commander.output;
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));

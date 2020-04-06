@@ -37,6 +37,7 @@ export default class Events {
                 $textarea.blur();
                 setTimeout(() => $textarea.focus());
             }
+            term.emit('keydown', event);
         });
 
         let canRenderByTop = false;
