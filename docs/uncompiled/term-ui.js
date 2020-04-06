@@ -427,12 +427,15 @@
 
     return condition;
   }
-
-  var utils = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    TermError: TermError,
-    errorHandle: errorHandle
-  });
+  function download(url, name) {
+    var elink = document.createElement('a');
+    elink.style.display = 'none';
+    elink.href = url;
+    elink.download = name;
+    document.body.appendChild(elink);
+    elink.click();
+    document.body.removeChild(elink);
+  }
 
   var Template = /*#__PURE__*/function () {
     function Template(term) {
@@ -565,6 +568,11 @@
 
   var INPUT = 'input';
   var OUTPUT = 'output';
+  var recorderOptions = {
+    audioBitsPerSecond: 128000,
+    videoBitsPerSecond: 2500000,
+    mimeType: 'video/webm'
+  };
 
   var Decoder = /*#__PURE__*/function () {
     function Decoder(term) {
@@ -1181,8 +1189,6 @@
       this.term = term;
       var drawer = term.drawer,
           welcome = term.options.welcome;
-      this.input = this.input.bind(this);
-      this.output = this.output.bind(this);
       this.output(welcome).input('');
       term.on('input', function (text) {
         if (drawer.editable) {
@@ -1289,6 +1295,65 @@
     return Commander;
   }();
 
+  var Recorder = /*#__PURE__*/function () {
+    function Recorder(term) {
+      classCallCheck(this, Recorder);
+
+      this.term = term;
+      this.recording = false;
+      this.blobs = [];
+    }
+
+    createClass(Recorder, [{
+      key: "start",
+      value: function start() {
+        var _this = this;
+
+        errorHandle(!this.recording, 'The recorder is recording...');
+        var $canvas = this.term.template.$canvas;
+        this.stream = $canvas.captureStream(30);
+        errorHandle(this.stream, 'Cannot get MediaStream of canvas');
+        errorHandle(MediaRecorder && MediaRecorder.isTypeSupported(recorderOptions.mimeType), 'Does not support recording webm video');
+        this.recorder = new MediaRecorder(this.stream, recorderOptions);
+
+        this.recorder.ondataavailable = function (event) {
+          if (event.data && event.data.size > 0) {
+            _this.blobs.push(event.data);
+
+            _this.term.emit('recording', _this.size);
+          }
+        };
+
+        this.recorder.onstart = function () {
+          _this.recording = true;
+
+          _this.term.emit('start');
+        };
+
+        this.recorder.start(1000);
+      }
+    }, {
+      key: "end",
+      value: function end() {
+        var url = URL.createObjectURL(new Blob(this.blobs));
+        download(url, "".concat(Date.now(), ".webm"));
+        URL.revokeObjectURL(url);
+        this.blobs = [];
+        this.recording = false;
+        this.term.emit('end');
+      }
+    }, {
+      key: "size",
+      get: function get() {
+        return this.blobs.reduce(function (result, item) {
+          return result + item.size;
+        }, 0);
+      }
+    }]);
+
+    return Recorder;
+  }();
+
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -1315,22 +1380,10 @@
         return '1.0.0';
       }
     }, {
-      key: "env",
-      get: function get() {
-        return '"development"';
-      }
-    }, {
-      key: "utils",
-      get: function get() {
-        return utils;
-      }
-    }, {
       key: "default",
       get: function get() {
         return {
           container: '#term',
-          title: 'Term UI',
-          prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
           width: 600,
           height: 500,
           actions: [],
@@ -1339,6 +1392,8 @@
           fontSize: 13,
           fontFamily: 'Arial',
           fontColor: '#b0b2b6',
+          title: 'Term UI',
+          prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
           welcome: "Last login: ".concat(new Date()),
           loading: '<d color="yellow">Loading...</d>',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
@@ -1354,8 +1409,6 @@
       get: function get() {
         return {
           container: 'string|htmldivelement',
-          title: 'string',
-          prefix: 'string',
           width: 'number',
           height: 'number',
           actions: [{
@@ -1367,6 +1420,8 @@
           fontSize: 'number',
           fontFamily: 'string',
           fontColor: 'string',
+          title: 'string',
+          prefix: 'string',
           welcome: 'string',
           loading: 'string',
           boxShadow: 'string',
@@ -1386,15 +1441,17 @@
 
       _this = _super.call(this);
       _this.options = optionValidator(_objectSpread({}, Term.default, {}, options), Term.scheme);
+      _this.isFocus = false;
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));
       _this.decoder = new Decoder(assertThisInitialized(_this));
       _this.drawer = new Drawer(assertThisInitialized(_this));
       _this.commander = new Commander(assertThisInitialized(_this));
-      _this.isFocus = false;
-      _this.isDestroy = false;
+      _this.recorder = new Recorder(assertThisInitialized(_this));
       _this.input = _this.commander.input;
       _this.output = _this.commander.output;
+      _this.start = _this.recorder.start;
+      _this.end = _this.recorder.end;
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
@@ -1402,27 +1459,12 @@
     }
 
     createClass(Term, [{
-      key: "exportPng",
-      value: function exportPng() {
-        return this;
-      }
-    }, {
-      key: "exportGif",
-      value: function exportGif() {
-        return this;
-      }
-    }, {
-      key: "exportVideo",
-      value: function exportVideo() {
-        return this;
-      }
-    }, {
       key: "destroy",
       value: function destroy() {
         instances.splice(instances.indexOf(this), 1);
-        this.isDestroy = true;
         this.events.destroy();
         this.template.destroy();
+        this.emit('destroy');
       }
     }]);
 

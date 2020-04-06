@@ -11,8 +11,6 @@ export default class Commander {
             options: { welcome },
         } = term;
 
-        this.input = this.input.bind(this);
-        this.output = this.output.bind(this);
         this.output(welcome).input('');
 
         term.on('input', (text) => {
