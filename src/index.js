@@ -6,9 +6,8 @@ import Decoder from './decoder';
 import Drawer from './drawer';
 import Keyboard from './keyboard';
 import Commander from './commander';
-import action from './action';
+import actions from './actions';
 import { mergeDeep } from './utils';
-import { INPUT, OUTPUT } from './constant';
 
 let id = 0;
 const instances = [];
@@ -32,12 +31,14 @@ export default class Term extends Emitter {
             prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
             width: 600,
             height: 500,
-            action,
+            actions,
+            parseOpt: {},
             borderRadius: 5,
             fontSize: 13,
             fontFamily: 'Arial',
             fontColor: '#b0b2b6',
             welcome: `Last login: ${new Date()}`,
+            loading: '<d color="yellow">Loading...</d>',
             boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
             backgroundColor: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
@@ -52,12 +53,13 @@ export default class Term extends Emitter {
             prefix: 'string',
             width: 'number',
             height: 'number',
-            action: [
+            actions: [
                 {
                     input: 'string|regexp',
                     output: 'string|function',
                 },
             ],
+            parseOpt: 'object',
             borderRadius: 'number',
             fontSize: 'number',
             fontFamily: 'string',
@@ -89,16 +91,6 @@ export default class Term extends Emitter {
         id += 1;
         this.id = id;
         instances.push(this);
-
-        this.drawer.draw({
-            type: OUTPUT,
-            text: this.options.welcome,
-        });
-
-        this.drawer.draw({
-            type: INPUT,
-            text: '',
-        });
     }
 
     setOptions(options = {}) {

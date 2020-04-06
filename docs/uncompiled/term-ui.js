@@ -933,49 +933,381 @@
     this.term = term;
   };
 
-  var Commander = function Commander(term) {
-    classCallCheck(this, Commander);
+  var _minimist_1_2_5_minimist = function (args, opts) {
+      if (!opts) opts = {};
+      
+      var flags = { bools : {}, strings : {}, unknownFn: null };
 
-    var notFound = term.options.notFound,
-        drawer = term.drawer;
-    term.on('input', function (text) {
-      if (drawer.editable) {
-        drawer.draw({
-          type: INPUT,
-          replace: true,
-          text: text
+      if (typeof opts['unknown'] === 'function') {
+          flags.unknownFn = opts['unknown'];
+      }
+
+      if (typeof opts['boolean'] === 'boolean' && opts['boolean']) {
+        flags.allBools = true;
+      } else {
+        [].concat(opts['boolean']).filter(Boolean).forEach(function (key) {
+            flags.bools[key] = true;
         });
       }
-    });
-    term.on('enter', function (text) {
-      if (drawer.editable) {
-        drawer.draw({
-          type: OUTPUT,
-          text: notFound(text)
-        });
-        drawer.draw({
-          type: INPUT,
-          text: ''
+      
+      var aliases = {};
+      Object.keys(opts.alias || {}).forEach(function (key) {
+          aliases[key] = [].concat(opts.alias[key]);
+          aliases[key].forEach(function (x) {
+              aliases[x] = [key].concat(aliases[key].filter(function (y) {
+                  return x !== y;
+              }));
+          });
+      });
+
+      [].concat(opts.string).filter(Boolean).forEach(function (key) {
+          flags.strings[key] = true;
+          if (aliases[key]) {
+              flags.strings[aliases[key]] = true;
+          }
+       });
+
+      var defaults = opts['default'] || {};
+      
+      var argv = { _ : [] };
+      Object.keys(flags.bools).forEach(function (key) {
+          setArg(key, defaults[key] === undefined ? false : defaults[key]);
+      });
+      
+      var notFlags = [];
+
+      if (args.indexOf('--') !== -1) {
+          notFlags = args.slice(args.indexOf('--')+1);
+          args = args.slice(0, args.indexOf('--'));
+      }
+
+      function argDefined(key, arg) {
+          return (flags.allBools && /^--[^=]+$/.test(arg)) ||
+              flags.strings[key] || flags.bools[key] || aliases[key];
+      }
+
+      function setArg (key, val, arg) {
+          if (arg && flags.unknownFn && !argDefined(key, arg)) {
+              if (flags.unknownFn(arg) === false) return;
+          }
+
+          var value = !flags.strings[key] && isNumber(val)
+              ? Number(val) : val
+          ;
+          setKey(argv, key.split('.'), value);
+          
+          (aliases[key] || []).forEach(function (x) {
+              setKey(argv, x.split('.'), value);
+          });
+      }
+
+      function setKey (obj, keys, value) {
+          var o = obj;
+          for (var i = 0; i < keys.length-1; i++) {
+              var key = keys[i];
+              if (key === '__proto__') return;
+              if (o[key] === undefined) o[key] = {};
+              if (o[key] === Object.prototype || o[key] === Number.prototype
+                  || o[key] === String.prototype) o[key] = {};
+              if (o[key] === Array.prototype) o[key] = [];
+              o = o[key];
+          }
+
+          var key = keys[keys.length - 1];
+          if (key === '__proto__') return;
+          if (o === Object.prototype || o === Number.prototype
+              || o === String.prototype) o = {};
+          if (o === Array.prototype) o = [];
+          if (o[key] === undefined || flags.bools[key] || typeof o[key] === 'boolean') {
+              o[key] = value;
+          }
+          else if (Array.isArray(o[key])) {
+              o[key].push(value);
+          }
+          else {
+              o[key] = [ o[key], value ];
+          }
+      }
+      
+      function aliasIsBoolean(key) {
+        return aliases[key].some(function (x) {
+            return flags.bools[x];
         });
       }
-    });
+
+      for (var i = 0; i < args.length; i++) {
+          var arg = args[i];
+          
+          if (/^--.+=/.test(arg)) {
+              // Using [\s\S] instead of . because js doesn't support the
+              // 'dotall' regex modifier. See:
+              // http://stackoverflow.com/a/1068308/13216
+              var m = arg.match(/^--([^=]+)=([\s\S]*)$/);
+              var key = m[1];
+              var value = m[2];
+              if (flags.bools[key]) {
+                  value = value !== 'false';
+              }
+              setArg(key, value, arg);
+          }
+          else if (/^--no-.+/.test(arg)) {
+              var key = arg.match(/^--no-(.+)/)[1];
+              setArg(key, false, arg);
+          }
+          else if (/^--.+/.test(arg)) {
+              var key = arg.match(/^--(.+)/)[1];
+              var next = args[i + 1];
+              if (next !== undefined && !/^-/.test(next)
+              && !flags.bools[key]
+              && !flags.allBools
+              && (aliases[key] ? !aliasIsBoolean(key) : true)) {
+                  setArg(key, next, arg);
+                  i++;
+              }
+              else if (/^(true|false)$/.test(next)) {
+                  setArg(key, next === 'true', arg);
+                  i++;
+              }
+              else {
+                  setArg(key, flags.strings[key] ? '' : true, arg);
+              }
+          }
+          else if (/^-[^-]+/.test(arg)) {
+              var letters = arg.slice(1,-1).split('');
+              
+              var broken = false;
+              for (var j = 0; j < letters.length; j++) {
+                  var next = arg.slice(j+2);
+                  
+                  if (next === '-') {
+                      setArg(letters[j], next, arg);
+                      continue;
+                  }
+                  
+                  if (/[A-Za-z]/.test(letters[j]) && /=/.test(next)) {
+                      setArg(letters[j], next.split('=')[1], arg);
+                      broken = true;
+                      break;
+                  }
+                  
+                  if (/[A-Za-z]/.test(letters[j])
+                  && /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)) {
+                      setArg(letters[j], next, arg);
+                      broken = true;
+                      break;
+                  }
+                  
+                  if (letters[j+1] && letters[j+1].match(/\W/)) {
+                      setArg(letters[j], arg.slice(j+2), arg);
+                      broken = true;
+                      break;
+                  }
+                  else {
+                      setArg(letters[j], flags.strings[letters[j]] ? '' : true, arg);
+                  }
+              }
+              
+              var key = arg.slice(-1)[0];
+              if (!broken && key !== '-') {
+                  if (args[i+1] && !/^(-|--)[^-]/.test(args[i+1])
+                  && !flags.bools[key]
+                  && (aliases[key] ? !aliasIsBoolean(key) : true)) {
+                      setArg(key, args[i+1], arg);
+                      i++;
+                  }
+                  else if (args[i+1] && /^(true|false)$/.test(args[i+1])) {
+                      setArg(key, args[i+1] === 'true', arg);
+                      i++;
+                  }
+                  else {
+                      setArg(key, flags.strings[key] ? '' : true, arg);
+                  }
+              }
+          }
+          else {
+              if (!flags.unknownFn || flags.unknownFn(arg) !== false) {
+                  argv._.push(
+                      flags.strings['_'] || !isNumber(arg) ? arg : Number(arg)
+                  );
+              }
+              if (opts.stopEarly) {
+                  argv._.push.apply(argv._, args.slice(i + 1));
+                  break;
+              }
+          }
+      }
+      
+      Object.keys(defaults).forEach(function (key) {
+          if (!hasKey(argv, key.split('.'))) {
+              setKey(argv, key.split('.'), defaults[key]);
+              
+              (aliases[key] || []).forEach(function (x) {
+                  setKey(argv, x.split('.'), defaults[key]);
+              });
+          }
+      });
+      
+      if (opts['--']) {
+          argv['--'] = new Array();
+          notFlags.forEach(function(key) {
+              argv['--'].push(key);
+          });
+      }
+      else {
+          notFlags.forEach(function(key) {
+              argv._.push(key);
+          });
+      }
+
+      return argv;
   };
 
-  var action = [{
-    input: '',
-    output: 'test'
+  function hasKey (obj, keys) {
+      var o = obj;
+      keys.slice(0,-1).forEach(function (key) {
+          o = (o[key] || {});
+      });
+
+      var key = keys[keys.length - 1];
+      return key in o;
+  }
+
+  function isNumber (x) {
+      if (typeof x === 'number') return true;
+      if (/^0x[0-9a-f]+$/i.test(x)) return true;
+      return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(x);
+  }
+
+  var Commander = /*#__PURE__*/function () {
+    function Commander(term) {
+      var _this = this;
+
+      classCallCheck(this, Commander);
+
+      this.term = term;
+      var drawer = term.drawer,
+          welcome = term.options.welcome;
+      this.input = this.input.bind(this);
+      this.output = this.output.bind(this);
+      this.output(welcome).input('');
+      term.on('input', function (text) {
+        if (drawer.editable) {
+          _this.input(text, true);
+        }
+      });
+      term.on('enter', function (text) {
+        if (drawer.editable) {
+          _this.execute(text);
+        }
+      });
+    }
+
+    createClass(Commander, [{
+      key: "execute",
+      value: function execute(text) {
+        var _this2 = this;
+
+        if (!text.trim()) return this.input('');
+        var _this$term$options = this.term.options,
+            parseOpt = _this$term$options.parseOpt,
+            notFound = _this$term$options.notFound,
+            loading = _this$term$options.loading;
+        var action = this.findAction(text);
+
+        if (action) {
+          if (typeof action.output === 'function') {
+            try {
+              var argv = _minimist_1_2_5_minimist(text.split(' '), parseOpt);
+              var result = action.output(text, argv);
+              var resultType = optionValidator.kindOf(result);
+
+              if (resultType === 'promise') {
+                this.output(loading);
+                return result.then(function (data) {
+                  return _this2.output(String(data), true).input('');
+                }).catch(function (error) {
+                  var errorType = optionValidator.kindOf(error);
+                  var errorText = errorType === 'error' ? "".concat(String(error)) : "Error: ".concat(String(error));
+                  var message = "<d color=\"red\">".concat(errorText, "</d>");
+                  return _this2.output(message, true).input('');
+                });
+              }
+
+              return this.output(String(result), true).input('');
+            } catch (error) {
+              var message = "<d color=\"red\">".concat(error.message, "</d>");
+              return this.output(message).input('');
+            }
+          } else {
+            return this.output(action.output).input('');
+          }
+        } else {
+          return this.output(notFound(text)).input('');
+        }
+      }
+    }, {
+      key: "findAction",
+      value: function findAction(input) {
+        input = input.trim().toLowerCase();
+        var actions = this.term.options.actions;
+        return actions.find(function (item) {
+          var inputType = optionValidator.kindOf(item.input);
+
+          if (inputType === 'string') {
+            return input === item.input;
+          }
+
+          if (inputType === 'regexp') {
+            return item.input.test(input);
+          }
+
+          return null;
+        });
+      }
+    }, {
+      key: "output",
+      value: function output(text) {
+        var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var drawer = this.term.drawer;
+        drawer.draw({
+          type: OUTPUT,
+          replace: replace,
+          text: text
+        });
+        return this;
+      }
+    }, {
+      key: "input",
+      value: function input(text) {
+        var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var drawer = this.term.drawer;
+        drawer.draw({
+          type: INPUT,
+          replace: replace,
+          text: text
+        });
+        return this;
+      }
+    }]);
+
+    return Commander;
+  }();
+
+  var actions = [{
+    input: 'test',
+    output: 'test1'
   }, {
-    input: '',
+    input: 'test2',
     output: function output(input) {
       return input.repeat(2);
     }
   }, {
-    input: '',
+    input: 'test3',
     output: function output(input) {
-      return new Promise(function (resolve) {
+      return new Promise(function (resolve, reject) {
         setTimeout(function () {
           resolve(input.repeat(2));
-        }, 3000);
+        }, 1000);
       });
     }
   }];
@@ -1015,12 +1347,14 @@
           prefix: 'root@linux: ~ <i color="#00f501">$</i> ',
           width: 600,
           height: 500,
-          action: action,
+          actions: actions,
+          parseOpt: {},
           borderRadius: 5,
           fontSize: 13,
           fontFamily: 'Arial',
           fontColor: '#b0b2b6',
           welcome: "Last login: ".concat(new Date()),
+          loading: '<d color="yellow">Loading...</d>',
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio,
@@ -1038,10 +1372,11 @@
           prefix: 'string',
           width: 'number',
           height: 'number',
-          action: [{
+          actions: [{
             input: 'string|regexp',
             output: 'string|function'
           }],
+          parseOpt: 'object',
           borderRadius: 'number',
           fontSize: 'number',
           fontFamily: 'string',
@@ -1078,17 +1413,6 @@
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
-
-      _this.drawer.draw({
-        type: OUTPUT,
-        text: _this.options.welcome
-      });
-
-      _this.drawer.draw({
-        type: INPUT,
-        text: ''
-      });
-
       return _this;
     }
 

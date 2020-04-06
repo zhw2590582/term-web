@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "hotkeys-js": "^3.7.6",
+    "minimist": "^1.2.5",
     "option-validator": "^2.0.5"
   }
 }

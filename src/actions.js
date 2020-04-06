@@ -1,21 +1,21 @@
 export default [
     {
-        input: '',
-        output: 'test',
+        input: 'test',
+        output: 'test1',
     },
     {
-        input: '',
+        input: 'test2',
         output(input) {
             return input.repeat(2);
         },
     },
     {
-        input: '',
+        input: 'test3',
         output(input) {
-            return new Promise(resolve => {
+            return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     resolve(input.repeat(2));
-                }, 3000);
+                }, 1000);
             });
         },
     },
