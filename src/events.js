@@ -70,11 +70,11 @@ export default class Events {
             $textarea.style.left = `${left}px`;
         });
 
-        term.on('size', ({ top, height, bottom }) => {
-            $header.style.height = `${top}px`;
+        term.on('size', ({ header, main, bottom }) => {
+            $header.style.height = `${header}px`;
             $footer.style.height = `${bottom}px`;
-            $main.style.top = `${top}px`;
-            $main.style.height = `${height}px`;
+            $main.style.top = `${header}px`;
+            $main.style.height = `${main}px`;
         });
 
         term.on('focus', () => {

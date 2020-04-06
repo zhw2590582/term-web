@@ -22,6 +22,12 @@ export default class Drawer {
         this.logs = [];
         this.renderLogs = [];
 
+        this.term.emit('size', {
+            header: this.padding[0] / pixelRatio,
+            main: this.height / pixelRatio,
+            bottom: this.padding[2] / pixelRatio,
+        });
+
         this.draw();
         this.draw = this.draw.bind(this);
 
@@ -150,12 +156,6 @@ export default class Drawer {
         this.term.emit('cursor', {
             left: left / pixelRatio,
             top: top / pixelRatio,
-        });
-
-        this.term.emit('size', {
-            top: this.padding[0] / pixelRatio,
-            height: this.height / pixelRatio,
-            bottom: this.padding[2] / pixelRatio,
         });
 
         const lastlogInInput = this.logs[this.logs.length - 1];

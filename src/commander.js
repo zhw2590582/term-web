@@ -46,6 +46,9 @@ export default class Commander {
                         this.output(loadingText);
                         return result
                             .then((data) => {
+                                if (typeof data === 'undefined') {
+                                    return this.input('');
+                                }
                                 return this.output(data, true).input('');
                             })
                             .catch((error) => {
@@ -55,6 +58,9 @@ export default class Commander {
                                 const message = `<d color="red">${errorText}</d>`;
                                 return this.output(message, true).input('');
                             });
+                    }
+                    if (typeof result === 'undefined') {
+                        return this.input('');
                     }
                     return this.output(result).input('');
                 } catch (error) {

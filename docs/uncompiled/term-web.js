@@ -293,13 +293,13 @@
         $textarea.style.left = "".concat(left, "px");
       });
       term.on('size', function (_ref3) {
-        var top = _ref3.top,
-            height = _ref3.height,
+        var header = _ref3.header,
+            main = _ref3.main,
             bottom = _ref3.bottom;
-        $header.style.height = "".concat(top, "px");
+        $header.style.height = "".concat(header, "px");
         $footer.style.height = "".concat(bottom, "px");
-        $main.style.top = "".concat(top, "px");
-        $main.style.height = "".concat(height, "px");
+        $main.style.top = "".concat(header, "px");
+        $main.style.height = "".concat(main, "px");
       });
       term.on('focus', function () {
         $textarea.focus();
@@ -804,6 +804,11 @@
       this.inputs = [];
       this.logs = [];
       this.renderLogs = [];
+      this.term.emit('size', {
+        header: this.padding[0] / pixelRatio,
+        main: this.height / pixelRatio,
+        bottom: this.padding[2] / pixelRatio
+      });
       this.draw();
       this.draw = this.draw.bind(this);
       this.cursor = false;
@@ -932,11 +937,6 @@
         this.term.emit('cursor', {
           left: left / pixelRatio,
           top: top / pixelRatio
-        });
-        this.term.emit('size', {
-          top: this.padding[0] / pixelRatio,
-          height: this.height / pixelRatio,
-          bottom: this.padding[2] / pixelRatio
         });
         var lastlogInInput = this.logs[this.logs.length - 1];
         var lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
@@ -1296,6 +1296,10 @@
                 var loadingText = loading.call(this.term, text, argv);
                 this.output(loadingText);
                 return result.then(function (data) {
+                  if (typeof data === 'undefined') {
+                    return _this2.input('');
+                  }
+
                   return _this2.output(data, true).input('');
                 }).catch(function (error) {
                   var errorType = optionValidator.kindOf(error);
@@ -1303,6 +1307,10 @@
                   var message = "<d color=\"red\">".concat(errorText, "</d>");
                   return _this2.output(message, true).input('');
                 });
+              }
+
+              if (typeof result === 'undefined') {
+                return this.input('');
               }
 
               return this.output(result).input('');
