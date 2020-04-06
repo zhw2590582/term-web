@@ -8,11 +8,9 @@ var mirror = CodeMirror(document.querySelector('.code'), {
     value: '',
 });
 
-var url = '';
+var url = '/assets/js/sample.js';
 if (window.location.href.includes('github.io')) {
     url = '/term-ui/assets/js/sample.js';
-} else {
-    url = '/assets/js/sample.js';
 }
 
 fetch(url)
