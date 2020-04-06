@@ -1413,7 +1413,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.0.0';
+        return '1.0.1';
       }
     }, {
       key: "default",

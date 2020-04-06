@@ -36,5 +36,29 @@ var term = new Term({
                 });
             },
         },
+        {
+            // Return your ip
+            input: /^ip$/i,
+            output() {
+                return fetch('https://ipinfo.io/json')
+                    .then((data) => data.json())
+                    .then(JSON.stringify);
+            },
+        },
+        {
+            // Return colorful text
+            input: /^color$/i,
+            output() {
+                const randomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+                return fetch('https://data.iana.org/TLD/tlds-alpha-by-domain.txt')
+                    .then((data) => data.text())
+                    .then((text) => {
+                        return text
+                            .split(/\r?\n/)
+                            .map((item) => `<d color="${randomColor()}">${item}</d>`)
+                            .join(' ');
+                    });
+            },
+        },
     ],
 });
