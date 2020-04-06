@@ -7,8 +7,8 @@ var term = new Term({
     title: 'Term Web',
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
     welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>',
-    loading: '<d color="yellow">Please wait...</d>',
-    notFound: (val) => `🐶 : <d color='red'>${val}</d>: command not found`,
+    loading: () => '<d color="yellow">Please wait for a moment...</d>',
+    notFound: (val) => `🐶 : <d color='red'>${val}</d> : command not found`,
     actions: [
         {
             // Exact match

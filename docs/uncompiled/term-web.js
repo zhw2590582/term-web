@@ -1251,7 +1251,8 @@
               var resultType = optionValidator.kindOf(result);
 
               if (resultType === 'promise') {
-                this.output(loading);
+                var loadingText = loading.call(this.term, text, argv);
+                this.output(loadingText);
                 return result.then(function (data) {
                   return _this2.output(data, true).input('');
                 }).catch(function (error) {
@@ -1440,7 +1441,9 @@
           title: 'Term Web',
           prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
           welcome: "Last login: ".concat(new Date()),
-          loading: '<d color="yellow">Loading...</d>',
+          loading: function loading() {
+            return '<d color="yellow">Loading...</d>';
+          },
           boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
           backgroundColor: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio,
@@ -1469,7 +1472,7 @@
           title: 'string',
           prefix: 'string',
           welcome: 'string',
-          loading: 'string',
+          loading: 'function',
           boxShadow: 'string',
           backgroundColor: 'string',
           pixelRatio: 'number',

@@ -42,7 +42,8 @@ export default class Commander {
                     const result = action.output.call(this.term, text, argv);
                     const resultType = validator.kindOf(result);
                     if (resultType === 'promise') {
-                        this.output(loading);
+                        const loadingText = loading.call(this.term, text, argv);
+                        this.output(loadingText);
                         return result
                             .then((data) => {
                                 return this.output(data, true).input('');

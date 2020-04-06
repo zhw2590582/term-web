@@ -107,7 +107,7 @@ var term = new Term({
     welcome: `Last login: ${new Date()}`,
 
     // Loading tips
-    loading: '<d color="yellow">Loading...</d>',
+    loading: (val) => '<d color="yellow">Loading...</d>',
 
     // Pixel ratio
     pixelRatio: window.devicePixelRatio,
