@@ -53,13 +53,13 @@ export default class Template {
             this.$recorder = document.createElement('div');
             this.$recorder.classList.add('term-recorder');
             this.$recorder.innerHTML = `
-                <div class="term-recorder-size">0m</div>
-                <div class="term-recorder-duration">0s</div>
+                <div class="term-recorder-size"></div>
+                <div class="term-recorder-duration"></div>
                 <div class="term-recorder-btn"></div> 
             `;
-            this.recorderSize = this.$recorder.querySelector('.term-recorder-size');
-            this.recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
-            this.recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
+            this.$recorderSize = this.$recorder.querySelector('.term-recorder-size');
+            this.$recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
+            this.$recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
             this.$container.appendChild(this.$recorder);
         }
 
@@ -77,8 +77,8 @@ export default class Template {
                 '.term-main:hover{cursor:text}',
                 '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}',
                 '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}',
-                '.term-recorder-btn{height:20px;width:20px;background:#e84036;border-radius:3px;cursor:pointer;}',
-                '.term-recorder.recording .term-recorder-btn{background:#e8a91e;}',
+                '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}',
+                '.term-recorder.recording .term-recorder-btn{background:#FFC107;}',
                 '.term-recorder.recording .term-recorder-size{display:block;}',
                 '.term-recorder.recording .term-recorder-duration{display:block;}',
             ].join('');

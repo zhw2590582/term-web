@@ -218,11 +218,17 @@
 
       this.destroyEvents = [];
       this.proxy = this.proxy.bind(this);
-      var _term$template = term.template,
-          $container = _term$template.$container,
-          $textarea = _term$template.$textarea,
-          $main = _term$template.$main,
-          $scrollbar = _term$template.$scrollbar;
+      var recorder = term.options.recorder,
+          _term$template = term.template,
+          $recorder = _term$template.$recorder,
+          $recorderSize = _term$template.$recorderSize,
+          $recorderDuration = _term$template.$recorderDuration,
+          $recorderBtn = _term$template.$recorderBtn,
+          _term$template2 = term.template,
+          $container = _term$template2.$container,
+          $textarea = _term$template2.$textarea,
+          $main = _term$template2.$main,
+          $scrollbar = _term$template2.$scrollbar;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
         if (event.composedPath && event.composedPath().indexOf($container) > -1) {
           term.isFocus = true;
@@ -265,6 +271,13 @@
           canRenderByTop = true;
         }
       });
+      this.proxy($recorderBtn, 'click', function () {
+        if (term.recorder.recording) {
+          term.recorder.end();
+        } else {
+          term.recorder.start();
+        }
+      });
       term.on('scroll', function (_ref) {
         var scrollHeight = _ref.scrollHeight,
             scrollTop = _ref.scrollTop;
@@ -286,6 +299,25 @@
       });
       term.on('focus', function () {
         $textarea.focus();
+      });
+      term.on('start', function () {
+        if (recorder) {
+          $recorder.classList.add('recording');
+        }
+      });
+      term.on('recording', function (_ref4) {
+        var size = _ref4.size,
+            duration = _ref4.duration;
+
+        if (recorder) {
+          $recorderSize.innerText = "".concat(Math.floor(size / 1024) || 0, "kb");
+          $recorderDuration.innerText = "".concat(duration || 0, "s");
+        }
+      });
+      term.on('end', function () {
+        if (recorder) {
+          $recorder.classList.remove('recording');
+        }
       });
     }
 
@@ -486,17 +518,17 @@
       if (recorder) {
         this.$recorder = document.createElement('div');
         this.$recorder.classList.add('term-recorder');
-        this.$recorder.innerHTML = "\n                <div class=\"term-recorder-size\">0m</div>\n                <div class=\"term-recorder-duration\">0s</div>\n                <div class=\"term-recorder-btn\"></div> \n            ";
-        this.recorderSize = this.$recorder.querySelector('.term-recorder-size');
-        this.recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
-        this.recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
+        this.$recorder.innerHTML = "\n                <div class=\"term-recorder-size\"></div>\n                <div class=\"term-recorder-duration\"></div>\n                <div class=\"term-recorder-btn\"></div> \n            ";
+        this.$recorderSize = this.$recorder.querySelector('.term-recorder-size');
+        this.$recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
+        this.$recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
         this.$container.appendChild(this.$recorder);
       }
 
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:20px;width:20px;background:#e84036;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#e8a91e;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}'].join('');
+        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}'].join('');
         document.head.appendChild(this.$style);
       }
     }
@@ -565,7 +597,7 @@
   var INPUT = 'input';
   var OUTPUT = 'output';
   var recorderOptions = {
-    videoBitsPerSecond: 2500000,
+    videoBitsPerSecond: 5000000,
     mimeType: 'video/webm'
   };
 

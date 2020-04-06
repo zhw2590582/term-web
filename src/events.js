@@ -4,6 +4,8 @@ export default class Events {
         this.proxy = this.proxy.bind(this);
 
         const {
+            options: { recorder },
+            template: { $recorder, $recorderSize, $recorderDuration, $recorderBtn },
             template: { $container, $textarea, $main, $scrollbar },
         } = term;
 
@@ -49,6 +51,14 @@ export default class Events {
             }
         });
 
+        this.proxy($recorderBtn, 'click', () => {
+            if (term.recorder.recording) {
+                term.recorder.end();
+            } else {
+                term.recorder.start();
+            }
+        });
+
         term.on('scroll', ({ scrollHeight, scrollTop }) => {
             $scrollbar.style.height = `${scrollHeight}px`;
             canRenderByTop = false;
@@ -67,6 +77,25 @@ export default class Events {
 
         term.on('focus', () => {
             $textarea.focus();
+        });
+
+        term.on('start', () => {
+            if (recorder) {
+                $recorder.classList.add('recording');
+            }
+        });
+
+        term.on('recording', ({ size, duration }) => {
+            if (recorder) {
+                $recorderSize.innerText = `${Math.floor(size / 1024) || 0}kb`;
+                $recorderDuration.innerText = `${duration || 0}s`;
+            }
+        });
+
+        term.on('end', () => {
+            if (recorder) {
+                $recorder.classList.remove('recording');
+            }
         });
     }
 
