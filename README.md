@@ -119,6 +119,8 @@ var term = new Term({
 
 ## API
 
+#### nput and output
+
 The main commonly used methods in the example are two `term.input` and`term.input`.
 
 -   `text` is the string to be displayed.
@@ -129,6 +131,12 @@ term.input(text, isReplace);
 term.output(text, isReplace);
 ```
 
+#### Clear all log
+
+```js
+term.clear();
+```
+
 #### Example
 
 ```js
@@ -137,6 +145,9 @@ term.input('foo');
 
 term.input('bar', true);
 // Replace the previous 'foo' with 'bar'
+
+term.clear();
+// clear all log
 ```
 
 ## Donations

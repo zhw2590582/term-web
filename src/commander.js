@@ -11,6 +11,10 @@ export default class Commander {
             options: { welcome },
         } = term;
 
+        this.input = this.input.bind(this);
+        this.output = this.output.bind(this);
+        this.clear = this.clear.bind(this);
+
         this.output(welcome).input('');
 
         term.on('input', (text) => {
@@ -81,8 +85,7 @@ export default class Commander {
     }
 
     output(text, replace = false) {
-        const { drawer } = this.term;
-        drawer.draw({
+        this.term.drawer.draw({
             type: OUTPUT,
             replace,
             text: String(text),
@@ -91,12 +94,17 @@ export default class Commander {
     }
 
     input(text, replace = false) {
-        const { drawer } = this.term;
-        drawer.draw({
+        this.term.drawer.draw({
             type: INPUT,
             replace,
             text: String(text),
         });
+        return this;
+    }
+
+    clear() {
+        this.term.drawer.logs = [];
+        this.term.drawer.draw();
         return this;
     }
 }

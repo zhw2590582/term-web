@@ -1215,6 +1215,9 @@
       this.term = term;
       var drawer = term.drawer,
           welcome = term.options.welcome;
+      this.input = this.input.bind(this);
+      this.output = this.output.bind(this);
+      this.clear = this.clear.bind(this);
       this.output(welcome).input('');
       term.on('input', function (text) {
         if (drawer.editable) {
@@ -1296,8 +1299,7 @@
       key: "output",
       value: function output(text) {
         var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var drawer = this.term.drawer;
-        drawer.draw({
+        this.term.drawer.draw({
           type: OUTPUT,
           replace: replace,
           text: String(text)
@@ -1308,12 +1310,18 @@
       key: "input",
       value: function input(text) {
         var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var drawer = this.term.drawer;
-        drawer.draw({
+        this.term.drawer.draw({
           type: INPUT,
           replace: replace,
           text: String(text)
         });
+        return this;
+      }
+    }, {
+      key: "clear",
+      value: function clear() {
+        this.term.drawer.logs = [];
+        this.term.drawer.draw();
         return this;
       }
     }]);
@@ -1488,6 +1496,7 @@
       _this.recorder = new Recorder(assertThisInitialized(_this));
       _this.input = _this.commander.input;
       _this.output = _this.commander.output;
+      _this.clear = _this.commander.clear;
       _this.start = _this.recorder.start;
       _this.end = _this.recorder.end;
       id += 1;

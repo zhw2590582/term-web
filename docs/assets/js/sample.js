@@ -37,6 +37,15 @@ var term = new Term({
             },
         },
         {
+            // Return a http request
+            input: /^http$/i,
+            output() {
+                return fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    .then((data) => data.json())
+                    .then(JSON.stringify);
+            },
+        },
+        {
             // Return your ip
             input: /^ip$/i,
             output() {
@@ -58,6 +67,14 @@ var term = new Term({
                             .map((item) => `<d color="${randomColor()}">${item}</d>`)
                             .join(' ');
                     });
+            },
+        },
+        {
+            // Clear all log
+            input: /^clear$/i,
+            output() {
+                this.clear();
+                return '<d color="#27C93F">Cleared successfully</d>';
             },
         },
     ],
