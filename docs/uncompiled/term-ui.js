@@ -446,9 +446,12 @@
       this.term = term;
       var _term$options = term.options,
           container = _term$options.container,
+          fontFamily = _term$options.fontFamily,
+          fontSize = _term$options.fontSize,
+          fontColor = _term$options.fontColor,
+          pixelRatio = _term$options.pixelRatio,
           width = _term$options.width,
           height = _term$options.height,
-          pixelRatio = _term$options.pixelRatio,
           borderRadius = _term$options.borderRadius,
           boxShadow = _term$options.boxShadow,
           recorder = _term$options.recorder;
@@ -483,18 +486,17 @@
       if (recorder) {
         this.$recorder = document.createElement('div');
         this.$recorder.classList.add('term-recorder');
-        this.$recorder.innerHTML = "\n                <div class=\"term-recorder-l\">\n                    <div class=\"term-size\">0m</div>\n                    <div class=\"term-duration\">0s</div>\n                </div>\n                <div class=\"term-recorder-r\">\n                    <div class=\"term-start\"></div>\n                    <div class=\"term-end\"></div> \n                </div>\n            ";
-        this.Size = this.$recorder.querySelector('.term-size');
-        this.duration = this.$recorder.querySelector('.term-duration');
-        this.start = this.$recorder.querySelector('.term-start');
-        this.end = this.$recorder.querySelector('.term-end');
+        this.$recorder.innerHTML = "\n                <div class=\"term-recorder-size\">0m</div>\n                <div class=\"term-recorder-duration\">0s</div>\n                <div class=\"term-recorder-btn\"></div> \n            ";
+        this.recorderSize = this.$recorder.querySelector('.term-recorder-size');
+        this.recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
+        this.recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
         this.$container.appendChild(this.$recorder);
       }
 
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = ['.term-container{position:relative;}', '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{position:absolute;right:0;top:0;}'].join('');
+        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:20px;width:20px;background:#e84036;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#e8a91e;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}'].join('');
         document.head.appendChild(this.$style);
       }
     }
