@@ -1,6 +1,6 @@
 {
   "name": "term-web",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": ":pager: A simple Terminal UI that run on the web",
   "main": "dist/term-web.js",
   "scripts": {
@@ -45,6 +45,7 @@
     "servor": "^3.2.0"
   },
   "dependencies": {
+    "draggabilly": "^2.2.0",
     "minimist": "^1.2.5",
     "option-validator": "^2.0.5"
   }

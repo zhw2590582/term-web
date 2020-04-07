@@ -91,6 +91,7 @@ export default class Template {
                 '.term-recorder.recording .term-recorder-duration{display:block;}',
                 '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}',
                 '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}',
+                '.is-dragging.term-container{opacity:.95}'
             ].join('');
             document.head.appendChild(this.$style);
         }

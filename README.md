@@ -79,6 +79,9 @@ var term = new Term({
     // Use the display recorder button
     recorder: true,
 
+    // Is it draggable
+    draggable: true,
+
     // Border radius
     borderRadius: 5,
 

@@ -1,16 +1,18 @@
+import Draggabilly from 'draggabilly';
+
 export default class Events {
     constructor(term) {
         this.destroyEvents = [];
         this.proxy = this.proxy.bind(this);
 
         const {
-            options: { recorder },
+            options: { recorder, draggable },
             template: { $recorder, $recorderSize, $recorderDuration, $recorderBtn },
-            template: { $textarea, $main, $scrollbar, $header, $footer },
+            template: { $container, $textarea, $main, $scrollbar, $header, $footer },
         } = term;
 
-        this.proxy(document, ['click', 'contextmenu'], (event) => {
-            if (event.composedPath && event.composedPath().indexOf($main) > -1) {
+        this.proxy(document, ['click', 'contextmenu'], event => {
+            if (event.target === $main) {
                 term.isFocus = true;
                 term.emit('focus');
             } else {
@@ -18,6 +20,15 @@ export default class Events {
                 term.emit('blur');
             }
         });
+
+        if (draggable) {
+            this.draggie = new Draggabilly($container, {
+                handle: '.term-header',
+            });
+            term.on('destroy', () => {
+                this.draggie.destroy();
+            });
+        }
 
         this.proxy($textarea, 'input', () => {
             term.emit('input', $textarea.value.trim());
@@ -27,7 +38,7 @@ export default class Events {
             term.emit('input', $textarea.value.trim());
         });
 
-        this.proxy($textarea, 'keydown', (event) => {
+        this.proxy($textarea, 'keydown', event => {
             const key = event.keyCode;
             if (key === 13) {
                 setTimeout(() => {
@@ -103,7 +114,7 @@ export default class Events {
 
     proxy(target, name, callback, option = {}) {
         if (Array.isArray(name)) {
-            name.forEach((item) => this.proxy(target, item, callback, option));
+            name.forEach(item => this.proxy(target, item, callback, option));
         } else {
             target.addEventListener(name, callback, option);
             this.destroyEvents.push(() => {
@@ -113,6 +124,6 @@ export default class Events {
     }
 
     destroy() {
-        this.destroyEvents.forEach((event) => event());
+        this.destroyEvents.forEach(event => event());
     }
 }
