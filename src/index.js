@@ -6,6 +6,7 @@ import Decoder from './decoder';
 import Drawer from './drawer';
 import Commander from './commander';
 import Recorder from './recorder';
+import Inquirer from './inquirer';
 import * as utils from './utils';
 
 let id = 0;
@@ -96,6 +97,7 @@ export default class Term extends Emitter {
         this.decoder = new Decoder(this);
         this.drawer = new Drawer(this);
         this.commander = new Commander(this);
+        this.inquirer = new Inquirer(this);
         this.recorder = new Recorder(this);
 
         this.input = this.commander.input;
