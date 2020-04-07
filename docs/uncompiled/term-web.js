@@ -1472,7 +1472,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.0.1';
+        return '1.0.3';
       }
     }, {
       key: "utils",
