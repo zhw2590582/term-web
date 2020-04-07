@@ -46,10 +46,10 @@ export default class Commander {
                         this.output(loadingText);
                         return result
                             .then((data) => {
-                                if (typeof data === 'undefined') {
-                                    return this.input('');
+                                if (typeof data !== 'undefined') {
+                                    return this.output(data, true).input('');
                                 }
-                                return this.output(data, true).input('');
+                                return this;
                             })
                             .catch((error) => {
                                 const errorType = validator.kindOf(error);
@@ -59,10 +59,10 @@ export default class Commander {
                                 return this.output(message, true).input('');
                             });
                     }
-                    if (typeof result === 'undefined') {
-                        return this.input('');
+                    if (typeof result !== 'undefined') {
+                        return this.output(result).input('');
                     }
-                    return this.output(result).input('');
+                    return this;
                 } catch (error) {
                     const message = `<d color="red">${String(error)}</d>`;
                     return this.output(message).input('');
