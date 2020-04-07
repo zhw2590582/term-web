@@ -72,10 +72,6 @@ var term = new Term({
     // Custom actions
     actions: [],
 
-    // Options when parsing parameters with minimist
-    // https://github.com/substack/minimist
-    parseOpt: {},
-
     // Use the display recorder button
     recorder: true,
 

@@ -1537,6 +1537,10 @@
   }));
   });
 
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
   var Events = /*#__PURE__*/function () {
     function Events(term) {
       var _this = this;
@@ -1548,6 +1552,7 @@
       var _term$options = term.options,
           recorder = _term$options.recorder,
           draggable = _term$options.draggable,
+          dragOpt = _term$options.dragOpt,
           _term$template = term.template,
           $recorder = _term$template.$recorder,
           $recorderSize = _term$template.$recorderSize,
@@ -1571,9 +1576,9 @@
       });
 
       if (draggable) {
-        this.draggie = new draggabilly($container, {
+        this.draggie = new draggabilly($container, _objectSpread({
           handle: '.term-header'
-        });
+        }, dragOpt));
         term.on('destroy', function () {
           _this.draggie.destroy();
         });
@@ -1909,7 +1914,7 @@
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.is-dragging.term-container{opacity:.95}'].join('');
+        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.is-dragging.term-container{opacity:.95};'].join('');
         document.head.appendChild(this.$style);
       }
     }
@@ -2789,9 +2794,9 @@
     return Recorder;
   }();
 
-  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
   function _createSuper$1(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct$2()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
 
@@ -2830,6 +2835,7 @@
           parseOpt: {},
           recorder: true,
           draggable: true,
+          dragOpt: {},
           borderRadius: 5,
           fontSize: 13,
           fontFamily: 'Arial',
@@ -2862,6 +2868,7 @@
           parseOpt: 'object',
           recorder: 'boolean',
           draggable: 'boolean',
+          dragOpt: 'object',
           borderRadius: 'number',
           fontSize: 'number',
           fontFamily: 'string',
@@ -2886,7 +2893,7 @@
       classCallCheck(this, Term);
 
       _this = _super.call(this);
-      _this.options = optionValidator(_objectSpread({}, Term.default, {}, options), Term.scheme);
+      _this.options = optionValidator(_objectSpread$1({}, Term.default, {}, options), Term.scheme);
       _this.isFocus = false;
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));

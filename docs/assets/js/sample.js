@@ -3,9 +3,9 @@
 
 var term = new Term({
     container: '#term',
-    fontFamily: 'monospace',
-    title: 'Term Web',
     pixelRatio: 2,
+    title: 'Term Web',
+    fontFamily: 'monospace',
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
     welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>',
     loading: () => '<d color="yellow">Please wait for a moment...</d>',

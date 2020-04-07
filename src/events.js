@@ -6,7 +6,7 @@ export default class Events {
         this.proxy = this.proxy.bind(this);
 
         const {
-            options: { recorder, draggable },
+            options: { recorder, draggable, dragOpt },
             template: { $recorder, $recorderSize, $recorderDuration, $recorderBtn },
             template: { $container, $textarea, $main, $scrollbar, $header, $footer },
         } = term;
@@ -24,6 +24,7 @@ export default class Events {
         if (draggable) {
             this.draggie = new Draggabilly($container, {
                 handle: '.term-header',
+                ...dragOpt,
             });
             term.on('destroy', () => {
                 this.draggie.destroy();
