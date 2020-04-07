@@ -103,6 +103,8 @@ export default class Term extends Emitter {
         this.input = this.commander.input;
         this.output = this.commander.output;
         this.clear = this.commander.clear;
+        this.radio = this.commander.radio;
+        this.checkbox = this.commander.checkbox;
         this.start = this.recorder.start;
         this.end = this.recorder.end;
 

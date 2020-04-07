@@ -1,21 +1,15 @@
 export default class Inquirer {
     constructor(term) {
         this.term = term;
+        this.radio = this.radio.bind(this);
+        this.checkbox = this.checkbox.bind(this);
     }
 
-    list() {
+    radio(list, validate) {
         //
     }
 
-    expand() {
-        //
-    }
-
-    checkbox() {
-        //
-    }
-
-    confirm() {
+    checkbox(list, validate) {
         //
     }
 }
