@@ -12,7 +12,7 @@ export default class Events {
         } = term;
 
         this.proxy(document, ['click', 'contextmenu'], event => {
-            if (event.target === $main) {
+            if (event.composedPath && event.composedPath().indexOf($main) > -1) {
                 term.isFocus = true;
                 term.emit('focus');
             } else {
