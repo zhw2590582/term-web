@@ -1992,6 +1992,8 @@
 
   var INPUT = 'input';
   var OUTPUT = 'output';
+  var RADIO = 'radio';
+  var CHECKBOX = 'checkbox';
   var recorderOptions = {
     videoBitsPerSecond: 5000000,
     mimeType: 'video/webm'
@@ -2030,6 +2032,7 @@
       this.ctx = $canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
       this.ctx.textBaseline = 'top';
+      this.cacheEmits = [];
       this.cacheLogs = [];
       this.renderLogs = [];
       this.term.emit('size', {
@@ -2127,15 +2130,16 @@
             left: left / pixelRatio,
             top: _top / pixelRatio
           });
-          this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
-          var lastlogs = this.renderLogs[this.renderLogs.length - 1];
-          var lastIndex = this.cacheLogs.indexOf(lastlogs);
-          this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-          this.term.emit('scroll', {
-            scrollHeight: clamp(this.scrollHeight, 0, Infinity),
-            scrollTop: clamp(this.scrollTop, 0, Infinity)
-          });
         }
+
+        this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
+        var lastlogs = this.renderLogs[this.renderLogs.length - 1];
+        var lastIndex = this.cacheLogs.indexOf(lastlogs);
+        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+        this.term.emit('scroll', {
+          scrollHeight: clamp(this.scrollHeight, 0, Infinity),
+          scrollTop: clamp(this.scrollTop, 0, Infinity)
+        });
       }
     }, {
       key: "renderByTop",
@@ -2175,6 +2179,7 @@
         });
 
         if (data.replace) {
+          this.cacheEmits.pop();
           var lastLogs = this.cacheLogs[this.cacheLogs.length - 1];
 
           if (lastLogs && lastLogs.group) {
@@ -2184,6 +2189,7 @@
           }
         }
 
+        this.cacheEmits.push(_objectSpread$1({}, data));
         var logs = this.parse(data);
 
         (_this$cacheLogs = this.cacheLogs).push.apply(_this$cacheLogs, toConsumableArray(logs));
@@ -2612,7 +2618,7 @@
         }
       });
       term.on('enter', function (text) {
-        if (drawer.cacheEditable) {
+        if (drawer.cacheEditable && text.trim()) {
           _this.execute(text);
         }
       });
@@ -2789,32 +2795,213 @@
 
   var Inquirer = /*#__PURE__*/function () {
     function Inquirer(term) {
+      var _this = this;
+
       classCallCheck(this, Inquirer);
 
       this.term = term;
-      this.radio = this.radio.bind(this);
-      this.checkbox = this.checkbox.bind(this);
+      this.color = '#66d9ef';
+      this.radioTip = '(select: Up or Down, confirm: Enter)';
+      this.checkboxTip = '(move: Up or Down, select: Space, confirm: Enter)';
+      this.radioInit = false;
+      this.radioList = [];
+      this.radioKey = null;
+
+      this.radioResolve = function () {
+        return null;
+      };
+
+      this.checkboxInit = false;
+      this.checkboxList = [];
+      this.checkboxIndex = 0;
+      this.checkboxKey = [];
+
+      this.checkboxResolve = function () {
+        return null;
+      };
+
+      this.radio = function (list) {
+        return _this.render(list, RADIO);
+      };
+
+      this.checkbox = function (list) {
+        return _this.render(list, CHECKBOX);
+      };
+
+      term.on('keydown', function (event) {
+        var last = term.drawer.lastCacheLog;
+        var key = event.keyCode;
+
+        if (last.style === RADIO && _this.radioList === last.list) {
+          _this.radioEvent(key);
+        }
+
+        if (last.style === CHECKBOX && _this.checkboxList === last.list) {
+          _this.checkboxEvent(key);
+        }
+      });
     }
 
     createClass(Inquirer, [{
-      key: "radio",
-      value: function radio(list, validate) {
-        optionValidator(list, [{
-          key: 'string|number',
-          text: 'string|number'
-        }]);
-        var text = list.map(function (item) {
-          return item.text;
-        }).join('\n');
-        this.term.output(text, true);
+      key: "render",
+      value: function render(list, type) {
+        var _this2 = this;
+
+        return new Promise(function (resolve) {
+          optionValidator(list, [{
+            key: 'string|number',
+            text: 'string|number'
+          }]);
+          errorHandle(list.length, 'Array cannot be empty');
+          errorHandle(list.map(function (item) {
+            return item.key;
+          }).every(function (item, _, arr) {
+            return arr.indexOf(item) === arr.lastIndexOf(item);
+          }), 'The key value in the array element must be unique');
+
+          if (type === RADIO) {
+            _this2.radioList = list;
+            _this2.radioKey = list[0].key;
+            _this2.radioResolve = resolve;
+
+            _this2.radioRender(list, _this2.radioKey);
+
+            _this2.radioInit = true;
+          }
+
+          if (type === CHECKBOX) {
+            _this2.checkboxList = list;
+            _this2.checkboxIndex = 0;
+            _this2.checkboxKey = [];
+            _this2.checkboxResolve = resolve;
+
+            _this2.checkboxRender();
+
+            _this2.checkboxInit = true;
+          }
+        });
       }
     }, {
-      key: "checkbox",
-      value: function checkbox(list, validate) {
-        optionValidator(list, [{
-          key: 'string|number',
-          text: 'string|number'
-        }]);
+      key: "radioRender",
+      value: function radioRender() {
+        var _this3 = this;
+
+        var text = this.radioList.map(function (item) {
+          return _this3.radioKey === item.key ? "<d color='".concat(_this3.color, "'>=> ").concat(item.text, "</d>") : "   ".concat(item.text);
+        }).join('\n');
+        this.term.drawer.emit({
+          text: "".concat(text, "\n").concat(this.radioTip),
+          list: this.radioList,
+          type: OUTPUT,
+          style: RADIO,
+          replace: this.radioInit
+        });
+      }
+    }, {
+      key: "radioEvent",
+      value: function radioEvent(key) {
+        var _this4 = this;
+
+        var index = this.radioList.findIndex(function (item) {
+          return item.key === _this4.radioKey;
+        });
+
+        if (key === 38) {
+          if (index <= 0) {
+            this.radioKey = this.radioList[this.radioList.length - 1].key;
+            this.radioRender(this.radioList, this.radioKey);
+          } else {
+            this.radioKey = this.radioList[index - 1].key;
+            this.radioRender(this.radioList, this.radioKey);
+          }
+        }
+
+        if (key === 40) {
+          if (index === this.radioList.length - 1) {
+            this.radioKey = this.radioList[0].key;
+            this.radioRender(this.radioList, this.radioKey);
+          } else {
+            this.radioKey = this.radioList[index + 1].key;
+            this.radioRender(this.radioList, this.radioKey);
+          }
+        }
+
+        if (key === 13) {
+          this.radioResolve(this.radioKey);
+          this.radioInit = false;
+          this.radioList = [];
+          this.radioKey = null;
+
+          this.radioResolve = function () {
+            return null;
+          };
+        }
+      }
+    }, {
+      key: "checkboxRender",
+      value: function checkboxRender() {
+        var _this5 = this;
+
+        var text = this.checkboxList.map(function (item, i) {
+          return i === _this5.checkboxIndex ? "<d color='".concat(_this5.color, "'>").concat(_this5.checkboxKey.includes(item.key) ? '◉' : '〇', " ").concat(item.text, "</d>") : "".concat(_this5.checkboxKey.includes(item.key) ? '◉' : '〇', " ").concat(item.text);
+        }).join('\n');
+        this.term.drawer.emit({
+          text: "".concat(text, "\n").concat(this.checkboxTip),
+          list: this.checkboxList,
+          type: OUTPUT,
+          style: CHECKBOX,
+          replace: this.checkboxInit
+        });
+      }
+    }, {
+      key: "checkboxEvent",
+      value: function checkboxEvent(key) {
+        if (key === 38) {
+          if (this.checkboxIndex <= 0) {
+            this.checkboxIndex = this.checkboxList.length - 1;
+            this.radioKey = this.checkboxList[this.checkboxIndex].key;
+            this.checkboxRender();
+          } else {
+            this.checkboxIndex -= 1;
+            this.radioKey = this.checkboxList[this.checkboxIndex].key;
+            this.checkboxRender();
+          }
+        }
+
+        if (key === 40) {
+          if (this.checkboxIndex === this.checkboxList.length - 1) {
+            this.checkboxIndex = 0;
+            this.checkboxRender();
+          } else {
+            this.checkboxIndex += 1;
+            this.checkboxRender();
+          }
+        }
+
+        if (key === 32) {
+          var currentKey = this.checkboxList[this.checkboxIndex].key;
+          var currentIndex = this.checkboxKey.indexOf(currentKey);
+
+          if (currentIndex > -1) {
+            this.checkboxKey.splice(currentIndex, 1);
+          } else {
+            this.checkboxKey.push(currentKey);
+          }
+
+          this.checkboxRender();
+        }
+
+        if (key === 13) {
+          this.checkboxResolve(this.checkboxKey);
+          this.checkboxInit = false;
+          this.checkboxList = [];
+          this.checkboxIndex = 0;
+          this.checkboxKey = [];
+
+          this.checkboxResolve = function () {
+            return null;
+          };
+        }
       }
     }]);
 

@@ -140,6 +140,44 @@ Start recording video
 
 End recording video and download the video
 
+#### term.radio(list)
+
+Output radio list
+
+```js
+term.radio([
+    {
+        key: 1,
+        text: 'hi',
+    },
+    {
+        key: 0,
+        text: 'bye',
+    },
+]).then((key) => {
+    console.log(key);
+});
+```
+
+#### term.checkbox(list)
+
+Output checkbox list
+
+```js
+term.checkbox([
+    {
+        key: 1,
+        text: 'hi',
+    },
+    {
+        key: 0,
+        text: 'bye',
+    },
+]).then((key) => {
+    console.log(key);
+});
+```
+
 ## Donations
 
 We accept donations through these channels:

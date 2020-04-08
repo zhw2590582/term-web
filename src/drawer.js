@@ -33,6 +33,7 @@ export default class renderer {
         this.ctx.font = `${this.fontSize}px ${fontFamily}`;
         this.ctx.textBaseline = 'top';
 
+        this.cacheEmits = [];
         this.cacheLogs = [];
         this.renderLogs = [];
 
@@ -142,16 +143,16 @@ export default class renderer {
                 left: left / pixelRatio,
                 top: top / pixelRatio,
             });
-
-            this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
-            const lastlogs = this.renderLogs[this.renderLogs.length - 1];
-            const lastIndex = this.cacheLogs.indexOf(lastlogs);
-            this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-            this.term.emit('scroll', {
-                scrollHeight: clamp(this.scrollHeight, 0, Infinity),
-                scrollTop: clamp(this.scrollTop, 0, Infinity),
-            });
         }
+
+        this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
+        const lastlogs = this.renderLogs[this.renderLogs.length - 1];
+        const lastIndex = this.cacheLogs.indexOf(lastlogs);
+        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+        this.term.emit('scroll', {
+            scrollHeight: clamp(this.scrollHeight, 0, Infinity),
+            scrollTop: clamp(this.scrollTop, 0, Infinity),
+        });
     }
 
     renderByTop(top) {
@@ -182,12 +183,14 @@ export default class renderer {
         });
 
         if (data.replace) {
+            this.cacheEmits.pop();
             const lastLogs = this.cacheLogs[this.cacheLogs.length - 1];
             if (lastLogs && lastLogs.group) {
                 this.cacheLogs = this.cacheLogs.filter((item) => item.group !== lastLogs.group);
             }
         }
 
+        this.cacheEmits.push({ ...data });
         const logs = this.parse(data);
         this.cacheLogs.push(...logs);
         this.renderLogs = this.cacheLogs.slice(-this.maxLength);

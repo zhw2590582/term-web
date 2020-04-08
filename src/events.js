@@ -11,7 +11,7 @@ export default class Events {
             template: { $container, $textarea, $content, $scrollbar, $header, $footer },
         } = term;
 
-        this.proxy(document, ['click', 'contextmenu'], event => {
+        this.proxy(document, ['click', 'contextmenu'], (event) => {
             if (event.composedPath && event.composedPath().indexOf($content) > -1) {
                 term.isFocus = true;
                 term.emit('focus');
@@ -39,7 +39,7 @@ export default class Events {
             term.emit('input', $textarea.value.trim());
         });
 
-        this.proxy($textarea, 'keydown', event => {
+        this.proxy($textarea, 'keydown', (event) => {
             const key = event.keyCode;
             if (key === 13) {
                 setTimeout(() => {
@@ -115,7 +115,7 @@ export default class Events {
 
     proxy(target, name, callback, option = {}) {
         if (Array.isArray(name)) {
-            name.forEach(item => this.proxy(target, item, callback, option));
+            name.forEach((item) => this.proxy(target, item, callback, option));
         } else {
             target.addEventListener(name, callback, option);
             this.destroyEvents.push(() => {
@@ -125,6 +125,6 @@ export default class Events {
     }
 
     destroy() {
-        this.destroyEvents.forEach(event => event());
+        this.destroyEvents.forEach((event) => event());
     }
 }

@@ -65,7 +65,9 @@ var term = new Term({
                             .map((item) => {
                                 const color = randomColor();
                                 const random = Math.random() > 0.5;
-                                return `<d color="${random ? color : '#fff'}" background="${random ? '' : color}">${item}</d>`;
+                                return `<d color="${random ? color : '#fff'}" background="${
+                                    random ? '' : color
+                                }">${item}</d>`;
                             })
                             .join(' ');
                     });
@@ -77,6 +79,42 @@ var term = new Term({
             output() {
                 this.clear();
                 return '<d color="#27C93F">Cleared successfully</d>';
+            },
+        },
+        {
+            // Radio
+            input: /^radio$/i,
+            output() {
+                this.radio([
+                    {
+                        key: 0,
+                        text: 'hi',
+                    },
+                    {
+                        key: 1,
+                        text: 'bye',
+                    },
+                ]).then((key) => {
+                    this.output(`<d color='yellow'>${key}</d>`, true).input('');
+                });
+            },
+        },
+        {
+            // Checkbox
+            input: /^checkbox$/i,
+            output() {
+                this.checkbox([
+                    {
+                        key: 1,
+                        text: 'hi',
+                    },
+                    {
+                        key: 0,
+                        text: 'bye',
+                    },
+                ]).then((key) => {
+                    this.output(`<d color='yellow'>${key}</d>`, true).input('');
+                });
             },
         },
     ],

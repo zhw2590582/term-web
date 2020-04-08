@@ -23,7 +23,7 @@ export default class Commander {
         });
 
         term.on('enter', (text) => {
-            if (drawer.cacheEditable) {
+            if (drawer.cacheEditable && text.trim()) {
                 this.execute(text);
             }
         });
