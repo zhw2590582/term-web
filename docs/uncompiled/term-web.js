@@ -2105,20 +2105,24 @@
             pixelRatio = _this$term$options2.pixelRatio,
             fontColor = _this$term$options2.fontColor;
 
-        for (var i = 0; i < this.renderLogs.length; i += 1) {
-          var logs = this.renderLogs[i];
+        if (this.renderLogs.length) {
+          for (var i = 0; i < this.renderLogs.length; i += 1) {
+            var logs = this.renderLogs[i];
 
-          for (var j = 0; j < logs.length; j += 1) {
-            var log = logs[j];
-            var top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
+            if (logs && logs.length) {
+              for (var j = 0; j < logs.length; j += 1) {
+                var log = logs[j];
+                var top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
 
-            if (log.background) {
-              this.ctx.fillStyle = log.background;
-              this.ctx.fillRect(log.left, top, log.width, this.fontSize);
+                if (log.background) {
+                  this.ctx.fillStyle = log.background;
+                  this.ctx.fillRect(log.left, top, log.width, this.fontSize);
+                }
+
+                this.ctx.fillStyle = log.color || fontColor;
+                this.ctx.fillText(log.text, log.left, top);
+              }
             }
-
-            this.ctx.fillStyle = log.color || fontColor;
-            this.ctx.fillText(log.text, log.left, top);
           }
         }
 
@@ -2134,13 +2138,10 @@
 
         this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
         this.term.emit('scrollHeight', clamp(this.scrollHeight, 0, Infinity));
-
-        if (this.lastCacheLog && !this.lastCacheLog.style) {
-          var lastlogs = this.renderLogs[this.renderLogs.length - 1];
-          var lastIndex = this.cacheLogs.indexOf(lastlogs);
-          this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-          this.term.emit('scrollTop', clamp(this.scrollTop, 0, Infinity));
-        }
+        var lastlogs = this.renderLogs[this.renderLogs.length - 1];
+        var lastIndex = this.cacheLogs.indexOf(lastlogs);
+        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+        this.term.emit('scrollTop', clamp(this.scrollTop, 0, Infinity));
       }
     }, {
       key: "renderByTop",
@@ -2302,7 +2303,7 @@
           left = this.contentPadding[3];
         }
 
-        return result;
+        return result.filter(Boolean);
       }
     }, {
       key: "clear",
