@@ -178,9 +178,7 @@ export default class renderer {
                 return true;
             },
             text: 'string',
-            color: 'undefined|string',
             replace: 'undefined|boolean',
-            background: 'undefined|string',
         });
 
         if (data.replace) {
@@ -213,8 +211,8 @@ export default class renderer {
                 const child = this.$tmp.childNodes[j];
                 const word = child.textContent;
                 const wordSize = this.ctx.measureText(word).width;
-                const color = child.getAttribute ? child.getAttribute('color') : null;
-                const background = child.getAttribute ? child.getAttribute('background') : null;
+                const color = child.getAttribute ? child.getAttribute('color') : '';
+                const background = child.getAttribute ? child.getAttribute('background') : '';
 
                 const nextWordWidth = left + wordSize;
                 if (nextWordWidth > this.contentWidth) {
@@ -231,7 +229,7 @@ export default class renderer {
                             left = nextLetterWidth;
                         } else {
                             const log = {
-                                type: data.type,
+                                ...data,
                                 width: this.ctx.measureText(textTmp).width,
                                 left: isNewLine ? this.contentPadding[3] : lastLeft,
                                 text: textTmp,
@@ -253,7 +251,7 @@ export default class renderer {
                     }
 
                     const log = {
-                        type: data.type,
+                        ...data,
                         width: this.ctx.measureText(textTmp).width,
                         left: this.contentPadding[3],
                         text: textTmp,
@@ -268,7 +266,7 @@ export default class renderer {
                     }
                 } else {
                     const log = {
-                        type: data.type,
+                        ...data,
                         width: wordSize,
                         text: word,
                         left,

@@ -1997,6 +1997,10 @@
     mimeType: 'video/webm'
   };
 
+  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
   var renderer = /*#__PURE__*/function () {
     function renderer(term) {
       classCallCheck(this, renderer);
@@ -2167,9 +2171,7 @@
             return true;
           },
           text: 'string',
-          color: 'undefined|string',
-          replace: 'undefined|boolean',
-          background: 'undefined|string'
+          replace: 'undefined|boolean'
         });
 
         if (data.replace) {
@@ -2206,8 +2208,8 @@
             var child = this.$tmp.childNodes[j];
             var word = child.textContent;
             var wordSize = this.ctx.measureText(word).width;
-            var color = child.getAttribute ? child.getAttribute('color') : null;
-            var background = child.getAttribute ? child.getAttribute('background') : null;
+            var color = child.getAttribute ? child.getAttribute('color') : '';
+            var background = child.getAttribute ? child.getAttribute('background') : '';
             var nextWordWidth = left + wordSize;
 
             if (nextWordWidth > this.contentWidth) {
@@ -2226,14 +2228,13 @@
                   textTmp += letter;
                   left = nextLetterWidth;
                 } else {
-                  var _log = {
-                    type: data.type,
+                  var _log = _objectSpread$1({}, data, {
                     width: this.ctx.measureText(textTmp).width,
                     left: isNewLine ? this.contentPadding[3] : lastLeft,
                     text: textTmp,
                     color: color,
                     background: background
-                  };
+                  });
 
                   if (result[index]) {
                     result[index].push(_log);
@@ -2248,14 +2249,13 @@
                 }
               }
 
-              var log = {
-                type: data.type,
+              var log = _objectSpread$1({}, data, {
                 width: this.ctx.measureText(textTmp).width,
                 left: this.contentPadding[3],
                 text: textTmp,
                 color: color,
                 background: background
-              };
+              });
 
               if (result[index]) {
                 result[index].push(log);
@@ -2263,14 +2263,13 @@
                 result[index] = [log];
               }
             } else {
-              var _log2 = {
-                type: data.type,
+              var _log2 = _objectSpread$1({}, data, {
                 width: wordSize,
                 text: word,
                 left: left,
                 color: color,
                 background: background
-              };
+              });
 
               if (result[index]) {
                 result[index].push(_log2);
@@ -2800,9 +2799,9 @@
     return Inquirer;
   }();
 
-  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+  function ownKeys$2(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  function _objectSpread$2(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$2(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$2(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
   function _createSuper$1(Derived) { return function () { var Super = getPrototypeOf(Derived), result; if (_isNativeReflectConstruct$2()) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
 
@@ -2899,7 +2898,7 @@
       classCallCheck(this, Term);
 
       _this = _super.call(this);
-      _this.options = optionValidator(_objectSpread$1({}, Term.default, {}, options), Term.scheme);
+      _this.options = optionValidator(_objectSpread$2({}, Term.default, {}, options), Term.scheme);
       _this.isFocus = false;
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));
