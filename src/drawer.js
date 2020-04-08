@@ -146,13 +146,14 @@ export default class renderer {
         }
 
         this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
-        const lastlogs = this.renderLogs[this.renderLogs.length - 1];
-        const lastIndex = this.cacheLogs.indexOf(lastlogs);
-        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-        this.term.emit('scroll', {
-            scrollHeight: clamp(this.scrollHeight, 0, Infinity),
-            scrollTop: clamp(this.scrollTop, 0, Infinity),
-        });
+        this.term.emit('scrollHeight', clamp(this.scrollHeight, 0, Infinity));
+
+        if (this.lastCacheLog && !this.lastCacheLog.style) {
+            const lastlogs = this.renderLogs[this.renderLogs.length - 1];
+            const lastIndex = this.cacheLogs.indexOf(lastlogs);
+            this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+            this.term.emit('scrollTop', clamp(this.scrollTop, 0, Infinity));
+        }
     }
 
     renderByTop(top) {

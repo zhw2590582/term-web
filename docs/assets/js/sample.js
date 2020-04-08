@@ -4,7 +4,7 @@ var term = new Term({
     title: `Term Web ${Term.version}`,
     fontFamily: 'monospace',
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
-    welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>',
+    welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>, try typing <d color="yellow">hi</d> to start',
     loading: () => '<d color="yellow">Please wait for a moment...</d>',
     notFound: (val) => `🐶 : <d color='red'>${val}</d> : command not found`,
     actions: [

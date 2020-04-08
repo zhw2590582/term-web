@@ -54,6 +54,14 @@ export default class Events {
             term.emit('keydown', event);
         });
 
+        this.proxy($recorderBtn, 'click', () => {
+            if (term.recorder.recording) {
+                term.recorder.end();
+            } else {
+                term.recorder.start();
+            }
+        });
+
         let canRenderByTop = false;
         this.proxy($content, 'scroll', () => {
             if (canRenderByTop) {
@@ -63,18 +71,13 @@ export default class Events {
             }
         });
 
-        this.proxy($recorderBtn, 'click', () => {
-            if (term.recorder.recording) {
-                term.recorder.end();
-            } else {
-                term.recorder.start();
-            }
-        });
-
-        term.on('scroll', ({ scrollHeight, scrollTop }) => {
-            $scrollbar.style.height = `${scrollHeight}px`;
+        term.on('scrollTop', (scrollTop) => {
             canRenderByTop = false;
             $content.scrollTo(0, scrollTop);
+        });
+
+        term.on('scrollHeight', (scrollHeight) => {
+            $scrollbar.style.height = `${scrollHeight}px`;
         });
 
         term.on('cursor', ({ left, top }) => {
