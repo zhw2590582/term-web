@@ -118,36 +118,27 @@ var term = new Term({
 
 ## API
 
-#### nput and output
-
-The main commonly used methods in the example are two `term.input` and`term.input`.
+#### term.input(text, isReplace)
 
 -   `text` is the string to be displayed.
 -   `isReplace` indicates whether to replace the previous record, default is `false`;
 
-```js
-term.input(text, isReplace);
-term.output(text, isReplace);
-```
+#### term.output(text, isReplace)
 
-#### Clear all log
+-   `text` is the string to be displayed.
+-   `isReplace` indicates whether to replace the previous record, default is `false`;
 
-```js
-term.clear();
-```
+#### term.clear()
 
-#### Example
+Clear all log
 
-```js
-term.input('foo');
-// output => 'foo'
+#### term.start()
 
-term.input('bar', true);
-// Replace the previous 'foo' with 'bar'
+Start recording video
 
-term.clear();
-// clear all log
-```
+#### term.end()
+
+End recording video and download the video
 
 ## Donations
 
