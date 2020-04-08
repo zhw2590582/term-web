@@ -40,14 +40,14 @@ export default class Template {
         this.$header.classList.add('term-header');
         this.$container.appendChild(this.$header);
 
-        this.$main = document.createElement('div');
-        this.$main.classList.add('term-main');
-        this.$container.appendChild(this.$main);
+        this.$content = document.createElement('div');
+        this.$content.classList.add('term-content');
+        this.$container.appendChild(this.$content);
 
         this.$scrollbar = document.createElement('div');
         this.$scrollbar.classList.add('term-scrollbar');
         this.$scrollbar.style.height = '0';
-        this.$main.appendChild(this.$scrollbar);
+        this.$content.appendChild(this.$scrollbar);
 
         this.$footer = document.createElement('div');
         this.$footer.classList.add('term-footer');
@@ -81,8 +81,8 @@ export default class Template {
                 '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}',
                 `.term-canvas{width:100%;height:100%;border-radius:${borderRadius}px;box-shadow:${boxShadow};}`,
                 '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}',
-                '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}',
-                '.term-main:hover{cursor:text}',
+                '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}',
+                '.term-content:hover{cursor:text}',
                 '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}',
                 '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}',
                 '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}',

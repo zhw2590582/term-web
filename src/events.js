@@ -8,11 +8,11 @@ export default class Events {
         const {
             options: { recorder, draggable, dragOpt },
             template: { $recorder, $recorderSize, $recorderDuration, $recorderBtn },
-            template: { $container, $textarea, $main, $scrollbar, $header, $footer },
+            template: { $container, $textarea, $content, $scrollbar, $header, $footer },
         } = term;
 
         this.proxy(document, ['click', 'contextmenu'], event => {
-            if (event.composedPath && event.composedPath().indexOf($main) > -1) {
+            if (event.composedPath && event.composedPath().indexOf($content) > -1) {
                 term.isFocus = true;
                 term.emit('focus');
             } else {
@@ -55,9 +55,9 @@ export default class Events {
         });
 
         let canRenderByTop = false;
-        this.proxy($main, 'scroll', () => {
+        this.proxy($content, 'scroll', () => {
             if (canRenderByTop) {
-                term.drawer.renderByTop($main.scrollTop);
+                term.drawer.renderByTop($content.scrollTop);
             } else {
                 canRenderByTop = true;
             }
@@ -74,7 +74,7 @@ export default class Events {
         term.on('scroll', ({ scrollHeight, scrollTop }) => {
             $scrollbar.style.height = `${scrollHeight}px`;
             canRenderByTop = false;
-            $main.scrollTo(0, scrollTop);
+            $content.scrollTo(0, scrollTop);
         });
 
         term.on('cursor', ({ left, top }) => {
@@ -82,11 +82,11 @@ export default class Events {
             $textarea.style.left = `${left}px`;
         });
 
-        term.on('size', ({ header, main, bottom }) => {
+        term.on('size', ({ header, content, footer }) => {
             $header.style.height = `${header}px`;
-            $footer.style.height = `${bottom}px`;
-            $main.style.top = `${header}px`;
-            $main.style.height = `${main}px`;
+            $footer.style.height = `${footer}px`;
+            $content.style.top = `${header}px`;
+            $content.style.height = `${content}px`;
         });
 
         term.on('focus', () => {

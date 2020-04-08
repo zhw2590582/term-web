@@ -1,6 +1,3 @@
-// For more instructions, please visit github
-// https://github.com/zhw2590582/term-web
-
 var term = new Term({
     container: '#term',
     pixelRatio: 2,

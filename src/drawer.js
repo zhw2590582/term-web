@@ -1,100 +1,113 @@
-import { INPUT } from './constant';
+import validator from 'option-validator';
+import { INPUT, OUTPUT } from './constant';
+import { escape, clamp } from './utils';
 
-export default class Drawer {
+export default class renderer {
     constructor(term) {
         this.term = term;
-        const { pixelRatio, fontSize, fontFamily, backgroundColor } = term.options;
-        this.gap = 10 * pixelRatio;
+
+        const {
+            template: { $canvas },
+            options: { pixelRatio, fontSize, fontFamily, backgroundColor },
+        } = term;
+
+        this.$tmp = document.createElement('div');
+        this.canvasHeight = $canvas.height;
+        this.canvasWidth = $canvas.width;
+
+        this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
+        this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
+        this.contentWidth = this.canvasWidth - this.contentPadding[1] - this.contentPadding[3];
+
+        this.logGap = 10 * pixelRatio;
         this.fontSize = fontSize * pixelRatio;
-        this.padding = [45, 15, 15, 15].map((item) => item * pixelRatio);
-        this.cursorColor = ['#FFF', backgroundColor];
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
         this.btnSize = 6 * pixelRatio;
-        this.$canvas = term.template.$canvas;
-        const { width, height } = this.$canvas;
-        this.height = height - this.padding[0] - this.padding[2];
-        this.width = width - this.padding[1] - this.padding[3];
-        this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
-        this.ctx = this.$canvas.getContext('2d');
+
+        this.cursorColor = ['#FFF', backgroundColor];
+        this.cursorSize = 5 * pixelRatio;
+
+        this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
+
+        this.ctx = $canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px ${fontFamily}`;
         this.ctx.textBaseline = 'top';
-        this.inputs = [];
-        this.logs = [];
+
+        this.cacheLogs = [];
         this.renderLogs = [];
 
         this.term.emit('size', {
-            header: this.padding[0] / pixelRatio,
-            main: this.height / pixelRatio,
-            bottom: this.padding[2] / pixelRatio,
+            header: this.contentPadding[0] / pixelRatio,
+            content: this.contentHeight / pixelRatio,
+            footer: this.contentPadding[2] / pixelRatio,
         });
 
-        this.draw();
-        this.draw = this.draw.bind(this);
+        this.emit = this.emit.bind(this);
+        this.clear = this.clear.bind(this);
+
+        this.render();
 
         this.cursor = false;
         (function loop() {
-            this.timer = setTimeout(() => {
+            this.cursorTimer = setTimeout(() => {
                 this.cursor = !this.cursor;
-                this.drawCursor();
+                this.renderCursor();
                 loop.call(this);
             }, 500);
         }.call(this));
     }
 
-    get editable() {
-        const lastlog = this.logs[this.logs.length - 1];
-        return this.term.isFocus && lastlog && lastlog.length && lastlog.input.type === INPUT;
+    get lastCacheLog() {
+        const logs = this.cacheLogs[this.cacheLogs.length - 1];
+        return logs && logs[logs.length - 1];
+    }
+
+    get lastRenderLog() {
+        const logs = this.renderLogs[this.renderLogs.length - 1];
+        return logs && logs[logs.length - 1];
+    }
+
+    get cacheEditable() {
+        return this.term.isFocus && this.lastCacheLog && this.lastCacheLog.type === INPUT;
     }
 
     get renderEditable() {
-        const lastlogInInput = this.logs[this.logs.length - 1];
-        const lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
-        return (
-            lastlogInInput === lastlogInRender &&
-            this.term.isFocus &&
-            lastlogInRender &&
-            lastlogInRender.length &&
-            lastlogInRender.input.type === INPUT
-        );
+        return this.cacheEditable && this.lastCacheLog === this.lastRenderLog;
     }
 
     get cursorPos() {
         if (this.renderEditable) {
             const { pixelRatio } = this.term.options;
-            const lastlog = this.renderLogs[this.renderLogs.length - 1];
-            const lastLine = lastlog[lastlog.length - 1];
-            const left = lastLine.left + lastLine.width + pixelRatio * 4;
-            const top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
+            const left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 4;
+            const top = this.contentPadding[0] + (this.fontSize + this.logGap) * (this.renderLogs.length - 1);
             return { left, top };
         }
         return { left: 0, top: 0 };
     }
 
-    draw(input, startIndex) {
-        this.drawBackground();
-        this.drawTopbar();
-        this.drawContent(input, startIndex);
+    render() {
+        this.renderBackground();
+        this.renderTopbar();
+        this.renderContent();
         return this;
     }
 
-    drawBackground() {
+    renderBackground() {
         const { backgroundColor } = this.term.options;
-        const { width, height } = this.$canvas;
-        this.ctx.clearRect(0, 0, width, height);
         this.ctx.fillStyle = backgroundColor;
-        this.ctx.fillRect(0, 0, width, height);
+        this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
     }
 
-    drawTopbar() {
+    renderTopbar() {
         const { title, fontColor } = this.term.options;
         this.ctx.fillStyle = fontColor;
         const { width } = this.ctx.measureText(title);
-        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
+        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.btnSize / 2);
         this.btnColor.forEach((item, index) => {
             this.ctx.beginPath();
             this.ctx.arc(
-                this.padding[3] + this.btnSize + index * this.btnSize * 3.6,
-                this.padding[1] + this.btnSize,
+                this.contentPadding[3] + this.btnSize + index * this.btnSize * 3.6,
+                this.contentPadding[1] + this.btnSize,
                 this.btnSize,
                 0,
                 360,
@@ -106,78 +119,180 @@ export default class Drawer {
         });
     }
 
-    drawContent(input, startIndex) {
-        if (input) {
-            if (input.replace) {
-                const lastInput = this.inputs[this.inputs.length - 1];
-                if (lastInput) {
-                    this.logs = this.logs.filter((item) => item.input !== lastInput);
+    renderContent() {
+        const { pixelRatio, fontColor } = this.term.options;
+
+        for (let i = 0; i < this.renderLogs.length; i += 1) {
+            const logs = this.renderLogs[i];
+            for (let j = 0; j < logs.length; j += 1) {
+                const log = logs[j];
+                const top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
+                if (log.background) {
+                    this.ctx.fillStyle = log.background;
+                    this.ctx.fillRect(log.left, top, log.width, this.fontSize);
                 }
+                this.ctx.fillStyle = log.color || fontColor;
+                this.ctx.fillText(log.text, log.left, top);
             }
-            this.inputs.push(input);
-            this.term.decoder.decode(input).forEach((item) => {
-                item.input = input;
-                this.logs.push(item);
-            });
         }
 
-        if (typeof startIndex === 'number') {
-            const renderLogs = this.logs.slice(startIndex, startIndex + this.totalLine);
-            this.render(renderLogs);
-        } else {
-            const renderLogs = this.logs.slice(-this.totalLine);
-            this.render(renderLogs);
+        if (this.renderEditable) {
+            const { left, top } = this.cursorPos;
+            this.term.emit('cursor', {
+                left: left / pixelRatio,
+                top: top / pixelRatio,
+            });
+
+            this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
+            const lastlogs = this.renderLogs[this.renderLogs.length - 1];
+            const lastIndex = this.cacheLogs.indexOf(lastlogs);
+            this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+            this.term.emit('scroll', {
+                scrollHeight: clamp(this.scrollHeight, 0, Infinity),
+                scrollTop: clamp(this.scrollTop, 0, Infinity),
+            });
         }
     }
 
     renderByTop(top) {
         const { pixelRatio } = this.term.options;
-        const startIndex = Math.ceil((top * pixelRatio) / (this.fontSize + this.gap));
-        this.draw(null, startIndex);
+        const startIndex = Math.ceil((top * pixelRatio) / (this.fontSize + this.logGap));
+        this.renderLogs = this.cacheLogs.slice(startIndex, startIndex + this.maxLength);
+        this.render();
     }
 
-    render(renderLogs) {
-        const { pixelRatio } = this.term.options;
-
-        this.renderLogs = renderLogs;
-        for (let i = 0; i < renderLogs.length; i += 1) {
-            const logs = renderLogs[i];
-            if (logs) {
-                for (let j = 0; j < logs.length; j += 1) {
-                    const log = logs[j];
-                    this.ctx.fillStyle = log.color;
-                    const top = this.padding[0] + (this.fontSize + this.gap) * i;
-                    this.ctx.fillText(log.text, log.left, top);
-                }
-            }
-        }
-
+    renderCursor() {
         const { left, top } = this.cursorPos;
-        this.term.emit('cursor', {
-            left: left / pixelRatio,
-            top: top / pixelRatio,
+        if (this.renderEditable && left && top) {
+            this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
+            this.ctx.fillRect(left, top, this.cursorSize, this.fontSize);
+        }
+    }
+
+    emit(data) {
+        validator(data, {
+            type: (type) => {
+                if (![INPUT, OUTPUT].includes(type)) {
+                    return `The type must be "${INPUT}" or "${OUTPUT}"`;
+                }
+                return true;
+            },
+            text: 'string',
+            color: 'undefined|string',
+            replace: 'undefined|boolean',
+            background: 'undefined|string',
         });
 
-        const lastlogInInput = this.logs[this.logs.length - 1];
-        const lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
-        if (lastlogInInput === lastlogInRender) {
-            this.scrollHeight = (this.logs.length * (this.fontSize + this.gap)) / pixelRatio;
-            const lastlog = this.renderLogs[this.renderLogs.length - 1];
-            const lastIndex = this.logs.indexOf(lastlog);
-            this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
-            this.term.emit('scroll', {
-                scrollHeight: this.scrollHeight,
-                scrollTop: this.scrollTop,
-            });
+        if (data.replace) {
+            this.cacheLogs.pop();
         }
+
+        const logs = this.parse(data);
+        this.cacheLogs.push(...logs);
+        this.renderLogs = this.cacheLogs.slice(-this.maxLength);
+        this.render();
     }
 
-    drawCursor() {
-        const { left, top } = this.cursorPos;
-        const { pixelRatio } = this.term.options;
-        if (this.renderEditable) {
-            this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
-            this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
+    parse(data) {
+        const { prefix } = this.term.options;
+
+        if (data.type === INPUT) {
+            data.text = prefix + escape(data.text);
         }
+
+        const result = [];
+        const lines = data.text.split(/\r?\n/);
+        const scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+
+        let index = 0;
+        let left = this.contentPadding[3];
+        for (let i = 0; i < lines.length; i += 1) {
+            const line = lines[i];
+            this.$tmp.innerHTML = line.replace(scriptReg, '');
+            for (let j = 0; j < this.$tmp.childNodes.length; j += 1) {
+                const child = this.$tmp.childNodes[j];
+                const word = child.textContent;
+                const wordSize = this.ctx.measureText(word).width;
+                const color = child.getAttribute ? child.getAttribute('color') : null;
+                const background = child.getAttribute ? child.getAttribute('background') : null;
+
+                const nextWordWidth = left + wordSize;
+                if (nextWordWidth > this.contentWidth) {
+                    let textTmp = '';
+                    let isNewLine = false;
+                    const lastLeft = left;
+                    const letters = [...word];
+                    for (let k = 0; k < letters.length; k += 1) {
+                        const letter = letters[k];
+                        const letterSize = this.ctx.measureText(letter).width;
+                        const nextLetterWidth = left + letterSize;
+                        if (nextLetterWidth < this.contentWidth) {
+                            textTmp += letter;
+                            left = nextLetterWidth;
+                        } else {
+                            const log = {
+                                type: data.type,
+                                width: this.ctx.measureText(textTmp).width,
+                                left: isNewLine ? this.contentPadding[3] : lastLeft,
+                                text: textTmp,
+                                color,
+                                background,
+                            };
+
+                            if (result[index]) {
+                                result[index].push(log);
+                            } else {
+                                result[index] = [log];
+                            }
+
+                            index += 1;
+                            textTmp = letter;
+                            isNewLine = true;
+                            left = this.contentPadding[3] + letterSize;
+                        }
+                    }
+
+                    const log = {
+                        type: data.type,
+                        width: this.ctx.measureText(textTmp).width,
+                        left: this.contentPadding[3],
+                        text: textTmp,
+                        color,
+                        background,
+                    };
+
+                    if (result[index]) {
+                        result[index].push(log);
+                    } else {
+                        result[index] = [log];
+                    }
+                } else {
+                    const log = {
+                        type: data.type,
+                        width: wordSize,
+                        text: word,
+                        left,
+                        color,
+                        background,
+                    };
+                    if (result[index]) {
+                        result[index].push(log);
+                    } else {
+                        result[index] = [log];
+                    }
+                    left = nextWordWidth;
+                }
+            }
+            index += 1;
+            left = this.contentPadding[3];
+        }
+
+        return result;
+    }
+
+    clear() {
+        this.cacheLogs = [];
+        this.renderLogs = [];
+        this.render();
     }
 }

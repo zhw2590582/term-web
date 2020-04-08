@@ -1561,12 +1561,12 @@
           _term$template2 = term.template,
           $container = _term$template2.$container,
           $textarea = _term$template2.$textarea,
-          $main = _term$template2.$main,
+          $content = _term$template2.$content,
           $scrollbar = _term$template2.$scrollbar,
           $header = _term$template2.$header,
           $footer = _term$template2.$footer;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
-        if (event.target === $main) {
+        if (event.composedPath && event.composedPath().indexOf($content) > -1) {
           term.isFocus = true;
           term.emit('focus');
         } else {
@@ -1610,9 +1610,9 @@
         term.emit('keydown', event);
       });
       var canRenderByTop = false;
-      this.proxy($main, 'scroll', function () {
+      this.proxy($content, 'scroll', function () {
         if (canRenderByTop) {
-          term.drawer.renderByTop($main.scrollTop);
+          term.drawer.renderByTop($content.scrollTop);
         } else {
           canRenderByTop = true;
         }
@@ -1629,7 +1629,7 @@
             scrollTop = _ref.scrollTop;
         $scrollbar.style.height = "".concat(scrollHeight, "px");
         canRenderByTop = false;
-        $main.scrollTo(0, scrollTop);
+        $content.scrollTo(0, scrollTop);
       });
       term.on('cursor', function (_ref2) {
         var left = _ref2.left,
@@ -1639,12 +1639,12 @@
       });
       term.on('size', function (_ref3) {
         var header = _ref3.header,
-            main = _ref3.main,
-            bottom = _ref3.bottom;
+            content = _ref3.content,
+            footer = _ref3.footer;
         $header.style.height = "".concat(header, "px");
-        $footer.style.height = "".concat(bottom, "px");
-        $main.style.top = "".concat(header, "px");
-        $main.style.height = "".concat(main, "px");
+        $footer.style.height = "".concat(footer, "px");
+        $content.style.top = "".concat(header, "px");
+        $content.style.height = "".concat(content, "px");
       });
       term.on('focus', function () {
         $textarea.focus();
@@ -1808,6 +1808,9 @@
 
     return condition;
   }
+  function clamp(num, a, b) {
+    return Math.max(Math.min(num, Math.max(a, b)), Math.min(a, b));
+  }
   function download(url, name) {
     var elink = document.createElement('a');
     elink.style.display = 'none';
@@ -1816,6 +1819,11 @@
     document.body.appendChild(elink);
     elink.click();
     document.body.removeChild(elink);
+  }
+  function uuid() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
+      return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+    });
   }
   function escape(str) {
     return str.replace(/[&<>'"]/g, function (tag) {
@@ -1844,7 +1852,9 @@
     __proto__: null,
     TermError: TermError,
     errorHandle: errorHandle,
+    clamp: clamp,
     download: download,
+    uuid: uuid,
     escape: escape,
     unescape: unescape
   });
@@ -1887,13 +1897,13 @@
       this.$header = document.createElement('div');
       this.$header.classList.add('term-header');
       this.$container.appendChild(this.$header);
-      this.$main = document.createElement('div');
-      this.$main.classList.add('term-main');
-      this.$container.appendChild(this.$main);
+      this.$content = document.createElement('div');
+      this.$content.classList.add('term-content');
+      this.$container.appendChild(this.$content);
       this.$scrollbar = document.createElement('div');
       this.$scrollbar.classList.add('term-scrollbar');
       this.$scrollbar.style.height = '0';
-      this.$main.appendChild(this.$scrollbar);
+      this.$content.appendChild(this.$scrollbar);
       this.$footer = document.createElement('div');
       this.$footer.classList.add('term-footer');
       this.$container.appendChild(this.$footer);
@@ -1914,7 +1924,7 @@
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-main{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-main:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.is-dragging.term-container{opacity:.95};'].join('');
+        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-content:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.is-dragging.term-container{opacity:.95};'].join('');
         document.head.appendChild(this.$style);
       }
     }
@@ -1987,21 +1997,170 @@
     mimeType: 'video/webm'
   };
 
-  var Decoder = /*#__PURE__*/function () {
-    function Decoder(term) {
-      classCallCheck(this, Decoder);
+  var renderer = /*#__PURE__*/function () {
+    function renderer(term) {
+      classCallCheck(this, renderer);
 
       this.term = term;
-      this.span = document.createElement('span');
+      var $canvas = term.template.$canvas,
+          _term$options = term.options,
+          pixelRatio = _term$options.pixelRatio,
+          fontSize = _term$options.fontSize,
+          fontFamily = _term$options.fontFamily,
+          backgroundColor = _term$options.backgroundColor;
+      this.$tmp = document.createElement('div');
+      this.canvasHeight = $canvas.height;
+      this.canvasWidth = $canvas.width;
+      this.contentPadding = [45, 15, 15, 15].map(function (item) {
+        return item * pixelRatio;
+      });
+      this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
+      this.contentWidth = this.canvasWidth - this.contentPadding[1] - this.contentPadding[3];
+      this.logGap = 10 * pixelRatio;
+      this.fontSize = fontSize * pixelRatio;
+      this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
+      this.btnSize = 6 * pixelRatio;
+      this.cursorColor = ['#FFF', backgroundColor];
+      this.cursorSize = 5 * pixelRatio;
+      this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
+      this.ctx = $canvas.getContext('2d');
+      this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
+      this.ctx.textBaseline = 'top';
+      this.cacheLogs = [];
+      this.renderLogs = [];
+      this.term.emit('size', {
+        header: this.contentPadding[0] / pixelRatio,
+        content: this.contentHeight / pixelRatio,
+        footer: this.contentPadding[2] / pixelRatio
+      });
+      this.emit = this.emit.bind(this);
+      this.clear = this.clear.bind(this);
+      this.render();
+      this.cursor = false;
+      (function loop() {
+        var _this = this;
+
+        this.cursorTimer = setTimeout(function () {
+          _this.cursor = !_this.cursor;
+
+          _this.renderCursor();
+
+          loop.call(_this);
+        }, 500);
+      }).call(this);
     }
 
-    createClass(Decoder, [{
-      key: "decode",
-      value: function decode(data) {
-        if (!data) return [];
+    createClass(renderer, [{
+      key: "render",
+      value: function render() {
+        this.renderBackground();
+        this.renderTopbar();
+        this.renderContent();
+        return this;
+      }
+    }, {
+      key: "renderBackground",
+      value: function renderBackground() {
+        var backgroundColor = this.term.options.backgroundColor;
+        this.ctx.fillStyle = backgroundColor;
+        this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+      }
+    }, {
+      key: "renderTopbar",
+      value: function renderTopbar() {
+        var _this2 = this;
+
+        var _this$term$options = this.term.options,
+            title = _this$term$options.title,
+            fontColor = _this$term$options.fontColor;
+        this.ctx.fillStyle = fontColor;
+
+        var _this$ctx$measureText = this.ctx.measureText(title),
+            width = _this$ctx$measureText.width;
+
+        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.btnSize / 2);
+        this.btnColor.forEach(function (item, index) {
+          _this2.ctx.beginPath();
+
+          _this2.ctx.arc(_this2.contentPadding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.contentPadding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
+
+          _this2.ctx.fillStyle = item;
+
+          _this2.ctx.fill();
+
+          _this2.ctx.closePath();
+        });
+      }
+    }, {
+      key: "renderContent",
+      value: function renderContent() {
+        var _this$term$options2 = this.term.options,
+            pixelRatio = _this$term$options2.pixelRatio,
+            fontColor = _this$term$options2.fontColor;
+
+        for (var i = 0; i < this.renderLogs.length; i += 1) {
+          var logs = this.renderLogs[i];
+
+          for (var j = 0; j < logs.length; j += 1) {
+            var log = logs[j];
+            var top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
+
+            if (log.background) {
+              this.ctx.fillStyle = log.background;
+              this.ctx.fillRect(log.left, top, log.width, this.fontSize);
+            }
+
+            this.ctx.fillStyle = log.color || fontColor;
+            this.ctx.fillText(log.text, log.left, top);
+          }
+        }
+
+        if (this.renderEditable) {
+          var _this$cursorPos = this.cursorPos,
+              left = _this$cursorPos.left,
+              _top = _this$cursorPos.top;
+          this.term.emit('cursor', {
+            left: left / pixelRatio,
+            top: _top / pixelRatio
+          });
+          this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
+          var lastlogs = this.renderLogs[this.renderLogs.length - 1];
+          var lastIndex = this.cacheLogs.indexOf(lastlogs);
+          this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+          this.term.emit('scroll', {
+            scrollHeight: clamp(this.scrollHeight, 0, Infinity),
+            scrollTop: clamp(this.scrollTop, 0, Infinity)
+          });
+        }
+      }
+    }, {
+      key: "renderByTop",
+      value: function renderByTop(top) {
+        var pixelRatio = this.term.options.pixelRatio;
+        var startIndex = Math.ceil(top * pixelRatio / (this.fontSize + this.logGap));
+        this.renderLogs = this.cacheLogs.slice(startIndex, startIndex + this.maxLength);
+        this.render();
+      }
+    }, {
+      key: "renderCursor",
+      value: function renderCursor() {
+        var _this$cursorPos2 = this.cursorPos,
+            left = _this$cursorPos2.left,
+            top = _this$cursorPos2.top;
+
+        if (this.renderEditable && left && top) {
+          this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
+          this.ctx.fillRect(left, top, this.cursorSize, this.fontSize);
+        }
+      }
+    }, {
+      key: "emit",
+      value: function emit(data) {
+        var _this$cacheLogs;
+
         optionValidator(data, {
-          type: function type(val) {
-            if (![INPUT, OUTPUT].includes(val)) {
+          type: function type(_type) {
+            if (![INPUT, OUTPUT].includes(_type)) {
               return "The type must be \"".concat(INPUT, "\" or \"").concat(OUTPUT, "\"");
             }
 
@@ -2009,16 +2168,25 @@
           },
           text: 'string',
           color: 'undefined|string',
-          replace: 'undefined|boolean'
+          replace: 'undefined|boolean',
+          background: 'undefined|string'
         });
-        var _this$term = this.term,
-            _this$term$drawer = _this$term.drawer,
-            ctx = _this$term$drawer.ctx,
-            width = _this$term$drawer.width,
-            padding = _this$term$drawer.padding,
-            _this$term$options = _this$term.options,
-            prefix = _this$term$options.prefix,
-            fontColor = _this$term$options.fontColor;
+
+        if (data.replace) {
+          this.cacheLogs.pop();
+        }
+
+        var logs = this.parse(data);
+
+        (_this$cacheLogs = this.cacheLogs).push.apply(_this$cacheLogs, toConsumableArray(logs));
+
+        this.renderLogs = this.cacheLogs.slice(-this.maxLength);
+        this.render();
+      }
+    }, {
+      key: "parse",
+      value: function parse(data) {
+        var prefix = this.term.options.prefix;
 
         if (data.type === INPUT) {
           data.text = prefix + escape(data.text);
@@ -2028,20 +2196,21 @@
         var lines = data.text.split(/\r?\n/);
         var scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
         var index = 0;
-        var left = padding[3];
+        var left = this.contentPadding[3];
 
         for (var i = 0; i < lines.length; i += 1) {
           var line = lines[i];
-          this.span.innerHTML = line.replace(scriptReg, '');
+          this.$tmp.innerHTML = line.replace(scriptReg, '');
 
-          for (var j = 0; j < this.span.childNodes.length; j += 1) {
-            var child = this.span.childNodes[j];
+          for (var j = 0; j < this.$tmp.childNodes.length; j += 1) {
+            var child = this.$tmp.childNodes[j];
             var word = child.textContent;
-            var wordSize = ctx.measureText(word).width;
-            var color = child.getAttribute ? child.getAttribute('color') || fontColor : fontColor;
+            var wordSize = this.ctx.measureText(word).width;
+            var color = child.getAttribute ? child.getAttribute('color') : null;
+            var background = child.getAttribute ? child.getAttribute('background') : null;
             var nextWordWidth = left + wordSize;
 
-            if (nextWordWidth > width) {
+            if (nextWordWidth > this.contentWidth) {
               var textTmp = '';
               var isNewLine = false;
               var lastLeft = left;
@@ -2050,18 +2219,20 @@
 
               for (var k = 0; k < letters.length; k += 1) {
                 var letter = letters[k];
-                var letterSize = ctx.measureText(letter).width;
+                var letterSize = this.ctx.measureText(letter).width;
                 var nextLetterWidth = left + letterSize;
 
-                if (nextLetterWidth < width) {
+                if (nextLetterWidth < this.contentWidth) {
                   textTmp += letter;
                   left = nextLetterWidth;
                 } else {
                   var _log = {
-                    width: ctx.measureText(textTmp).width,
-                    left: isNewLine ? padding[3] : lastLeft,
+                    type: data.type,
+                    width: this.ctx.measureText(textTmp).width,
+                    left: isNewLine ? this.contentPadding[3] : lastLeft,
                     text: textTmp,
-                    color: color
+                    color: color,
+                    background: background
                   };
 
                   if (result[index]) {
@@ -2073,15 +2244,17 @@
                   index += 1;
                   textTmp = letter;
                   isNewLine = true;
-                  left = padding[3] + letterSize;
+                  left = this.contentPadding[3] + letterSize;
                 }
               }
 
               var log = {
-                width: ctx.measureText(textTmp).width,
-                left: padding[3],
+                type: data.type,
+                width: this.ctx.measureText(textTmp).width,
+                left: this.contentPadding[3],
                 text: textTmp,
-                color: color
+                color: color,
+                background: background
               };
 
               if (result[index]) {
@@ -2091,10 +2264,12 @@
               }
             } else {
               var _log2 = {
+                type: data.type,
                 width: wordSize,
                 text: word,
                 left: left,
-                color: color
+                color: color,
+                background: background
               };
 
               if (result[index]) {
@@ -2108,230 +2283,47 @@
           }
 
           index += 1;
-          left = padding[3];
+          left = this.contentPadding[3];
         }
 
         return result;
       }
-    }]);
-
-    return Decoder;
-  }();
-
-  var Drawer = /*#__PURE__*/function () {
-    function Drawer(term) {
-      classCallCheck(this, Drawer);
-
-      this.term = term;
-      var _term$options = term.options,
-          pixelRatio = _term$options.pixelRatio,
-          fontSize = _term$options.fontSize,
-          fontFamily = _term$options.fontFamily,
-          backgroundColor = _term$options.backgroundColor;
-      this.gap = 10 * pixelRatio;
-      this.fontSize = fontSize * pixelRatio;
-      this.padding = [45, 15, 15, 15].map(function (item) {
-        return item * pixelRatio;
-      });
-      this.cursorColor = ['#FFF', backgroundColor];
-      this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
-      this.btnSize = 6 * pixelRatio;
-      this.$canvas = term.template.$canvas;
-      var _this$$canvas = this.$canvas,
-          width = _this$$canvas.width,
-          height = _this$$canvas.height;
-      this.height = height - this.padding[0] - this.padding[2];
-      this.width = width - this.padding[1] - this.padding[3];
-      this.totalLine = Math.floor(this.height / (this.fontSize + this.gap));
-      this.ctx = this.$canvas.getContext('2d');
-      this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
-      this.ctx.textBaseline = 'top';
-      this.inputs = [];
-      this.logs = [];
-      this.renderLogs = [];
-      this.term.emit('size', {
-        header: this.padding[0] / pixelRatio,
-        main: this.height / pixelRatio,
-        bottom: this.padding[2] / pixelRatio
-      });
-      this.draw();
-      this.draw = this.draw.bind(this);
-      this.cursor = false;
-      (function loop() {
-        var _this = this;
-
-        this.timer = setTimeout(function () {
-          _this.cursor = !_this.cursor;
-
-          _this.drawCursor();
-
-          loop.call(_this);
-        }, 500);
-      }).call(this);
-    }
-
-    createClass(Drawer, [{
-      key: "draw",
-      value: function draw(input, startIndex) {
-        this.drawBackground();
-        this.drawTopbar();
-        this.drawContent(input, startIndex);
-        return this;
+    }, {
+      key: "clear",
+      value: function clear() {
+        this.cacheLogs = [];
+        this.renderLogs = [];
+        this.render();
       }
     }, {
-      key: "drawBackground",
-      value: function drawBackground() {
-        var backgroundColor = this.term.options.backgroundColor;
-        var _this$$canvas2 = this.$canvas,
-            width = _this$$canvas2.width,
-            height = _this$$canvas2.height;
-        this.ctx.clearRect(0, 0, width, height);
-        this.ctx.fillStyle = backgroundColor;
-        this.ctx.fillRect(0, 0, width, height);
-      }
-    }, {
-      key: "drawTopbar",
-      value: function drawTopbar() {
-        var _this2 = this;
-
-        var _this$term$options = this.term.options,
-            title = _this$term$options.title,
-            fontColor = _this$term$options.fontColor;
-        this.ctx.fillStyle = fontColor;
-
-        var _this$ctx$measureText = this.ctx.measureText(title),
-            width = _this$ctx$measureText.width;
-
-        this.ctx.fillText(title, this.$canvas.width / 2 - width / 2, this.padding[1] - this.btnSize / 2);
-        this.btnColor.forEach(function (item, index) {
-          _this2.ctx.beginPath();
-
-          _this2.ctx.arc(_this2.padding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.padding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
-
-          _this2.ctx.fillStyle = item;
-
-          _this2.ctx.fill();
-
-          _this2.ctx.closePath();
-        });
-      }
-    }, {
-      key: "drawContent",
-      value: function drawContent(input, startIndex) {
-        var _this3 = this;
-
-        if (input) {
-          if (input.replace) {
-            var lastInput = this.inputs[this.inputs.length - 1];
-
-            if (lastInput) {
-              this.logs = this.logs.filter(function (item) {
-                return item.input !== lastInput;
-              });
-            }
-          }
-
-          this.inputs.push(input);
-          this.term.decoder.decode(input).forEach(function (item) {
-            item.input = input;
-
-            _this3.logs.push(item);
-          });
-        }
-
-        if (typeof startIndex === 'number') {
-          var renderLogs = this.logs.slice(startIndex, startIndex + this.totalLine);
-          this.render(renderLogs);
-        } else {
-          var _renderLogs = this.logs.slice(-this.totalLine);
-
-          this.render(_renderLogs);
-        }
-      }
-    }, {
-      key: "renderByTop",
-      value: function renderByTop(top) {
-        var pixelRatio = this.term.options.pixelRatio;
-        var startIndex = Math.ceil(top * pixelRatio / (this.fontSize + this.gap));
-        this.draw(null, startIndex);
-      }
-    }, {
-      key: "render",
-      value: function render(renderLogs) {
-        var pixelRatio = this.term.options.pixelRatio;
-        this.renderLogs = renderLogs;
-
-        for (var i = 0; i < renderLogs.length; i += 1) {
-          var logs = renderLogs[i];
-
-          if (logs) {
-            for (var j = 0; j < logs.length; j += 1) {
-              var log = logs[j];
-              this.ctx.fillStyle = log.color;
-
-              var _top = this.padding[0] + (this.fontSize + this.gap) * i;
-
-              this.ctx.fillText(log.text, log.left, _top);
-            }
-          }
-        }
-
-        var _this$cursorPos = this.cursorPos,
-            left = _this$cursorPos.left,
-            top = _this$cursorPos.top;
-        this.term.emit('cursor', {
-          left: left / pixelRatio,
-          top: top / pixelRatio
-        });
-        var lastlogInInput = this.logs[this.logs.length - 1];
-        var lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
-
-        if (lastlogInInput === lastlogInRender) {
-          this.scrollHeight = this.logs.length * (this.fontSize + this.gap) / pixelRatio;
-          var lastlog = this.renderLogs[this.renderLogs.length - 1];
-          var lastIndex = this.logs.indexOf(lastlog);
-          this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.gap) - this.height) / pixelRatio;
-          this.term.emit('scroll', {
-            scrollHeight: this.scrollHeight,
-            scrollTop: this.scrollTop
-          });
-        }
-      }
-    }, {
-      key: "drawCursor",
-      value: function drawCursor() {
-        var _this$cursorPos2 = this.cursorPos,
-            left = _this$cursorPos2.left,
-            top = _this$cursorPos2.top;
-        var pixelRatio = this.term.options.pixelRatio;
-
-        if (this.renderEditable) {
-          this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
-          this.ctx.fillRect(left, top, pixelRatio * 5, this.fontSize);
-        }
-      }
-    }, {
-      key: "editable",
+      key: "lastCacheLog",
       get: function get() {
-        var lastlog = this.logs[this.logs.length - 1];
-        return this.term.isFocus && lastlog && lastlog.length && lastlog.input.type === INPUT;
+        var logs = this.cacheLogs[this.cacheLogs.length - 1];
+        return logs && logs[logs.length - 1];
+      }
+    }, {
+      key: "lastRenderLog",
+      get: function get() {
+        var logs = this.renderLogs[this.renderLogs.length - 1];
+        return logs && logs[logs.length - 1];
+      }
+    }, {
+      key: "cacheEditable",
+      get: function get() {
+        return this.term.isFocus && this.lastCacheLog && this.lastCacheLog.type === INPUT;
       }
     }, {
       key: "renderEditable",
       get: function get() {
-        var lastlogInInput = this.logs[this.logs.length - 1];
-        var lastlogInRender = this.renderLogs[this.renderLogs.length - 1];
-        return lastlogInInput === lastlogInRender && this.term.isFocus && lastlogInRender && lastlogInRender.length && lastlogInRender.input.type === INPUT;
+        return this.cacheEditable && this.lastCacheLog === this.lastRenderLog;
       }
     }, {
       key: "cursorPos",
       get: function get() {
         if (this.renderEditable) {
           var pixelRatio = this.term.options.pixelRatio;
-          var lastlog = this.renderLogs[this.renderLogs.length - 1];
-          var lastLine = lastlog[lastlog.length - 1];
-          var left = lastLine.left + lastLine.width + pixelRatio * 4;
-          var top = this.padding[0] + (this.fontSize + this.gap) * (this.renderLogs.length - 1);
+          var left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 4;
+          var top = this.contentPadding[0] + (this.fontSize + this.logGap) * (this.renderLogs.length - 1);
           return {
             left: left,
             top: top
@@ -2345,7 +2337,7 @@
       }
     }]);
 
-    return Drawer;
+    return renderer;
   }();
 
   var _minimist_1_2_5_minimist = function (args, opts) {
@@ -2604,15 +2596,14 @@
           welcome = term.options.welcome;
       this.input = this.input.bind(this);
       this.output = this.output.bind(this);
-      this.clear = this.clear.bind(this);
       this.output(welcome).input('');
       term.on('input', function (text) {
-        if (drawer.editable) {
+        if (drawer.cacheEditable) {
           _this.input(text, true);
         }
       });
       term.on('enter', function (text) {
-        if (drawer.editable) {
+        if (drawer.cacheEditable) {
           _this.execute(text);
         }
       });
@@ -2641,11 +2632,11 @@
                 var loadingText = loading.call(this.term, text, argv);
                 this.output(loadingText);
                 return result.then(function (data) {
-                  if (typeof data === 'undefined') {
-                    return _this2.input('');
+                  if (typeof data !== 'undefined') {
+                    return _this2.output(data, true).input('');
                   }
 
-                  return _this2.output(data, true).input('');
+                  return _this2;
                 }).catch(function (error) {
                   var errorType = optionValidator.kindOf(error);
                   var errorText = errorType === 'error' ? "".concat(String(error)) : "Error: ".concat(String(error));
@@ -2654,11 +2645,11 @@
                 });
               }
 
-              if (typeof result === 'undefined') {
-                return this.input('');
+              if (typeof result !== 'undefined') {
+                return this.output(result).input('');
               }
 
-              return this.output(result).input('');
+              return this;
             } catch (error) {
               var message = "<d color=\"red\">".concat(String(error), "</d>");
               return this.output(message).input('');
@@ -2695,7 +2686,7 @@
       key: "output",
       value: function output(text) {
         var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        this.term.drawer.draw({
+        this.term.drawer.emit({
           type: OUTPUT,
           replace: replace,
           text: String(text)
@@ -2706,18 +2697,11 @@
       key: "input",
       value: function input(text) {
         var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        this.term.drawer.draw({
+        this.term.drawer.emit({
           type: INPUT,
           replace: replace,
           text: String(text)
         });
-        return this;
-      }
-    }, {
-      key: "clear",
-      value: function clear() {
-        this.term.drawer.logs = [];
-        this.term.drawer.draw();
         return this;
       }
     }]);
@@ -2794,6 +2778,28 @@
     return Recorder;
   }();
 
+  var Inquirer = /*#__PURE__*/function () {
+    function Inquirer(term) {
+      classCallCheck(this, Inquirer);
+
+      this.term = term;
+      this.radio = this.radio.bind(this);
+      this.checkbox = this.checkbox.bind(this);
+    }
+
+    createClass(Inquirer, [{
+      key: "radio",
+      value: function radio(list, validate) {//
+      }
+    }, {
+      key: "checkbox",
+      value: function checkbox(list, validate) {//
+      }
+    }]);
+
+    return Inquirer;
+  }();
+
   function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -2817,7 +2823,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.0.3';
+        return '1.0.4';
       }
     }, {
       key: "utils",
@@ -2897,13 +2903,15 @@
       _this.isFocus = false;
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));
-      _this.decoder = new Decoder(assertThisInitialized(_this));
-      _this.drawer = new Drawer(assertThisInitialized(_this));
+      _this.drawer = new renderer(assertThisInitialized(_this));
       _this.commander = new Commander(assertThisInitialized(_this));
+      _this.inquirer = new Inquirer(assertThisInitialized(_this));
       _this.recorder = new Recorder(assertThisInitialized(_this));
       _this.input = _this.commander.input;
       _this.output = _this.commander.output;
-      _this.clear = _this.commander.clear;
+      _this.clear = _this.drawer.clear;
+      _this.radio = _this.commander.radio;
+      _this.checkbox = _this.commander.checkbox;
       _this.start = _this.recorder.start;
       _this.end = _this.recorder.end;
       id += 1;
