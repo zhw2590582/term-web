@@ -1,6 +1,6 @@
 import validator from 'option-validator';
 import { INPUT, OUTPUT } from './constant';
-import { escape, clamp } from './utils';
+import { escape, clamp, uuid } from './utils';
 
 export default class renderer {
     constructor(term) {
@@ -182,7 +182,10 @@ export default class renderer {
         });
 
         if (data.replace) {
-            this.cacheLogs.pop();
+            const lastLogs = this.cacheLogs[this.cacheLogs.length - 1];
+            if (lastLogs && lastLogs.group) {
+                this.cacheLogs = this.cacheLogs.filter((item) => item.group !== lastLogs.group);
+            }
         }
 
         const logs = this.parse(data);
@@ -198,6 +201,7 @@ export default class renderer {
             data.text = prefix + escape(data.text);
         }
 
+        const group = uuid();
         const result = [];
         const lines = data.text.split(/\r?\n/);
         const scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
@@ -241,6 +245,7 @@ export default class renderer {
                                 result[index].push(log);
                             } else {
                                 result[index] = [log];
+                                result[index].group = group;
                             }
 
                             index += 1;
@@ -263,6 +268,7 @@ export default class renderer {
                         result[index].push(log);
                     } else {
                         result[index] = [log];
+                        result[index].group = group;
                     }
                 } else {
                     const log = {
@@ -277,6 +283,7 @@ export default class renderer {
                         result[index].push(log);
                     } else {
                         result[index] = [log];
+                        result[index].group = group;
                     }
                     left = nextWordWidth;
                 }

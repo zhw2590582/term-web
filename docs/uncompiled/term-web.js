@@ -2175,7 +2175,13 @@
         });
 
         if (data.replace) {
-          this.cacheLogs.pop();
+          var lastLogs = this.cacheLogs[this.cacheLogs.length - 1];
+
+          if (lastLogs && lastLogs.group) {
+            this.cacheLogs = this.cacheLogs.filter(function (item) {
+              return item.group !== lastLogs.group;
+            });
+          }
         }
 
         var logs = this.parse(data);
@@ -2194,6 +2200,7 @@
           data.text = prefix + escape(data.text);
         }
 
+        var group = uuid();
         var result = [];
         var lines = data.text.split(/\r?\n/);
         var scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
@@ -2240,6 +2247,7 @@
                     result[index].push(_log);
                   } else {
                     result[index] = [_log];
+                    result[index].group = group;
                   }
 
                   index += 1;
@@ -2261,6 +2269,7 @@
                 result[index].push(log);
               } else {
                 result[index] = [log];
+                result[index].group = group;
               }
             } else {
               var _log2 = _objectSpread$1({}, data, {
@@ -2275,6 +2284,7 @@
                 result[index].push(_log2);
               } else {
                 result[index] = [_log2];
+                result[index].group = group;
               }
 
               left = nextWordWidth;
@@ -2788,11 +2798,23 @@
 
     createClass(Inquirer, [{
       key: "radio",
-      value: function radio(list, validate) {//
+      value: function radio(list, validate) {
+        optionValidator(list, [{
+          key: 'string|number',
+          text: 'string|number'
+        }]);
+        var text = list.map(function (item) {
+          return item.text;
+        }).join('\n');
+        this.term.output(text, true);
       }
     }, {
       key: "checkbox",
-      value: function checkbox(list, validate) {//
+      value: function checkbox(list, validate) {
+        optionValidator(list, [{
+          key: 'string|number',
+          text: 'string|number'
+        }]);
       }
     }]);
 
@@ -2909,8 +2931,8 @@
       _this.input = _this.commander.input;
       _this.output = _this.commander.output;
       _this.clear = _this.drawer.clear;
-      _this.radio = _this.commander.radio;
-      _this.checkbox = _this.commander.checkbox;
+      _this.radio = _this.inquirer.radio;
+      _this.checkbox = _this.inquirer.checkbox;
       _this.start = _this.recorder.start;
       _this.end = _this.recorder.end;
       id += 1;
