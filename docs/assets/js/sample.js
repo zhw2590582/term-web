@@ -62,7 +62,11 @@ var term = new Term({
                     .then((text) => {
                         return text
                             .split(/\r?\n/)
-                            .map((item) => `<d color="${randomColor()}">${item}</d>`)
+                            .map((item) => {
+                                const color = randomColor();
+                                const random = Math.random() > 0.5;
+                                return `<d color="${random ? color : '#fff'}" background="${random ? '' : color}">${item}</d>`;
+                            })
                             .join(' ');
                     });
             },
