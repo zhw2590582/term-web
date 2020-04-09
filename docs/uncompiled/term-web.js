@@ -2065,9 +2065,10 @@
     createClass(renderer, [{
       key: "render",
       value: function render() {
+        var isScrollTobottom = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
         this.renderBackground();
         this.renderTopbar();
-        this.renderContent();
+        this.renderContent(isScrollTobottom);
         return this;
       }
     }, {
@@ -2105,13 +2106,10 @@
       }
     }, {
       key: "renderContent",
-      value: function renderContent() {
+      value: function renderContent(isScrollTobottom) {
         var _this$term$options2 = this.term.options,
             pixelRatio = _this$term$options2.pixelRatio,
-            fontColor = _this$term$options2.fontColor,
-            backgroundColor = _this$term$options2.backgroundColor;
-        this.ctx.fillStyle = backgroundColor;
-        this.ctx.fillRect(this.contentPadding[3], this.contentPadding[0], this.contentWidth, this.contentHeight);
+            fontColor = _this$term$options2.fontColor;
 
         if (this.renderLogs.length) {
           for (var i = 0; i < this.renderLogs.length; i += 1) {
@@ -2149,7 +2147,16 @@
         var lastlogs = this.renderLogs[this.renderLogs.length - 1];
         var lastIndex = this.cacheLogs.indexOf(lastlogs);
         this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-        this.term.emit('scrollTop', this.scrollTop);
+
+        if (isScrollTobottom) {
+          this.term.emit('scrollTop', this.scrollTop);
+        }
+      }
+    }, {
+      key: "renderByIndex",
+      value: function renderByIndex(index) {
+        this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
+        this.render(false);
       }
     }, {
       key: "renderByTop",
@@ -2157,12 +2164,6 @@
         var pixelRatio = this.term.options.pixelRatio;
         var index = Math.ceil(top * pixelRatio / (this.fontSize + this.logGap));
         this.renderByIndex(index);
-      }
-    }, {
-      key: "renderByIndex",
-      value: function renderByIndex(index) {
-        this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
-        this.renderContent();
       }
     }, {
       key: "renderCursor",
@@ -2210,7 +2211,7 @@
         (_this$cacheLogs = this.cacheLogs).push.apply(_this$cacheLogs, toConsumableArray(logs));
 
         this.renderLogs = this.cacheLogs.slice(-this.maxLength);
-        this.renderContent();
+        this.render();
       }
     }, {
       key: "parse",
@@ -2252,7 +2253,7 @@
                 var letterSize = this.ctx.measureText(letter).width;
                 var nextLetterWidth = left + letterSize;
 
-                if (nextLetterWidth < this.contentWidth) {
+                if (nextLetterWidth <= this.contentWidth) {
                   textTmp += letter;
                   left = nextLetterWidth;
                 } else {
@@ -2323,7 +2324,7 @@
       value: function clear() {
         this.cacheLogs = [];
         this.renderLogs = [];
-        this.renderContent();
+        this.render();
       }
     }, {
       key: "lastCacheLog",

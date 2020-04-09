@@ -89,10 +89,10 @@ export default class renderer {
         return { left: 0, top: 0 };
     }
 
-    render() {
+    render(isScrollTobottom = true) {
         this.renderBackground();
         this.renderTopbar();
-        this.renderContent();
+        this.renderContent(isScrollTobottom);
         return this;
     }
 
@@ -123,11 +123,8 @@ export default class renderer {
         });
     }
 
-    renderContent() {
-        const { pixelRatio, fontColor, backgroundColor } = this.term.options;
-
-        this.ctx.fillStyle = backgroundColor;
-        this.ctx.fillRect(this.contentPadding[3], this.contentPadding[0], this.contentWidth, this.contentHeight);
+    renderContent(isScrollTobottom) {
+        const { pixelRatio, fontColor } = this.term.options;
 
         if (this.renderLogs.length) {
             for (let i = 0; i < this.renderLogs.length; i += 1) {
@@ -161,18 +158,20 @@ export default class renderer {
         const lastlogs = this.renderLogs[this.renderLogs.length - 1];
         const lastIndex = this.cacheLogs.indexOf(lastlogs);
         this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-        this.term.emit('scrollTop', this.scrollTop);
+        if (isScrollTobottom) {
+            this.term.emit('scrollTop', this.scrollTop);
+        }
+    }
+
+    renderByIndex(index) {
+        this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
+        this.render(false);
     }
 
     renderByTop(top) {
         const { pixelRatio } = this.term.options;
         const index = Math.ceil((top * pixelRatio) / (this.fontSize + this.logGap));
         this.renderByIndex(index);
-    }
-
-    renderByIndex(index) {
-        this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
-        this.renderContent();
     }
 
     renderCursor() {
@@ -207,7 +206,7 @@ export default class renderer {
         const logs = this.parse(data);
         this.cacheLogs.push(...logs);
         this.renderLogs = this.cacheLogs.slice(-this.maxLength);
-        this.renderContent();
+        this.render();
     }
 
     parse(data) {
@@ -244,7 +243,7 @@ export default class renderer {
                         const letter = letters[k];
                         const letterSize = this.ctx.measureText(letter).width;
                         const nextLetterWidth = left + letterSize;
-                        if (nextLetterWidth < this.contentWidth) {
+                        if (nextLetterWidth <= this.contentWidth) {
                             textTmp += letter;
                             left = nextLetterWidth;
                         } else {
@@ -314,6 +313,6 @@ export default class renderer {
     clear() {
         this.cacheLogs = [];
         this.renderLogs = [];
-        this.renderContent();
+        this.render();
     }
 }
