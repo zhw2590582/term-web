@@ -4,10 +4,15 @@ var term = new Term({
     title: `Term Web ${Term.version}`,
     fontFamily: 'monospace',
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
-    welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>, try typing <d color="yellow">hi</d> to start',
+    welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>',
     loading: () => '<d color="yellow">Please wait for a moment...</d>',
     notFound: (val) => `🐶 : <d color='red'>${val}</d> : command not found`,
     actions: [
+        {
+            // Automatic input
+            input: 'what is this ?',
+            output: '<d color="yellow">This is a simple Terminal UI that run on the web</d>',
+        },
         {
             // Exact match
             input: 'hi',
@@ -105,11 +110,11 @@ var term = new Term({
             output() {
                 this.checkbox([
                     {
-                        key: 1,
+                        key: 0,
                         text: 'hi',
                     },
                     {
-                        key: 0,
+                        key: 1,
                         text: 'bye',
                     },
                 ]).then((key) => {
@@ -119,3 +124,5 @@ var term = new Term({
         },
     ],
 });
+
+term.type('what is this ?');

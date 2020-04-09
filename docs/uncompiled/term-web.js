@@ -2631,6 +2631,8 @@
       this.term = term;
       var drawer = term.drawer,
           welcome = term.options.welcome;
+      this.isTyping = false;
+      this.type = this.type.bind(this);
       this.input = this.input.bind(this);
       this.output = this.output.bind(this);
       this.output(welcome).input('');
@@ -2740,6 +2742,43 @@
           text: String(text)
         });
         return this;
+      }
+    }, {
+      key: "type",
+      value: function type(text) {
+        var _this3 = this;
+
+        var isExecute = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+        if (this.isTyping) return Promise.reject();
+        var $textarea = this.term.template.$textarea;
+        return new Promise(function (resolve) {
+          var letters = toConsumableArray(text);
+
+          var lastLetters = '';
+          (function loop() {
+            var _this4 = this;
+
+            if (!letters.length) {
+              this.isTyping = false;
+              $textarea.value = lastLetters;
+
+              if (isExecute) {
+                this.execute(lastLetters);
+                $textarea.value = '';
+              }
+
+              resolve(lastLetters);
+            } else {
+              this.isTyping = true;
+              var letter = letters.shift();
+              lastLetters += letter;
+              this.input(lastLetters, true);
+              setTimeout(function () {
+                loop.call(_this4);
+              }, 100);
+            }
+          }).call(_this3);
+        });
       }
     }]);
 
@@ -3137,6 +3176,7 @@
       _this.commander = new Commander(assertThisInitialized(_this));
       _this.inquirer = new Inquirer(assertThisInitialized(_this));
       _this.recorder = new Recorder(assertThisInitialized(_this));
+      _this.type = _this.commander.type;
       _this.input = _this.commander.input;
       _this.output = _this.commander.output;
       _this.clear = _this.drawer.clear;

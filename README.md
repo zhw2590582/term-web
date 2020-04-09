@@ -128,6 +128,11 @@ var term = new Term({
 -   `text` is the string to be displayed.
 -   `isReplace` indicates whether to replace the previous record, default is `false`;
 
+#### term.type(text, isExecute)
+
+-   `text` is the string to be displayed.
+-   `isExecute` Whether to execute immediately after typing, default is `true`;
+
 #### term.clear()
 
 Clear all log

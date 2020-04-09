@@ -11,6 +11,8 @@ export default class Commander {
             options: { welcome },
         } = term;
 
+        this.isTyping = false;
+        this.type = this.type.bind(this);
         this.input = this.input.bind(this);
         this.output = this.output.bind(this);
 
@@ -106,5 +108,33 @@ export default class Commander {
             text: String(text),
         });
         return this;
+    }
+
+    type(text, isExecute = true) {
+        if (this.isTyping) return Promise.reject();
+        const { $textarea } = this.term.template;
+        return new Promise((resolve) => {
+            const letters = [...text];
+            let lastLetters = '';
+            (function loop() {
+                if (!letters.length) {
+                    this.isTyping = false;
+                    $textarea.value = lastLetters;
+                    if (isExecute) {
+                        this.execute(lastLetters);
+                        $textarea.value = '';
+                    }
+                    resolve(lastLetters);
+                } else {
+                    this.isTyping = true;
+                    const letter = letters.shift();
+                    lastLetters += letter;
+                    this.input(lastLetters, true);
+                    setTimeout(() => {
+                        loop.call(this);
+                    }, 100);
+                }
+            }.call(this));
+        });
     }
 }

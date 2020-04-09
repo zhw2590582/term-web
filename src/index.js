@@ -98,6 +98,7 @@ export default class Term extends Emitter {
         this.inquirer = new Inquirer(this);
         this.recorder = new Recorder(this);
 
+        this.type = this.commander.type;
         this.input = this.commander.input;
         this.output = this.commander.output;
         this.clear = this.drawer.clear;
