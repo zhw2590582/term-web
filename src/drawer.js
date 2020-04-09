@@ -17,7 +17,7 @@ export default class renderer {
 
         this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[1] - this.contentPadding[3];
+        this.contentWidth = this.canvasWidth - this.contentPadding[3];
 
         this.logGap = 10 * pixelRatio;
         this.fontSize = fontSize * pixelRatio;
@@ -89,10 +89,10 @@ export default class renderer {
         return { left: 0, top: 0 };
     }
 
-    render(isScrollTobottom = true) {
+    render(isAutoScroll = true) {
         this.renderBackground();
         this.renderTopbar();
-        this.renderContent(isScrollTobottom);
+        this.renderContent(isAutoScroll);
         return this;
     }
 
@@ -123,7 +123,7 @@ export default class renderer {
         });
     }
 
-    renderContent(isScrollTobottom) {
+    renderContent(isAutoScroll) {
         const { pixelRatio, fontColor } = this.term.options;
 
         if (this.renderLogs.length) {
@@ -155,12 +155,17 @@ export default class renderer {
         this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
 
+        if (isAutoScroll) {
+            this.autoScroll();
+        }
+    }
+
+    autoScroll() {
+        const { pixelRatio } = this.term.options;
         const lastlogs = this.renderLogs[this.renderLogs.length - 1];
         const lastIndex = this.cacheLogs.indexOf(lastlogs);
         this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-        if (isScrollTobottom) {
-            this.term.emit('scrollTop', this.scrollTop);
-        }
+        this.term.emit('scrollTop', this.scrollTop);
     }
 
     renderByIndex(index) {

@@ -2024,7 +2024,7 @@
         return item * pixelRatio;
       });
       this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-      this.contentWidth = this.canvasWidth - this.contentPadding[1] - this.contentPadding[3];
+      this.contentWidth = this.canvasWidth - this.contentPadding[3];
       this.logGap = 10 * pixelRatio;
       this.fontSize = fontSize * pixelRatio;
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
@@ -2065,10 +2065,10 @@
     createClass(renderer, [{
       key: "render",
       value: function render() {
-        var isScrollTobottom = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        var isAutoScroll = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
         this.renderBackground();
         this.renderTopbar();
-        this.renderContent(isScrollTobottom);
+        this.renderContent(isAutoScroll);
         return this;
       }
     }, {
@@ -2106,7 +2106,7 @@
       }
     }, {
       key: "renderContent",
-      value: function renderContent(isScrollTobottom) {
+      value: function renderContent(isAutoScroll) {
         var _this$term$options2 = this.term.options,
             pixelRatio = _this$term$options2.pixelRatio,
             fontColor = _this$term$options2.fontColor;
@@ -2144,13 +2144,19 @@
 
         this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
+
+        if (isAutoScroll) {
+          this.autoScroll();
+        }
+      }
+    }, {
+      key: "autoScroll",
+      value: function autoScroll() {
+        var pixelRatio = this.term.options.pixelRatio;
         var lastlogs = this.renderLogs[this.renderLogs.length - 1];
         var lastIndex = this.cacheLogs.indexOf(lastlogs);
         this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-
-        if (isScrollTobottom) {
-          this.term.emit('scrollTop', this.scrollTop);
-        }
+        this.term.emit('scrollTop', this.scrollTop);
       }
     }, {
       key: "renderByIndex",
