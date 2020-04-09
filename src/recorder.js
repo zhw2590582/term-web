@@ -44,15 +44,17 @@ export default class Recorder {
         this.recorder.onstart = () => {
             this.term.emit('start');
         };
+        this.recorder.onstop = () => {
+            const url = URL.createObjectURL(new Blob(this.blobs));
+            download(url, `${Date.now()}.webm`);
+            URL.revokeObjectURL(url);
+            this.blobs = [];
+            this.term.emit('end');
+        };
         this.recorder.start(1000);
     }
 
     end() {
         this.recorder.stop();
-        const url = URL.createObjectURL(new Blob(this.blobs));
-        download(url, `${Date.now()}.webm`);
-        URL.revokeObjectURL(url);
-        this.blobs = [];
-        this.term.emit('end');
     }
 }

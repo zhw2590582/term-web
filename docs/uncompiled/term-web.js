@@ -2820,17 +2820,21 @@
           _this.term.emit('start');
         };
 
+        this.recorder.onstop = function () {
+          var url = URL.createObjectURL(new Blob(_this.blobs));
+          download(url, "".concat(Date.now(), ".webm"));
+          URL.revokeObjectURL(url);
+          _this.blobs = [];
+
+          _this.term.emit('end');
+        };
+
         this.recorder.start(1000);
       }
     }, {
       key: "end",
       value: function end() {
         this.recorder.stop();
-        var url = URL.createObjectURL(new Blob(this.blobs));
-        download(url, "".concat(Date.now(), ".webm"));
-        URL.revokeObjectURL(url);
-        this.blobs = [];
-        this.term.emit('end');
       }
     }, {
       key: "recording",
@@ -3092,7 +3096,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.0.4';
+        return '1.0.5';
       }
     }, {
       key: "utils",
