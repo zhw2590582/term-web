@@ -71,17 +71,16 @@ export default class Events {
             }
         });
 
-        term.on('scroll', ({ scrollHeight, scrollTop }) => {
-            if (scrollHeight) {
-                $scrollbar.style.height = `${scrollHeight}px`;
+        term.on('scrollTop', (scrollTop) => {
+            if (canRenderByTop) {
+                canRenderByTop = false;
+            } else {
+                $content.scrollTop = scrollTop;
             }
-            if (scrollTop) {
-                if (canRenderByTop) {
-                    canRenderByTop = false;
-                } else {
-                    $content.scrollTop = scrollTop;
-                }
-            }
+        });
+
+        term.on('scrollHeight', (scrollHeight) => {
+            $scrollbar.style.height = `${scrollHeight}px`;
         });
 
         term.on('cursor', ({ left, top }) => {

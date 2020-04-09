@@ -1624,32 +1624,26 @@
           canRenderByTop = true;
         }
       });
-      term.on('scroll', function (_ref) {
-        var scrollHeight = _ref.scrollHeight,
-            scrollTop = _ref.scrollTop;
-
-        if (scrollHeight) {
-          $scrollbar.style.height = "".concat(scrollHeight, "px");
-        }
-
-        if (scrollTop) {
-          if (canRenderByTop) {
-            canRenderByTop = false;
-          } else {
-            $content.scrollTop = scrollTop;
-          }
+      term.on('scrollTop', function (scrollTop) {
+        if (canRenderByTop) {
+          canRenderByTop = false;
+        } else {
+          $content.scrollTop = scrollTop;
         }
       });
-      term.on('cursor', function (_ref2) {
-        var left = _ref2.left,
-            top = _ref2.top;
+      term.on('scrollHeight', function (scrollHeight) {
+        $scrollbar.style.height = "".concat(scrollHeight, "px");
+      });
+      term.on('cursor', function (_ref) {
+        var left = _ref.left,
+            top = _ref.top;
         $textarea.style.top = "".concat(top, "px");
         $textarea.style.left = "".concat(left, "px");
       });
-      term.on('size', function (_ref3) {
-        var header = _ref3.header,
-            content = _ref3.content,
-            footer = _ref3.footer;
+      term.on('size', function (_ref2) {
+        var header = _ref2.header,
+            content = _ref2.content,
+            footer = _ref2.footer;
         $header.style.height = "".concat(header, "px");
         $footer.style.height = "".concat(footer, "px");
         $content.style.top = "".concat(header, "px");
@@ -1663,9 +1657,9 @@
           $recorder.classList.add('recording');
         }
       });
-      term.on('recording', function (_ref4) {
-        var size = _ref4.size,
-            duration = _ref4.duration;
+      term.on('recording', function (_ref3) {
+        var size = _ref3.size,
+            duration = _ref3.duration;
 
         if (recorder) {
           $recorderSize.innerText = "".concat(Math.floor(size / 1024) || 0, "kb");
@@ -2151,18 +2145,23 @@
         }
 
         this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
-        this.scrollTop = this.scrollHeight - this.contentHeight / 2;
-        this.term.emit('scroll', {
-          scrollHeight: this.scrollHeight,
-          scrollTop: this.scrollTop
-        });
+        this.term.emit('scrollHeight', this.scrollHeight);
+        var lastlogs = this.renderLogs[this.renderLogs.length - 1];
+        var lastIndex = this.cacheLogs.indexOf(lastlogs);
+        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+        this.term.emit('scrollTop', this.scrollTop);
       }
     }, {
       key: "renderByTop",
       value: function renderByTop(top) {
         var pixelRatio = this.term.options.pixelRatio;
-        var startIndex = Math.ceil(top * pixelRatio / (this.fontSize + this.logGap));
-        this.renderLogs = this.cacheLogs.slice(startIndex, startIndex + this.maxLength);
+        var index = Math.ceil(top * pixelRatio / (this.fontSize + this.logGap));
+        this.renderByIndex(index);
+      }
+    }, {
+      key: "renderByIndex",
+      value: function renderByIndex(index) {
+        this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
         this.renderContent();
       }
     }, {
