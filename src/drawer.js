@@ -66,10 +66,6 @@ export default class renderer {
         return logs && logs[logs.length - 1];
     }
 
-    get lastCacheHasStyle() {
-        return this.lastCacheLog && this.lastCacheLog.style;
-    }
-
     get lastRenderLog() {
         const logs = this.renderLogs[this.renderLogs.length - 1];
         return logs && logs[logs.length - 1];

@@ -2332,11 +2332,6 @@
         return logs && logs[logs.length - 1];
       }
     }, {
-      key: "lastCacheHasStyle",
-      get: function get() {
-        return this.lastCacheLog && this.lastCacheLog.style;
-      }
-    }, {
       key: "lastRenderLog",
       get: function get() {
         var logs = this.renderLogs[this.renderLogs.length - 1];
