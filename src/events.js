@@ -7,8 +7,18 @@ export default class Events {
 
         const {
             options: { recorder, draggable, dragOpt },
-            template: { $recorder, $recorderSize, $recorderDuration, $recorderBtn },
-            template: { $container, $textarea, $content, $scrollbar, $header, $footer },
+            template: {
+                $container,
+                $textarea,
+                $content,
+                $scrollbar,
+                $header,
+                $footer,
+                $recorder,
+                $recorderSize,
+                $recorderDuration,
+                $recorderBtn,
+            },
         } = term;
 
         this.proxy(document, ['click', 'contextmenu'], (event) => {

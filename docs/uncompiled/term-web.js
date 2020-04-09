@@ -1554,17 +1554,16 @@
           draggable = _term$options.draggable,
           dragOpt = _term$options.dragOpt,
           _term$template = term.template,
+          $container = _term$template.$container,
+          $textarea = _term$template.$textarea,
+          $content = _term$template.$content,
+          $scrollbar = _term$template.$scrollbar,
+          $header = _term$template.$header,
+          $footer = _term$template.$footer,
           $recorder = _term$template.$recorder,
           $recorderSize = _term$template.$recorderSize,
           $recorderDuration = _term$template.$recorderDuration,
-          $recorderBtn = _term$template.$recorderBtn,
-          _term$template2 = term.template,
-          $container = _term$template2.$container,
-          $textarea = _term$template2.$textarea,
-          $content = _term$template2.$content,
-          $scrollbar = _term$template2.$scrollbar,
-          $header = _term$template2.$header,
-          $footer = _term$template2.$footer;
+          $recorderBtn = _term$template.$recorderBtn;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
         if (event.composedPath && event.composedPath().indexOf($content) > -1) {
           term.isFocus = true;
