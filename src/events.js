@@ -71,13 +71,17 @@ export default class Events {
             }
         });
 
-        term.on('scrollTop', (scrollTop) => {
-            canRenderByTop = false;
-            $content.scrollTo(0, scrollTop);
-        });
-
-        term.on('scrollHeight', (scrollHeight) => {
-            $scrollbar.style.height = `${scrollHeight}px`;
+        term.on('scroll', ({ scrollHeight, scrollTop }) => {
+            if (scrollHeight) {
+                $scrollbar.style.height = `${scrollHeight}px`;
+            }
+            if (scrollTop) {
+                if (canRenderByTop) {
+                    canRenderByTop = false;
+                } else {
+                    $content.scrollTop = scrollTop;
+                }
+            }
         });
 
         term.on('cursor', ({ left, top }) => {

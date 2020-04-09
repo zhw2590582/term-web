@@ -1624,23 +1624,32 @@
           canRenderByTop = true;
         }
       });
-      term.on('scrollTop', function (scrollTop) {
-        canRenderByTop = false;
-        $content.scrollTo(0, scrollTop);
+      term.on('scroll', function (_ref) {
+        var scrollHeight = _ref.scrollHeight,
+            scrollTop = _ref.scrollTop;
+
+        if (scrollHeight) {
+          $scrollbar.style.height = "".concat(scrollHeight, "px");
+        }
+
+        if (scrollTop) {
+          if (canRenderByTop) {
+            canRenderByTop = false;
+          } else {
+            $content.scrollTop = scrollTop;
+          }
+        }
       });
-      term.on('scrollHeight', function (scrollHeight) {
-        $scrollbar.style.height = "".concat(scrollHeight, "px");
-      });
-      term.on('cursor', function (_ref) {
-        var left = _ref.left,
-            top = _ref.top;
+      term.on('cursor', function (_ref2) {
+        var left = _ref2.left,
+            top = _ref2.top;
         $textarea.style.top = "".concat(top, "px");
         $textarea.style.left = "".concat(left, "px");
       });
-      term.on('size', function (_ref2) {
-        var header = _ref2.header,
-            content = _ref2.content,
-            footer = _ref2.footer;
+      term.on('size', function (_ref3) {
+        var header = _ref3.header,
+            content = _ref3.content,
+            footer = _ref3.footer;
         $header.style.height = "".concat(header, "px");
         $footer.style.height = "".concat(footer, "px");
         $content.style.top = "".concat(header, "px");
@@ -1654,9 +1663,9 @@
           $recorder.classList.add('recording');
         }
       });
-      term.on('recording', function (_ref3) {
-        var size = _ref3.size,
-            duration = _ref3.duration;
+      term.on('recording', function (_ref4) {
+        var size = _ref4.size,
+            duration = _ref4.duration;
 
         if (recorder) {
           $recorderSize.innerText = "".concat(Math.floor(size / 1024) || 0, "kb");
@@ -2028,6 +2037,8 @@
       this.btnSize = 6 * pixelRatio;
       this.cursorColor = ['#FFF', backgroundColor];
       this.cursorSize = 5 * pixelRatio;
+      this.scrollHeight = 0;
+      this.scrollTop = 0;
       this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
       this.ctx = $canvas.getContext('2d');
       this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
@@ -2103,7 +2114,10 @@
       value: function renderContent() {
         var _this$term$options2 = this.term.options,
             pixelRatio = _this$term$options2.pixelRatio,
-            fontColor = _this$term$options2.fontColor;
+            fontColor = _this$term$options2.fontColor,
+            backgroundColor = _this$term$options2.backgroundColor;
+        this.ctx.fillStyle = backgroundColor;
+        this.ctx.fillRect(this.contentPadding[3], this.contentPadding[0], this.contentWidth, this.contentHeight);
 
         if (this.renderLogs.length) {
           for (var i = 0; i < this.renderLogs.length; i += 1) {
@@ -2137,11 +2151,11 @@
         }
 
         this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
-        this.term.emit('scrollHeight', clamp(this.scrollHeight, 0, Infinity));
-        var lastlogs = this.renderLogs[this.renderLogs.length - 1];
-        var lastIndex = this.cacheLogs.indexOf(lastlogs);
-        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-        this.term.emit('scrollTop', clamp(this.scrollTop, 0, Infinity));
+        this.scrollTop = this.scrollHeight - this.contentHeight / 2;
+        this.term.emit('scroll', {
+          scrollHeight: this.scrollHeight,
+          scrollTop: this.scrollTop
+        });
       }
     }, {
       key: "renderByTop",
@@ -2149,7 +2163,7 @@
         var pixelRatio = this.term.options.pixelRatio;
         var startIndex = Math.ceil(top * pixelRatio / (this.fontSize + this.logGap));
         this.renderLogs = this.cacheLogs.slice(startIndex, startIndex + this.maxLength);
-        this.render();
+        this.renderContent();
       }
     }, {
       key: "renderCursor",
@@ -2197,7 +2211,7 @@
         (_this$cacheLogs = this.cacheLogs).push.apply(_this$cacheLogs, toConsumableArray(logs));
 
         this.renderLogs = this.cacheLogs.slice(-this.maxLength);
-        this.render();
+        this.renderContent();
       }
     }, {
       key: "parse",
@@ -2310,13 +2324,18 @@
       value: function clear() {
         this.cacheLogs = [];
         this.renderLogs = [];
-        this.render();
+        this.renderContent();
       }
     }, {
       key: "lastCacheLog",
       get: function get() {
         var logs = this.cacheLogs[this.cacheLogs.length - 1];
         return logs && logs[logs.length - 1];
+      }
+    }, {
+      key: "lastCacheHasStyle",
+      get: function get() {
+        return this.lastCacheLog && this.lastCacheLog.style;
       }
     }, {
       key: "lastRenderLog",

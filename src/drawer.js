@@ -1,6 +1,6 @@
 import validator from 'option-validator';
 import { INPUT, OUTPUT } from './constant';
-import { escape, clamp, uuid } from './utils';
+import { escape, uuid } from './utils';
 
 export default class renderer {
     constructor(term) {
@@ -26,6 +26,9 @@ export default class renderer {
 
         this.cursorColor = ['#FFF', backgroundColor];
         this.cursorSize = 5 * pixelRatio;
+
+        this.scrollHeight = 0;
+        this.scrollTop = 0;
 
         this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
 
@@ -61,6 +64,10 @@ export default class renderer {
     get lastCacheLog() {
         const logs = this.cacheLogs[this.cacheLogs.length - 1];
         return logs && logs[logs.length - 1];
+    }
+
+    get lastCacheHasStyle() {
+        return this.lastCacheLog && this.lastCacheLog.style;
     }
 
     get lastRenderLog() {
@@ -121,7 +128,10 @@ export default class renderer {
     }
 
     renderContent() {
-        const { pixelRatio, fontColor } = this.term.options;
+        const { pixelRatio, fontColor, backgroundColor } = this.term.options;
+
+        this.ctx.fillStyle = backgroundColor;
+        this.ctx.fillRect(this.contentPadding[3], this.contentPadding[0], this.contentWidth, this.contentHeight);
 
         if (this.renderLogs.length) {
             for (let i = 0; i < this.renderLogs.length; i += 1) {
@@ -150,19 +160,18 @@ export default class renderer {
         }
 
         this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
-        this.term.emit('scrollHeight', clamp(this.scrollHeight, 0, Infinity));
-
-        const lastlogs = this.renderLogs[this.renderLogs.length - 1];
-        const lastIndex = this.cacheLogs.indexOf(lastlogs);
-        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
-        this.term.emit('scrollTop', clamp(this.scrollTop, 0, Infinity));
+        this.scrollTop = this.scrollHeight - this.contentHeight / 2;
+        this.term.emit('scroll', {
+            scrollHeight: this.scrollHeight,
+            scrollTop: this.scrollTop,
+        });
     }
 
     renderByTop(top) {
         const { pixelRatio } = this.term.options;
         const startIndex = Math.ceil((top * pixelRatio) / (this.fontSize + this.logGap));
         this.renderLogs = this.cacheLogs.slice(startIndex, startIndex + this.maxLength);
-        this.render();
+        this.renderContent();
     }
 
     renderCursor() {
@@ -197,7 +206,7 @@ export default class renderer {
         const logs = this.parse(data);
         this.cacheLogs.push(...logs);
         this.renderLogs = this.cacheLogs.slice(-this.maxLength);
-        this.render();
+        this.renderContent();
     }
 
     parse(data) {
@@ -304,6 +313,6 @@ export default class renderer {
     clear() {
         this.cacheLogs = [];
         this.renderLogs = [];
-        this.render();
+        this.renderContent();
     }
 }
