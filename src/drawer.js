@@ -2,54 +2,34 @@ import validator from 'option-validator';
 import { INPUT, OUTPUT } from './constant';
 import { escape, uuid } from './utils';
 
-export default class renderer {
+export default class Drawer {
     constructor(term) {
         this.term = term;
 
-        const {
-            template: { $canvas },
-            options: { pixelRatio, fontSize, fontFamily, backgroundColor },
-        } = term;
+        const { pixelRatio, fontSize, backgroundColor } = term.options;
 
-        this.$tmp = document.createElement('div');
-        this.canvasHeight = $canvas.height;
-        this.canvasWidth = $canvas.width;
-
-        this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
-        this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[3];
-
+        this.scrollHeight = 0;
+        this.scrollTop = 0;
+        this.cursorColor = ['#FFF', backgroundColor];
+        this.cursorSize = 5 * pixelRatio;
         this.logGap = 10 * pixelRatio;
         this.fontSize = fontSize * pixelRatio;
         this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
         this.btnSize = 6 * pixelRatio;
-
-        this.cursorColor = ['#FFF', backgroundColor];
-        this.cursorSize = 5 * pixelRatio;
-
-        this.scrollHeight = 0;
-        this.scrollTop = 0;
-
-        this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
-
-        this.ctx = $canvas.getContext('2d');
-        this.ctx.font = `${this.fontSize}px ${fontFamily}`;
-        this.ctx.textBaseline = 'top';
+        this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
+        this.$tmp = document.createElement('div');
 
         this.cacheEmits = [];
         this.cacheLogs = [];
         this.renderLogs = [];
 
-        this.term.emit('size', {
-            header: this.contentPadding[0] / pixelRatio,
-            content: this.contentHeight / pixelRatio,
-            footer: this.contentPadding[2] / pixelRatio,
-        });
-
         this.emit = this.emit.bind(this);
         this.clear = this.clear.bind(this);
 
-        this.render();
+        this.init();
+        term.on('resize', () => {
+            this.init();
+        });
 
         this.cursor = false;
         (function loop() {
@@ -59,6 +39,31 @@ export default class renderer {
                 loop.call(this);
             }, 500);
         }.call(this));
+    }
+
+    init() {
+        const {
+            template: { $canvas },
+            options: { pixelRatio, fontFamily },
+        } = this.term;
+
+        this.canvasHeight = $canvas.height;
+        this.canvasWidth = $canvas.width;
+        this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
+        this.contentWidth = this.canvasWidth - this.contentPadding[3];
+        this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
+
+        this.ctx = $canvas.getContext('2d');
+        this.ctx.font = `${this.fontSize}px ${fontFamily}`;
+        this.ctx.textBaseline = 'top';
+
+        this.term.emit('size', {
+            header: this.contentPadding[0] / pixelRatio,
+            content: this.contentHeight / pixelRatio,
+            footer: this.contentPadding[2] / pixelRatio,
+        });
+
+        this.render();
     }
 
     get lastCacheLog() {

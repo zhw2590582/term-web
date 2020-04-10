@@ -53,6 +53,10 @@ export default class Template {
         this.$footer.classList.add('term-footer');
         this.$container.appendChild(this.$footer);
 
+        this.$resize = document.createElement('div');
+        this.$resize.classList.add('term-resize');
+        this.$footer.appendChild(this.$resize);
+
         this.$textarea = document.createElement('textarea');
         this.$textarea.classList.add('term-textarea');
         this.$container.appendChild(this.$textarea);
@@ -91,7 +95,8 @@ export default class Template {
                 '.term-recorder.recording .term-recorder-duration{display:block;}',
                 '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}',
                 '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}',
-                '.is-dragging.term-container{opacity:.95};'
+                '.term-resize{position: absolute;right: 0;bottom: 0;width: 20px;height: 20px;cursor: nwse-resize;}',
+                '.is-dragging.term-container{opacity:.95};',
             ].join('');
             document.head.appendChild(this.$style);
         }

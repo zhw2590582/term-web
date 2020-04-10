@@ -1553,8 +1553,10 @@
           recorder = _term$options.recorder,
           draggable = _term$options.draggable,
           dragOpt = _term$options.dragOpt,
+          pixelRatio = _term$options.pixelRatio,
           _term$template = term.template,
           $container = _term$template.$container,
+          $canvas = _term$template.$canvas,
           $textarea = _term$template.$textarea,
           $content = _term$template.$content,
           $scrollbar = _term$template.$scrollbar,
@@ -1563,7 +1565,8 @@
           $recorder = _term$template.$recorder,
           $recorderSize = _term$template.$recorderSize,
           $recorderDuration = _term$template.$recorderDuration,
-          $recorderBtn = _term$template.$recorderBtn;
+          $recorderBtn = _term$template.$recorderBtn,
+          $resize = _term$template.$resize;
       this.proxy(document, ['click', 'contextmenu'], function (event) {
         if (event.composedPath && event.composedPath().indexOf($content) > -1) {
           term.isFocus = true;
@@ -1571,6 +1574,47 @@
         } else {
           term.isFocus = false;
           term.emit('blur');
+        }
+      });
+      var isResize = false;
+      var lastX = 0;
+      var lastY = 0;
+      var lastWidth = 0;
+      var lastHeight = 0;
+      this.proxy($resize, 'mousedown', function (event) {
+        isResize = true;
+        var clientWidth = $container.clientWidth,
+            clientHeight = $container.clientHeight;
+        lastWidth = clientWidth;
+        lastHeight = clientHeight;
+        lastX = event.pageX;
+        lastY = event.pageY;
+      });
+      this.proxy(document, 'mousemove', function (event) {
+        if (isResize) {
+          $content.style.visibility = 'hidden';
+          var width = lastWidth + event.pageX - lastX;
+          var height = lastHeight + event.pageY - lastY;
+
+          if (width >= 300 && height >= 300) {
+            $container.style.width = "".concat(width, "px");
+            $container.style.height = "".concat(height, "px");
+          }
+        }
+      });
+      this.proxy(document, 'mouseup', function () {
+        if (isResize) {
+          $content.style.visibility = 'visible';
+          var clientWidth = $container.clientWidth,
+              clientHeight = $container.clientHeight;
+          $canvas.width = clientWidth * pixelRatio;
+          $canvas.height = clientHeight * pixelRatio;
+          isResize = false;
+          lastX = 0;
+          lastY = 0;
+          lastWidth = 0;
+          lastHeight = 0;
+          term.drawer.init();
         }
       });
 
@@ -1909,6 +1953,9 @@
       this.$footer = document.createElement('div');
       this.$footer.classList.add('term-footer');
       this.$container.appendChild(this.$footer);
+      this.$resize = document.createElement('div');
+      this.$resize.classList.add('term-resize');
+      this.$footer.appendChild(this.$resize);
       this.$textarea = document.createElement('textarea');
       this.$textarea.classList.add('term-textarea');
       this.$container.appendChild(this.$textarea);
@@ -1926,7 +1973,7 @@
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-content:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.is-dragging.term-container{opacity:.95};'].join('');
+        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}', '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-content:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.term-resize{position: absolute;right: 0;bottom: 0;width: 20px;height: 20px;cursor: nwse-resize;}', '.is-dragging.term-container{opacity:.95};'].join('');
         document.head.appendChild(this.$style);
       }
     }
@@ -2005,63 +2052,76 @@
 
   function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-  var renderer = /*#__PURE__*/function () {
-    function renderer(term) {
-      classCallCheck(this, renderer);
+  var Drawer = /*#__PURE__*/function () {
+    function Drawer(term) {
+      var _this = this;
+
+      classCallCheck(this, Drawer);
 
       this.term = term;
-      var $canvas = term.template.$canvas,
-          _term$options = term.options,
+      var _term$options = term.options,
           pixelRatio = _term$options.pixelRatio,
           fontSize = _term$options.fontSize,
-          fontFamily = _term$options.fontFamily,
           backgroundColor = _term$options.backgroundColor;
-      this.$tmp = document.createElement('div');
-      this.canvasHeight = $canvas.height;
-      this.canvasWidth = $canvas.width;
-      this.contentPadding = [45, 15, 15, 15].map(function (item) {
-        return item * pixelRatio;
-      });
-      this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-      this.contentWidth = this.canvasWidth - this.contentPadding[3];
+      this.scrollHeight = 0;
+      this.scrollTop = 0;
+      this.cursorColor = ['#FFF', backgroundColor];
+      this.cursorSize = 5 * pixelRatio;
       this.logGap = 10 * pixelRatio;
       this.fontSize = fontSize * pixelRatio;
       this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
       this.btnSize = 6 * pixelRatio;
-      this.cursorColor = ['#FFF', backgroundColor];
-      this.cursorSize = 5 * pixelRatio;
-      this.scrollHeight = 0;
-      this.scrollTop = 0;
-      this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
-      this.ctx = $canvas.getContext('2d');
-      this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
-      this.ctx.textBaseline = 'top';
+      this.contentPadding = [45, 15, 15, 15].map(function (item) {
+        return item * pixelRatio;
+      });
+      this.$tmp = document.createElement('div');
       this.cacheEmits = [];
       this.cacheLogs = [];
       this.renderLogs = [];
-      this.term.emit('size', {
-        header: this.contentPadding[0] / pixelRatio,
-        content: this.contentHeight / pixelRatio,
-        footer: this.contentPadding[2] / pixelRatio
-      });
       this.emit = this.emit.bind(this);
       this.clear = this.clear.bind(this);
-      this.render();
+      this.init();
+      term.on('resize', function () {
+        _this.init();
+      });
       this.cursor = false;
       (function loop() {
-        var _this = this;
+        var _this2 = this;
 
         this.cursorTimer = setTimeout(function () {
-          _this.cursor = !_this.cursor;
+          _this2.cursor = !_this2.cursor;
 
-          _this.renderCursor();
+          _this2.renderCursor();
 
-          loop.call(_this);
+          loop.call(_this2);
         }, 500);
       }).call(this);
     }
 
-    createClass(renderer, [{
+    createClass(Drawer, [{
+      key: "init",
+      value: function init() {
+        var _this$term = this.term,
+            $canvas = _this$term.template.$canvas,
+            _this$term$options = _this$term.options,
+            pixelRatio = _this$term$options.pixelRatio,
+            fontFamily = _this$term$options.fontFamily;
+        this.canvasHeight = $canvas.height;
+        this.canvasWidth = $canvas.width;
+        this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
+        this.contentWidth = this.canvasWidth - this.contentPadding[3];
+        this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
+        this.ctx = $canvas.getContext('2d');
+        this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
+        this.ctx.textBaseline = 'top';
+        this.term.emit('size', {
+          header: this.contentPadding[0] / pixelRatio,
+          content: this.contentHeight / pixelRatio,
+          footer: this.contentPadding[2] / pixelRatio
+        });
+        this.render();
+      }
+    }, {
       key: "render",
       value: function render() {
         var isAutoScroll = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
@@ -2080,11 +2140,11 @@
     }, {
       key: "renderTopbar",
       value: function renderTopbar() {
-        var _this2 = this;
+        var _this3 = this;
 
-        var _this$term$options = this.term.options,
-            title = _this$term$options.title,
-            fontColor = _this$term$options.fontColor;
+        var _this$term$options2 = this.term.options,
+            title = _this$term$options2.title,
+            fontColor = _this$term$options2.fontColor;
         this.ctx.fillStyle = fontColor;
 
         var _this$ctx$measureText = this.ctx.measureText(title),
@@ -2092,23 +2152,23 @@
 
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
-          _this2.ctx.beginPath();
+          _this3.ctx.beginPath();
 
-          _this2.ctx.arc(_this2.contentPadding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.contentPadding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
+          _this3.ctx.arc(_this3.contentPadding[3] + _this3.btnSize + index * _this3.btnSize * 3.6, _this3.contentPadding[1] + _this3.btnSize, _this3.btnSize, 0, 360, false);
 
-          _this2.ctx.fillStyle = item;
+          _this3.ctx.fillStyle = item;
 
-          _this2.ctx.fill();
+          _this3.ctx.fill();
 
-          _this2.ctx.closePath();
+          _this3.ctx.closePath();
         });
       }
     }, {
       key: "renderContent",
       value: function renderContent(isAutoScroll) {
-        var _this$term$options2 = this.term.options,
-            pixelRatio = _this$term$options2.pixelRatio,
-            fontColor = _this$term$options2.fontColor;
+        var _this$term$options3 = this.term.options,
+            pixelRatio = _this$term$options3.pixelRatio,
+            fontColor = _this$term$options3.fontColor;
 
         if (this.renderLogs.length) {
           for (var i = 0; i < this.renderLogs.length; i += 1) {
@@ -2373,7 +2433,7 @@
       }
     }]);
 
-    return renderer;
+    return Drawer;
   }();
 
   var _minimist_1_2_5_minimist = function (args, opts) {
@@ -3175,7 +3235,7 @@
       _this.isFocus = false;
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));
-      _this.drawer = new renderer(assertThisInitialized(_this));
+      _this.drawer = new Drawer(assertThisInitialized(_this));
       _this.commander = new Commander(assertThisInitialized(_this));
       _this.inquirer = new Inquirer(assertThisInitialized(_this));
       _this.recorder = new Recorder(assertThisInitialized(_this));

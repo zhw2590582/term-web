@@ -6,9 +6,10 @@ export default class Events {
         this.proxy = this.proxy.bind(this);
 
         const {
-            options: { recorder, draggable, dragOpt },
+            options: { recorder, draggable, dragOpt, pixelRatio },
             template: {
                 $container,
+                $canvas,
                 $textarea,
                 $content,
                 $scrollbar,
@@ -18,6 +19,7 @@ export default class Events {
                 $recorderSize,
                 $recorderDuration,
                 $recorderBtn,
+                $resize,
             },
         } = term;
 
@@ -28,6 +30,48 @@ export default class Events {
             } else {
                 term.isFocus = false;
                 term.emit('blur');
+            }
+        });
+
+        let isResize = false;
+        let lastX = 0;
+        let lastY = 0;
+        let lastWidth = 0;
+        let lastHeight = 0;
+
+        this.proxy($resize, 'mousedown', (event) => {
+            isResize = true;
+            const { clientWidth, clientHeight } = $container;
+            lastWidth = clientWidth;
+            lastHeight = clientHeight;
+            lastX = event.pageX;
+            lastY = event.pageY;
+        });
+
+        this.proxy(document, 'mousemove', (event) => {
+            if (isResize) {
+                $content.style.visibility = 'hidden';
+                const width = lastWidth + event.pageX - lastX;
+                const height = lastHeight + event.pageY - lastY;
+                if (width >= 300 && height >= 300) {
+                    $container.style.width = `${width}px`;
+                    $container.style.height = `${height}px`;
+                }
+            }
+        });
+
+        this.proxy(document, 'mouseup', () => {
+            if (isResize) {
+                $content.style.visibility = 'visible';
+                const { clientWidth, clientHeight } = $container;
+                $canvas.width = clientWidth * pixelRatio;
+                $canvas.height = clientHeight * pixelRatio;
+                isResize = false;
+                lastX = 0;
+                lastY = 0;
+                lastWidth = 0;
+                lastHeight = 0;
+                term.drawer.init();
             }
         });
 
