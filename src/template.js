@@ -79,12 +79,12 @@ export default class Template {
             this.$style = document.createElement('style');
             this.$style.id = 'term-ui-style';
             this.$style.textContent = [
-                `.term-container{font-family:${fontFamily};font-size:${fontSize}px;color:${fontColor};position:relative;}`,
+                `.term-container{font-family:${fontFamily};font-size:${fontSize}px;color:${fontColor};position:relative;user-select:none;}`,
                 '.term-container ::-webkit-scrollbar{width:5px;}',
                 '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}',
                 '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}',
                 `.term-canvas{width:100%;height:100%;border-radius:${borderRadius}px;box-shadow:${boxShadow};}`,
-                '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;user-select:none;}',
+                '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;}',
                 '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}',
                 '.term-content:hover{cursor:text}',
                 '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}',
