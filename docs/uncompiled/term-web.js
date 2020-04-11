@@ -1940,6 +1940,9 @@
       this.$canvas.width = width * pixelRatio;
       this.$canvas.height = height * pixelRatio;
       this.$container.appendChild(this.$canvas);
+      this.$textarea = document.createElement('textarea');
+      this.$textarea.classList.add('term-textarea');
+      this.$container.appendChild(this.$textarea);
       this.$header = document.createElement('div');
       this.$header.classList.add('term-header');
       this.$container.appendChild(this.$header);
@@ -1956,9 +1959,6 @@
       this.$resize = document.createElement('div');
       this.$resize.classList.add('term-resize');
       this.$footer.appendChild(this.$resize);
-      this.$textarea = document.createElement('textarea');
-      this.$textarea.classList.add('term-textarea');
-      this.$container.appendChild(this.$textarea);
 
       if (recorder) {
         this.$recorder = document.createElement('div');
