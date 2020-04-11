@@ -30,7 +30,7 @@ var term = new Term({
         },
         {
             // Return a promise
-            input: /^test/i,
+            input: /^wait/i,
             output(input) {
                 return new Promise((resolve) => {
                     setTimeout(() => {
