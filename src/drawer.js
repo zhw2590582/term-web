@@ -27,9 +27,6 @@ export default class Drawer {
         this.clear = this.clear.bind(this);
 
         this.init();
-        term.on('resize', () => {
-            this.init();
-        });
 
         this.cursor = false;
         (function loop() {

@@ -62,17 +62,23 @@ export default class Events {
 
         this.proxy(document, 'mouseup', () => {
             if (isResize) {
-                $content.style.visibility = 'visible';
-                const { clientWidth, clientHeight } = $container;
-                $canvas.width = clientWidth * pixelRatio;
-                $canvas.height = clientHeight * pixelRatio;
                 isResize = false;
                 lastX = 0;
                 lastY = 0;
                 lastWidth = 0;
                 lastHeight = 0;
-                term.drawer.init();
+                $content.style.visibility = 'visible';
+                const { clientWidth, clientHeight } = $container;
+                term.emit('resize', { width: clientWidth, height: clientHeight });
             }
+        });
+
+        term.on('resize', ({ width, height }) => {
+            $container.style.width = `${width}px`;
+            $container.style.height = `${height}px`;
+            $canvas.width = width * pixelRatio;
+            $canvas.height = height * pixelRatio;
+            term.drawer.init();
         });
 
         if (draggable) {

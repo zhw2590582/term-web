@@ -1604,18 +1604,28 @@
       });
       this.proxy(document, 'mouseup', function () {
         if (isResize) {
-          $content.style.visibility = 'visible';
-          var clientWidth = $container.clientWidth,
-              clientHeight = $container.clientHeight;
-          $canvas.width = clientWidth * pixelRatio;
-          $canvas.height = clientHeight * pixelRatio;
           isResize = false;
           lastX = 0;
           lastY = 0;
           lastWidth = 0;
           lastHeight = 0;
-          term.drawer.init();
+          $content.style.visibility = 'visible';
+          var clientWidth = $container.clientWidth,
+              clientHeight = $container.clientHeight;
+          term.emit('resize', {
+            width: clientWidth,
+            height: clientHeight
+          });
         }
+      });
+      term.on('resize', function (_ref) {
+        var width = _ref.width,
+            height = _ref.height;
+        $container.style.width = "".concat(width, "px");
+        $container.style.height = "".concat(height, "px");
+        $canvas.width = width * pixelRatio;
+        $canvas.height = height * pixelRatio;
+        term.drawer.init();
       });
 
       if (draggable) {
@@ -1677,16 +1687,16 @@
       term.on('scrollHeight', function (scrollHeight) {
         $scrollbar.style.height = "".concat(scrollHeight, "px");
       });
-      term.on('cursor', function (_ref) {
-        var left = _ref.left,
-            top = _ref.top;
+      term.on('cursor', function (_ref2) {
+        var left = _ref2.left,
+            top = _ref2.top;
         $textarea.style.top = "".concat(top, "px");
         $textarea.style.left = "".concat(left, "px");
       });
-      term.on('size', function (_ref2) {
-        var header = _ref2.header,
-            content = _ref2.content,
-            footer = _ref2.footer;
+      term.on('size', function (_ref3) {
+        var header = _ref3.header,
+            content = _ref3.content,
+            footer = _ref3.footer;
         $header.style.height = "".concat(header, "px");
         $footer.style.height = "".concat(footer, "px");
         $content.style.top = "".concat(header, "px");
@@ -1700,9 +1710,9 @@
           $recorder.classList.add('recording');
         }
       });
-      term.on('recording', function (_ref3) {
-        var size = _ref3.size,
-            duration = _ref3.duration;
+      term.on('recording', function (_ref4) {
+        var size = _ref4.size,
+            duration = _ref4.duration;
 
         if (recorder) {
           $recorderSize.innerText = "".concat(Math.floor(size / 1024) || 0, "kb");
@@ -2054,8 +2064,6 @@
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
-      var _this = this;
-
       classCallCheck(this, Drawer);
 
       this.term = term;
@@ -2081,19 +2089,16 @@
       this.emit = this.emit.bind(this);
       this.clear = this.clear.bind(this);
       this.init();
-      term.on('resize', function () {
-        _this.init();
-      });
       this.cursor = false;
       (function loop() {
-        var _this2 = this;
+        var _this = this;
 
         this.cursorTimer = setTimeout(function () {
-          _this2.cursor = !_this2.cursor;
+          _this.cursor = !_this.cursor;
 
-          _this2.renderCursor();
+          _this.renderCursor();
 
-          loop.call(_this2);
+          loop.call(_this);
         }, 500);
       }).call(this);
     }
@@ -2140,7 +2145,7 @@
     }, {
       key: "renderTopbar",
       value: function renderTopbar() {
-        var _this3 = this;
+        var _this2 = this;
 
         var _this$term$options2 = this.term.options,
             title = _this$term$options2.title,
@@ -2152,15 +2157,15 @@
 
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
-          _this3.ctx.beginPath();
+          _this2.ctx.beginPath();
 
-          _this3.ctx.arc(_this3.contentPadding[3] + _this3.btnSize + index * _this3.btnSize * 3.6, _this3.contentPadding[1] + _this3.btnSize, _this3.btnSize, 0, 360, false);
+          _this2.ctx.arc(_this2.contentPadding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.contentPadding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
 
-          _this3.ctx.fillStyle = item;
+          _this2.ctx.fillStyle = item;
 
-          _this3.ctx.fill();
+          _this2.ctx.fill();
 
-          _this3.ctx.closePath();
+          _this2.ctx.closePath();
         });
       }
     }, {
