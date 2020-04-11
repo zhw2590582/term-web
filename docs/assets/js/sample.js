@@ -87,6 +87,15 @@ var term = new Term({
             },
         },
         {
+            // Ask a question
+            input: /^ask$/i,
+            output() {
+                this.ask(`<d color='#27C93F'>> How are you ? </d>`).then((answer) => {
+                    this.output(`<d color='yellow'>${answer}</d>`, true).input('');
+                });
+            },
+        },
+        {
             // Radio
             input: /^radio$/i,
             output() {

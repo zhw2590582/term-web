@@ -8,10 +8,14 @@ export default class Commander {
 
         const {
             drawer,
+            template: { $textarea },
             options: { welcome },
         } = term;
 
         this.isTyping = false;
+        this.askResolve = null;
+
+        this.ask = this.ask.bind(this);
         this.type = this.type.bind(this);
         this.input = this.input.bind(this);
         this.output = this.output.bind(this);
@@ -20,15 +24,31 @@ export default class Commander {
 
         term.on('input', (text) => {
             if (drawer.cacheEditable) {
-                this.input(text, true);
+                if (this.isAsk) {
+                    const { prefix } = drawer.lastCacheLog;
+                    this.ask(prefix, text);
+                } else {
+                    this.input(text, true);
+                }
             }
         });
 
         term.on('enter', (text) => {
             if (drawer.cacheEditable && text.trim()) {
-                this.execute(text);
+                if (this.isAsk) {
+                    this.askResolve(text);
+                    this.askResolve = null;
+                    $textarea.value = '';
+                } else {
+                    this.execute(text);
+                }
             }
         });
+    }
+
+    get isAsk() {
+        const { lastCacheLog } = this.term.drawer;
+        return lastCacheLog && lastCacheLog.prefix && typeof this.askResolve === 'function';
     }
 
     execute(text) {
@@ -108,6 +128,24 @@ export default class Commander {
             text: String(text),
         });
         return this;
+    }
+
+    ask(question, answer = '') {
+        const { $textarea } = this.term.template;
+        return new Promise((resolve) => {
+            this.term.drawer.emit({
+                type: INPUT,
+                replace: !!this.askResolve,
+                prefix: question,
+                text: answer,
+                resolve,
+            });
+            if (this.askResolve) {
+                $textarea.value = answer;
+            } else {
+                this.askResolve = resolve;
+            }
+        });
     }
 
     type(text, isExecute = true) {

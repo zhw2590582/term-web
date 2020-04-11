@@ -201,6 +201,7 @@ export default class Drawer {
                 return true;
             },
             text: 'string',
+            prefix: 'undefined|string',
             replace: 'undefined|boolean',
         });
 
@@ -223,7 +224,7 @@ export default class Drawer {
         const { prefix } = this.term.options;
 
         if (data.type === INPUT) {
-            data.text = prefix + escape(data.text);
+            data.text = (data.prefix || prefix) + escape(data.text);
         }
 
         const group = uuid();

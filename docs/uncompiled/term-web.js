@@ -2256,6 +2256,7 @@
             return true;
           },
           text: 'string',
+          prefix: 'undefined|string',
           replace: 'undefined|boolean'
         });
 
@@ -2284,7 +2285,7 @@
         var prefix = this.term.options.prefix;
 
         if (data.type === INPUT) {
-          data.text = prefix + escape(data.text);
+          data.text = (data.prefix || prefix) + escape(data.text);
         }
 
         var group = uuid();
@@ -2689,20 +2690,36 @@
 
       this.term = term;
       var drawer = term.drawer,
+          $textarea = term.template.$textarea,
           welcome = term.options.welcome;
       this.isTyping = false;
+      this.askResolve = null;
+      this.ask = this.ask.bind(this);
       this.type = this.type.bind(this);
       this.input = this.input.bind(this);
       this.output = this.output.bind(this);
       this.output(welcome).input('');
       term.on('input', function (text) {
         if (drawer.cacheEditable) {
-          _this.input(text, true);
+          if (_this.isAsk) {
+            var prefix = drawer.lastCacheLog.prefix;
+
+            _this.ask(prefix, text);
+          } else {
+            _this.input(text, true);
+          }
         }
       });
       term.on('enter', function (text) {
         if (drawer.cacheEditable && text.trim()) {
-          _this.execute(text);
+          if (_this.isAsk) {
+            _this.askResolve(text);
+
+            _this.askResolve = null;
+            $textarea.value = '';
+          } else {
+            _this.execute(text);
+          }
         }
       });
     }
@@ -2803,9 +2820,32 @@
         return this;
       }
     }, {
+      key: "ask",
+      value: function ask(question) {
+        var _this3 = this;
+
+        var answer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+        var $textarea = this.term.template.$textarea;
+        return new Promise(function (resolve) {
+          _this3.term.drawer.emit({
+            type: INPUT,
+            replace: !!_this3.askResolve,
+            prefix: question,
+            text: answer,
+            resolve: resolve
+          });
+
+          if (_this3.askResolve) {
+            $textarea.value = answer;
+          } else {
+            _this3.askResolve = resolve;
+          }
+        });
+      }
+    }, {
       key: "type",
       value: function type(text) {
-        var _this3 = this;
+        var _this4 = this;
 
         var isExecute = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
         if (this.isTyping) return Promise.reject();
@@ -2815,7 +2855,7 @@
 
           var lastLetters = '';
           (function loop() {
-            var _this4 = this;
+            var _this5 = this;
 
             if (!letters.length) {
               this.isTyping = false;
@@ -2833,11 +2873,17 @@
               lastLetters += letter;
               this.input(lastLetters, true);
               setTimeout(function () {
-                loop.call(_this4);
+                loop.call(_this5);
               }, 100);
             }
-          }).call(_this3);
+          }).call(_this4);
         });
+      }
+    }, {
+      key: "isAsk",
+      get: function get() {
+        var lastCacheLog = this.term.drawer.lastCacheLog;
+        return lastCacheLog && lastCacheLog.prefix && typeof this.askResolve === 'function';
       }
     }]);
 
@@ -3239,6 +3285,7 @@
       _this.commander = new Commander(assertThisInitialized(_this));
       _this.inquirer = new Inquirer(assertThisInitialized(_this));
       _this.recorder = new Recorder(assertThisInitialized(_this));
+      _this.ask = _this.commander.ask;
       _this.type = _this.commander.type;
       _this.input = _this.commander.input;
       _this.output = _this.commander.output;
