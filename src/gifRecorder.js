@@ -56,6 +56,7 @@ export default class GifRecorder {
             {
                 gifWidth: $container.clientWidth,
                 gifHeight: $container.clientHeight,
+                numWorkers: 4,
                 ...gifshotOpt,
                 images: this.images,
             },

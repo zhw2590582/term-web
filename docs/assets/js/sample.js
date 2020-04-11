@@ -1,9 +1,9 @@
 var term = new Term({
     container: '#term',
     pixelRatio: 2,
-    recordType: 'gif',
-    title: `Term Web ${Term.version}`,
+    recordType: 'gif', // gif or video
     fontFamily: 'monospace',
+    title: `Term Web ${Term.version}`,
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
     welcome: '🎉 Hello, welcome to use <d color="yellow">Term Web</d>',
     loading: () => '<d color="yellow">Please wait for a moment...</d>',

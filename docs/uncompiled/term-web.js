@@ -5846,7 +5846,8 @@
             $container = _this$term.template.$container;
         gifshot.createGIF(_objectSpread$2({
           gifWidth: $container.clientWidth,
-          gifHeight: $container.clientHeight
+          gifHeight: $container.clientHeight,
+          numWorkers: 4
         }, gifshotOpt, {
           images: this.images
         }), function (data) {
