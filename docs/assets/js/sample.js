@@ -1,6 +1,7 @@
 var term = new Term({
     container: '#term',
     pixelRatio: 2,
+    recordType: 'gif',
     title: `Term Web ${Term.version}`,
     fontFamily: 'monospace',
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',

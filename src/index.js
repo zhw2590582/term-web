@@ -4,7 +4,8 @@ import Events from './events';
 import Template from './template';
 import Drawer from './drawer';
 import Commander from './commander';
-import Recorder from './recorder';
+import VideoRecorder from './videoRecorder';
+import GifRecorder from './gifRecorder';
 import Inquirer from './inquirer';
 import * as utils from './utils';
 
@@ -31,6 +32,8 @@ export default class Term extends Emitter {
             actions: [],
             parseOpt: {},
             recorder: true,
+            recordType: 'video',
+            gifshotOpt: {},
             draggable: true,
             dragOpt: {},
             borderRadius: 5,
@@ -61,6 +64,8 @@ export default class Term extends Emitter {
             ],
             parseOpt: 'object',
             recorder: 'boolean',
+            recordType: 'string',
+            gifshotOpt: 'object',
             draggable: 'boolean',
             dragOpt: 'object',
             borderRadius: 'number',
@@ -96,7 +101,8 @@ export default class Term extends Emitter {
         this.drawer = new Drawer(this);
         this.commander = new Commander(this);
         this.inquirer = new Inquirer(this);
-        this.recorder = new Recorder(this);
+        this.video = new VideoRecorder(this);
+        this.gif = new GifRecorder(this);
 
         this.ask = this.commander.ask;
         this.type = this.commander.type;
@@ -105,8 +111,6 @@ export default class Term extends Emitter {
         this.clear = this.drawer.clear;
         this.radio = this.inquirer.radio;
         this.checkbox = this.inquirer.checkbox;
-        this.start = this.recorder.start;
-        this.end = this.recorder.end;
 
         id += 1;
         this.id = id;

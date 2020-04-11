@@ -1,7 +1,7 @@
 import { errorHandle, download } from './utils';
 import { recorderOptions } from './constant';
 
-export default class Recorder {
+export default class VideoRecorder {
     constructor(term) {
         this.term = term;
         this.blobs = [];
@@ -55,6 +55,7 @@ export default class Recorder {
     }
 
     end() {
+        this.term.emit('creating');
         this.recorder.stop();
     }
 }

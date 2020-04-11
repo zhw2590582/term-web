@@ -6,7 +6,7 @@ export default class Events {
         this.proxy = this.proxy.bind(this);
 
         const {
-            options: { recorder, draggable, dragOpt, pixelRatio },
+            options: { recorder, draggable, dragOpt, pixelRatio, recordType },
             template: {
                 $container,
                 $canvas,
@@ -115,10 +115,10 @@ export default class Events {
         });
 
         this.proxy($recorderBtn, 'click', () => {
-            if (term.recorder.recording) {
-                term.recorder.end();
+            if (term[recordType].recording) {
+                term[recordType].end();
             } else {
-                term.recorder.start();
+                term[recordType].start();
             }
         });
 
@@ -167,8 +167,15 @@ export default class Events {
 
         term.on('recording', ({ size, duration }) => {
             if (recorder) {
-                $recorderSize.innerText = `${Math.floor(size / 1024) || 0}kb`;
+                $recorderSize.innerText = `${Math.floor(size / 1024 / 1024) || 0}mb`;
                 $recorderDuration.innerText = `${duration || 0}s`;
+            }
+        });
+
+        term.on('creating', () => {
+            if (recorder) {
+                $recorderSize.innerText = `${recordType} is creating...`;
+                $recorderDuration.innerText = '';
             }
         });
 
