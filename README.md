@@ -137,6 +137,14 @@ var term = new Term({
 
 Clear all log
 
+#### term.ask(text)
+
+-   `text` is the question string to be displayed.
+
+```js
+term.ask('How are you ?').then((answer) => console.log(answer));
+```
+
 #### term.start()
 
 Start recording video

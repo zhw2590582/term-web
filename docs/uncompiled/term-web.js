@@ -2690,21 +2690,23 @@
 
       this.term = term;
       var drawer = term.drawer,
-          $textarea = term.template.$textarea,
           welcome = term.options.welcome;
       this.isTyping = false;
       this.askResolve = null;
-      this.ask = this.ask.bind(this);
       this.type = this.type.bind(this);
       this.input = this.input.bind(this);
       this.output = this.output.bind(this);
+
+      this.ask = function (question) {
+        errorHandle(!_this.isQuestion, 'The last problem has not been solved');
+        return _this.question(question);
+      };
+
       this.output(welcome).input('');
       term.on('input', function (text) {
         if (drawer.cacheEditable) {
-          if (_this.isAsk) {
-            var prefix = drawer.lastCacheLog.prefix;
-
-            _this.ask(prefix, text);
+          if (_this.isQuestion) {
+            _this.question(drawer.lastCacheLog.prefix, text);
           } else {
             _this.input(text, true);
           }
@@ -2712,11 +2714,10 @@
       });
       term.on('enter', function (text) {
         if (drawer.cacheEditable && text.trim()) {
-          if (_this.isAsk) {
+          if (_this.isQuestion) {
             _this.askResolve(text);
 
             _this.askResolve = null;
-            $textarea.value = '';
           } else {
             _this.execute(text);
           }
@@ -2820,26 +2821,30 @@
         return this;
       }
     }, {
-      key: "ask",
-      value: function ask(question) {
+      key: "question",
+      value: function question(_question) {
         var _this3 = this;
 
         var answer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-        var $textarea = this.term.template.$textarea;
+
+        if (this.isQuestion) {
+          return this.term.drawer.emit({
+            type: INPUT,
+            replace: true,
+            prefix: _question,
+            text: answer
+          });
+        }
+
         return new Promise(function (resolve) {
+          _this3.askResolve = resolve;
+
           _this3.term.drawer.emit({
             type: INPUT,
-            replace: !!_this3.askResolve,
-            prefix: question,
-            text: answer,
-            resolve: resolve
+            replace: false,
+            prefix: _question,
+            text: answer
           });
-
-          if (_this3.askResolve) {
-            $textarea.value = answer;
-          } else {
-            _this3.askResolve = resolve;
-          }
         });
       }
     }, {
@@ -2880,10 +2885,12 @@
         });
       }
     }, {
-      key: "isAsk",
+      key: "isQuestion",
       get: function get() {
-        var lastCacheLog = this.term.drawer.lastCacheLog;
-        return lastCacheLog && lastCacheLog.prefix && typeof this.askResolve === 'function';
+        var _this$term$drawer = this.term.drawer,
+            lastCacheLog = _this$term$drawer.lastCacheLog,
+            cacheEditable = _this$term$drawer.cacheEditable;
+        return cacheEditable && lastCacheLog.prefix && typeof this.askResolve === 'function';
       }
     }]);
 

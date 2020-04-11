@@ -1,5 +1,6 @@
 import minimist from 'minimist';
 import validator from 'option-validator';
+import { errorHandle } from './utils';
 import { INPUT, OUTPUT } from './constant';
 
 export default class Commander {
@@ -8,25 +9,27 @@ export default class Commander {
 
         const {
             drawer,
-            template: { $textarea },
             options: { welcome },
         } = term;
 
         this.isTyping = false;
         this.askResolve = null;
 
-        this.ask = this.ask.bind(this);
         this.type = this.type.bind(this);
         this.input = this.input.bind(this);
         this.output = this.output.bind(this);
+
+        this.ask = (question) => {
+            errorHandle(!this.isQuestion, 'The last problem has not been solved');
+            return this.question(question);
+        };
 
         this.output(welcome).input('');
 
         term.on('input', (text) => {
             if (drawer.cacheEditable) {
-                if (this.isAsk) {
-                    const { prefix } = drawer.lastCacheLog;
-                    this.ask(prefix, text);
+                if (this.isQuestion) {
+                    this.question(drawer.lastCacheLog.prefix, text);
                 } else {
                     this.input(text, true);
                 }
@@ -35,10 +38,9 @@ export default class Commander {
 
         term.on('enter', (text) => {
             if (drawer.cacheEditable && text.trim()) {
-                if (this.isAsk) {
+                if (this.isQuestion) {
                     this.askResolve(text);
                     this.askResolve = null;
-                    $textarea.value = '';
                 } else {
                     this.execute(text);
                 }
@@ -46,9 +48,9 @@ export default class Commander {
         });
     }
 
-    get isAsk() {
-        const { lastCacheLog } = this.term.drawer;
-        return lastCacheLog && lastCacheLog.prefix && typeof this.askResolve === 'function';
+    get isQuestion() {
+        const { lastCacheLog, cacheEditable } = this.term.drawer;
+        return cacheEditable && lastCacheLog.prefix && typeof this.askResolve === 'function';
     }
 
     execute(text) {
@@ -130,21 +132,23 @@ export default class Commander {
         return this;
     }
 
-    ask(question, answer = '') {
-        const { $textarea } = this.term.template;
-        return new Promise((resolve) => {
-            this.term.drawer.emit({
+    question(question, answer = '') {
+        if (this.isQuestion) {
+            return this.term.drawer.emit({
                 type: INPUT,
-                replace: !!this.askResolve,
+                replace: true,
                 prefix: question,
                 text: answer,
-                resolve,
             });
-            if (this.askResolve) {
-                $textarea.value = answer;
-            } else {
-                this.askResolve = resolve;
-            }
+        }
+        return new Promise((resolve) => {
+            this.askResolve = resolve;
+            this.term.drawer.emit({
+                type: INPUT,
+                replace: false,
+                prefix: question,
+                text: answer,
+            });
         });
     }
 
