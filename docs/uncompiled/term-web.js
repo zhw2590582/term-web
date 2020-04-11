@@ -1722,8 +1722,8 @@
       });
       term.on('creating', function () {
         if (recorder) {
-          $recorderSize.innerText = "".concat(recordType, " is creating...");
-          $recorderDuration.innerText = '';
+          $recorderSize.innerText = '';
+          $recorderDuration.innerText = "".concat(recordType, " is creating...");
         }
       });
       term.on('end', function () {

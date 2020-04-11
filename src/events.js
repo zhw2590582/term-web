@@ -174,8 +174,8 @@ export default class Events {
 
         term.on('creating', () => {
             if (recorder) {
-                $recorderSize.innerText = `${recordType} is creating...`;
-                $recorderDuration.innerText = '';
+                $recorderSize.innerText = '';
+                $recorderDuration.innerText = `${recordType} is creating...`;
             }
         });
 

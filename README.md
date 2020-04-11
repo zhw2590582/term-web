@@ -75,6 +75,9 @@ var term = new Term({
     // Use the display recorder button
     recorder: true,
 
+    // Type of recorder: gif or video
+    recordType: 'gif',
+
     // Is it draggable
     draggable: true,
 
@@ -144,14 +147,6 @@ Clear all log
 ```js
 term.ask('How are you ?').then((answer) => console.log(answer));
 ```
-
-#### term.start()
-
-Start recording video
-
-#### term.end()
-
-End recording video and download the video
 
 #### term.radio(list)
 
