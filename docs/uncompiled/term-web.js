@@ -1716,7 +1716,7 @@
             duration = _ref4.duration;
 
         if (recorder) {
-          $recorderSize.innerText = "".concat(Math.floor(size / 1024 / 1024) || 0, "mb");
+          $recorderSize.innerText = "".concat(Math.ceil(size / 1024 / 1024) || 0, "mb");
           $recorderDuration.innerText = "".concat(duration || 0, "s");
         }
       });

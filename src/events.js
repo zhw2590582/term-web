@@ -167,7 +167,7 @@ export default class Events {
 
         term.on('recording', ({ size, duration }) => {
             if (recorder) {
-                $recorderSize.innerText = `${Math.floor(size / 1024 / 1024) || 0}mb`;
+                $recorderSize.innerText = `${Math.ceil(size / 1024 / 1024) || 0}mb`;
                 $recorderDuration.innerText = `${duration || 0}s`;
             }
         });
