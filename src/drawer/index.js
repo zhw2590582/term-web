@@ -151,7 +151,7 @@ export default class Drawer {
             const { left, top } = this.cursorPos;
             this.term.emit('cursor', {
                 left: left / pixelRatio,
-                top: top / pixelRatio,
+                top: (top - this.contentPadding[0]) / pixelRatio,
             });
         }
 
