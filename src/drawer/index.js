@@ -145,6 +145,13 @@ export default class Drawer {
                         if (log.href) {
                             this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
                         }
+                        if (log.border) {
+                            this.ctx.fillStyle = log.border;
+                            this.ctx.fillRect(log.left, top, log.width, pixelRatio);
+                            this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
+                            this.ctx.fillRect(log.left, top, pixelRatio, this.fontSize);
+                            this.ctx.fillRect(log.left + log.width - pixelRatio, top, pixelRatio, this.fontSize);
+                        }
                     }
                 }
             }
@@ -242,9 +249,11 @@ export default class Drawer {
                 const child = this.$tmp.childNodes[j];
                 const word = child.textContent;
                 const wordSize = this.ctx.measureText(word).width;
+
                 const color = child.getAttribute ? child.getAttribute('color') : '';
                 const background = child.getAttribute ? child.getAttribute('background') : '';
                 const href = child.getAttribute ? child.getAttribute('href') : '';
+                const border = child.getAttribute ? child.getAttribute('border') : '';
 
                 const nextWordWidth = left + wordSize;
                 if (nextWordWidth > this.contentWidth) {
@@ -267,6 +276,7 @@ export default class Drawer {
                                 text: textTmp,
                                 color,
                                 href,
+                                border,
                                 background,
                             };
 
@@ -291,6 +301,7 @@ export default class Drawer {
                         text: textTmp,
                         color,
                         href,
+                        border,
                         background,
                     };
 
@@ -308,6 +319,7 @@ export default class Drawer {
                         left,
                         color,
                         href,
+                        border,
                         background,
                     };
                     if (result[index]) {

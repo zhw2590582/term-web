@@ -24,7 +24,7 @@ var term = new Term({
             input: /^bye/i,
             output(input, args) {
                 return JSON.stringify({
-                    input: `<d color='#00BCD4'>${input}</d>`,
+                    input: `<d color='#00BCD4' border="#00BCD4"> ${input} </d>`,
                     args: args,
                 });
             },

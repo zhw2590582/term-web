@@ -2327,6 +2327,14 @@
                 if (log.href) {
                   this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
                 }
+
+                if (log.border) {
+                  this.ctx.fillStyle = log.border;
+                  this.ctx.fillRect(log.left, top, log.width, pixelRatio);
+                  this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
+                  this.ctx.fillRect(log.left, top, pixelRatio, this.fontSize);
+                  this.ctx.fillRect(log.left + log.width - pixelRatio, top, pixelRatio, this.fontSize);
+                }
               }
             }
           }
@@ -2447,6 +2455,7 @@
             var color = child.getAttribute ? child.getAttribute('color') : '';
             var background = child.getAttribute ? child.getAttribute('background') : '';
             var href = child.getAttribute ? child.getAttribute('href') : '';
+            var border = child.getAttribute ? child.getAttribute('border') : '';
             var nextWordWidth = left + wordSize;
 
             if (nextWordWidth > this.contentWidth) {
@@ -2471,6 +2480,7 @@
                     text: textTmp,
                     color: color,
                     href: href,
+                    border: border,
                     background: background
                   });
 
@@ -2494,6 +2504,7 @@
                 text: textTmp,
                 color: color,
                 href: href,
+                border: border,
                 background: background
               });
 
@@ -2510,6 +2521,7 @@
                 left: left,
                 color: color,
                 href: href,
+                border: border,
                 background: background
               });
 
