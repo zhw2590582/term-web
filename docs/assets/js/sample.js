@@ -12,7 +12,7 @@ var term = new Term({
         {
             // Automatic input
             input: 'what is this ?',
-            output: '<d color="yellow">This is a simple Terminal UI that run on the web</d>',
+            output: 'This is a simple <d color="#fff" background="#ff79c6"> Terminal UI </d> that run on the web',
         },
         {
             // Exact match
@@ -71,9 +71,7 @@ var term = new Term({
                             .map((item) => {
                                 const color = randomColor();
                                 const random = Math.random() > 0.5;
-                                return `<d color="${random ? color : '#fff'}" background="${
-                                    random ? '' : color
-                                }">${item}</d>`;
+                                return `<d color="${random ? color : '#fff'}" background="${random ? '' : color}">${item}</d>`;
                             })
                             .join(' ');
                     });
