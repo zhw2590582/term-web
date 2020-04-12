@@ -214,11 +214,12 @@
 
   function click (term, events) {
     var $textarea = term.template.$textarea;
-    events.proxy(document, ['click', 'contextmenu'], function (event) {
+    events.proxy(document, ['click', 'contextmenu', 'dblclick'], function (event) {
       if (event.composedPath && event.composedPath().indexOf(term.template.$content) > -1) {
         term.isFocus = true;
         $textarea.focus();
         term.emit('focus');
+        term.emit(event.type, event);
       } else {
         term.isFocus = false;
         term.emit('blur');
@@ -1743,6 +1744,76 @@
     });
   }
 
+  function copy (term) {
+    var $content = term.template.$content;
+    var _term$options = term.options,
+        pixelRatio = _term$options.pixelRatio,
+        backgroundColor = _term$options.backgroundColor;
+    var $copy = document.createElement('textarea');
+    $copy.style.position = 'fixed';
+    $copy.style.left = '-999px';
+    $copy.style.top = '-999px';
+    document.body.appendChild($copy);
+    var lastLogs = [];
+    var lastDblclickTime = 0;
+    term.on('click', function () {
+      term.drawer.render(false);
+
+      if (lastDblclickTime && lastLogs.length && Date.now() - lastDblclickTime <= 300) {
+        var _term$drawer = term.drawer,
+            fontSize = _term$drawer.fontSize,
+            ctx = _term$drawer.ctx,
+            contentWidth = _term$drawer.contentWidth,
+            contentPadding = _term$drawer.contentPadding;
+        var text = lastLogs.reduce(function (result, item) {
+          return result + item.text;
+        }, '');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(contentPadding[3], lastLogs[0].top, contentWidth, fontSize);
+        ctx.fillStyle = backgroundColor;
+        ctx.fillText(text, contentPadding[3], lastLogs[0].top);
+        $copy.value = text;
+        $copy.focus();
+        $copy.select();
+      } else {
+        lastLogs = [];
+        lastDblclickTime = 0;
+        $copy.value = '';
+      }
+    });
+    term.on('dblclick', function (event) {
+      term.drawer.render(false);
+      var contentRect = $content.getBoundingClientRect();
+      var left = (event.pageX - contentRect.left) * pixelRatio;
+      var top = (event.pageY - contentRect.top) * pixelRatio;
+      var _term$drawer2 = term.drawer,
+          renderLogs = _term$drawer2.renderLogs,
+          logGap = _term$drawer2.logGap,
+          fontSize = _term$drawer2.fontSize,
+          ctx = _term$drawer2.ctx;
+      var index = Math.floor(top / (logGap + fontSize));
+      var logs = renderLogs[index] || [];
+      var target = logs.find(function (log) {
+        return left > log.left && log.left + log.width >= left;
+      });
+      lastLogs = [];
+      lastDblclickTime = 0;
+      if (!target) return;
+      lastLogs = logs;
+      lastDblclickTime = Date.now();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(target.left, target.top, target.width, fontSize);
+      ctx.fillStyle = backgroundColor;
+      ctx.fillText(target.text, target.left, target.top);
+      $copy.value = target.text;
+      $copy.focus();
+      $copy.select();
+    });
+    term.on('destroy', function () {
+      return document.body.removeChild($copy);
+    });
+  }
+
   var Events = /*#__PURE__*/function () {
     function Events(term) {
       classCallCheck(this, Events);
@@ -1755,6 +1826,7 @@
       input(term, this);
       record(term, this);
       scroll(term, this);
+      copy(term);
     }
 
     createClass(Events, [{
@@ -2145,7 +2217,7 @@
         this.canvasHeight = $canvas.height;
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[3];
+        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
         this.ctx = $canvas.getContext('2d');
         this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
@@ -2214,6 +2286,7 @@
               for (var j = 0; j < logs.length; j += 1) {
                 var log = logs[j];
                 var top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
+                log.top = top;
 
                 if (log.background) {
                   this.ctx.fillStyle = log.background;

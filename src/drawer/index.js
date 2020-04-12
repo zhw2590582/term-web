@@ -47,7 +47,7 @@ export default class Drawer {
         this.canvasHeight = $canvas.height;
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[3];
+        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
 
         this.ctx = $canvas.getContext('2d');
@@ -135,6 +135,7 @@ export default class Drawer {
                     for (let j = 0; j < logs.length; j += 1) {
                         const log = logs[j];
                         const top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
+                        log.top = top;
                         if (log.background) {
                             this.ctx.fillStyle = log.background;
                             this.ctx.fillRect(log.left, top, log.width, this.fontSize);
