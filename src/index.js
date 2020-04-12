@@ -7,6 +7,7 @@ import Commander from './commander';
 import Video from './recorder/video';
 import Gif from './recorder/gif';
 import Inquirer from './inquirer';
+import Style from './style';
 import * as utils from './share/utils';
 
 let id = 0;
@@ -101,6 +102,7 @@ export default class Term extends Emitter {
         this.drawer = new Drawer(this);
         this.commander = new Commander(this);
         this.inquirer = new Inquirer(this);
+        this.style = new Style(this);
         this.video = new Video(this);
         this.gif = new Gif(this);
 
@@ -111,6 +113,7 @@ export default class Term extends Emitter {
         this.clear = this.drawer.clear;
         this.radio = this.inquirer.radio;
         this.checkbox = this.inquirer.checkbox;
+        this.table = this.style.table;
 
         id += 1;
         this.id = id;

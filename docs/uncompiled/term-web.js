@@ -6230,6 +6230,58 @@
     return Inquirer;
   }();
 
+  function table () {
+    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+    optionValidator(data, [['string|number']]);
+    errorHandle(data.length, 'Table length cannot be zero');
+    var pixelRatio = this.options.pixelRatio;
+    var ctx = this.drawer.ctx;
+    var gap = 5 * pixelRatio;
+    var header = data[0] || [];
+    var spaceWidth = ctx.measureText(' ').width;
+    var lineWidth = ctx.measureText('—').width;
+    var line2Width = ctx.measureText('|').width;
+    var columnWidth = header.map(function (_, index) {
+      var widths = data.map(function (subItem) {
+        return Math.floor(ctx.measureText(subItem[index] || '').width + gap * 2);
+      });
+      return Math.max.apply(Math, toConsumableArray(widths));
+    });
+    var tableWidth = columnWidth.reduce(function (totle, item) {
+      return totle + item;
+    }, 0) + line2Width * (header.length + 4);
+    var lineNum = Math.ceil(tableWidth / lineWidth);
+    var line = ''.repeat(lineNum);
+
+    function addSpace(word, width) {
+      var wordWidth = Math.ceil(ctx.measureText(word || '').width);
+      var spaceNum = Math.ceil((width - wordWidth) / spaceWidth);
+      var fixSpaceNum = spaceNum % 2 ? spaceNum + 1 : spaceNum;
+      return "".concat(' '.repeat(fixSpaceNum / 2), "<d>").concat(word, "</d>").concat(' '.repeat(fixSpaceNum / 2));
+    }
+
+    var result = "".concat(line, "\n").concat(data.map(function (item) {
+      return "|".concat(item.map(function (subItem, subIndex) {
+        if (subIndex < header.length) {
+          return addSpace(subItem, columnWidth[subIndex]);
+        }
+
+        return null;
+      }).filter(function (subItem) {
+        return subItem !== null;
+      }).join('|'), "|");
+    }).join("\n".concat(line, "\n")), "\n").concat(line);
+    this.output(result);
+  }
+
+  var Style = function Style(term) {
+    classCallCheck(this, Style);
+
+    this.table = function (args) {
+      return table.call(term, args);
+    };
+  };
+
   function ownKeys$3(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread$3(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$3(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$3(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -6340,6 +6392,7 @@
       _this.drawer = new Drawer(assertThisInitialized(_this));
       _this.commander = new Commander(assertThisInitialized(_this));
       _this.inquirer = new Inquirer(assertThisInitialized(_this));
+      _this.style = new Style(assertThisInitialized(_this));
       _this.video = new VideoRecorder(assertThisInitialized(_this));
       _this.gif = new GifRecorder(assertThisInitialized(_this));
       _this.ask = _this.commander.ask;
@@ -6349,6 +6402,7 @@
       _this.clear = _this.drawer.clear;
       _this.radio = _this.inquirer.radio;
       _this.checkbox = _this.inquirer.checkbox;
+      _this.table = _this.style.table;
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
