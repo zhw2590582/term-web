@@ -41,6 +41,7 @@ export default function (term) {
         const target = logs.find((log) => left > log.left && log.left + log.width >= left);
         lastLogs = [];
         lastDblclickTime = 0;
+        $copy.value = '';
         if (!target) return;
         lastLogs = logs;
         lastDblclickTime = Date.now();
@@ -51,6 +52,13 @@ export default function (term) {
         $copy.value = target.text;
         $copy.focus();
         $copy.select();
+    });
+
+    term.on('blur', () => {
+        term.drawer.render(false);
+        lastLogs = [];
+        lastDblclickTime = 0;
+        $copy.value = '';
     });
 
     term.on('destroy', () => document.body.removeChild($copy));

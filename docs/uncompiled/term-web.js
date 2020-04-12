@@ -1798,6 +1798,7 @@
       });
       lastLogs = [];
       lastDblclickTime = 0;
+      $copy.value = '';
       if (!target) return;
       lastLogs = logs;
       lastDblclickTime = Date.now();
@@ -1808,6 +1809,12 @@
       $copy.value = target.text;
       $copy.focus();
       $copy.select();
+    });
+    term.on('blur', function () {
+      term.drawer.render(false);
+      lastLogs = [];
+      lastDblclickTime = 0;
+      $copy.value = '';
     });
     term.on('destroy', function () {
       return document.body.removeChild($copy);
