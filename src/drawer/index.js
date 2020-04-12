@@ -30,6 +30,7 @@ export default class Drawer {
             const $watermark = new Image();
             $watermark.onload = () => {
                 this.$watermark = $watermark;
+                this.render(false);
             };
             $watermark.src = watermark;
         }

@@ -2228,6 +2228,8 @@
 
         $watermark.onload = function () {
           _this.$watermark = $watermark;
+
+          _this.render(false);
         };
 
         $watermark.src = watermark;
