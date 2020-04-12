@@ -225,6 +225,12 @@
         term.emit('blur');
       }
     });
+    term.on('click', function (event) {
+      var _events$getLogFromEve = events.getLogFromEvent(event),
+          log = _events$getLogFromEve.log;
+
+      if (log && log.href) window.open(log.href);
+    });
   }
 
   function resize (term, events) {
@@ -1744,11 +1750,8 @@
     });
   }
 
-  function copy (term) {
-    var $content = term.template.$content;
-    var _term$options = term.options,
-        pixelRatio = _term$options.pixelRatio,
-        backgroundColor = _term$options.backgroundColor;
+  function copy (term, events) {
+    var backgroundColor = term.options.backgroundColor;
     var $copy = document.createElement('textarea');
     $copy.style.position = 'fixed';
     $copy.style.left = '-999px';
@@ -1783,30 +1786,25 @@
     });
     term.on('dblclick', function (event) {
       term.drawer.render(false);
-      var contentRect = $content.getBoundingClientRect();
-      var left = (event.pageX - contentRect.left) * pixelRatio;
-      var top = (event.pageY - contentRect.top) * pixelRatio;
-      var _term$drawer2 = term.drawer,
-          renderLogs = _term$drawer2.renderLogs,
-          logGap = _term$drawer2.logGap,
-          fontSize = _term$drawer2.fontSize,
-          ctx = _term$drawer2.ctx;
-      var index = Math.floor(top / (logGap + fontSize));
-      var logs = renderLogs[index] || [];
-      var target = logs.find(function (log) {
-        return left > log.left && log.left + log.width >= left;
-      });
+
+      var _events$getLogFromEve = events.getLogFromEvent(event),
+          logs = _events$getLogFromEve.logs,
+          log = _events$getLogFromEve.log;
+
       lastLogs = [];
       lastDblclickTime = 0;
       $copy.value = '';
-      if (!target) return;
+      if (!log) return;
+      var _term$drawer2 = term.drawer,
+          ctx = _term$drawer2.ctx,
+          fontSize = _term$drawer2.fontSize;
       lastLogs = logs;
       lastDblclickTime = Date.now();
       ctx.fillStyle = '#fff';
-      ctx.fillRect(target.left, target.top, target.width, fontSize);
+      ctx.fillRect(log.left, log.top, log.width, fontSize);
       ctx.fillStyle = backgroundColor;
-      ctx.fillText(target.text, target.left, target.top);
-      $copy.value = target.text;
+      ctx.fillText(log.text, log.left, log.top);
+      $copy.value = log.text;
       $copy.focus();
       $copy.select();
     });
@@ -1825,6 +1823,7 @@
     function Events(term) {
       classCallCheck(this, Events);
 
+      this.term = term;
       this.destroyEvents = [];
       this.proxy = this.proxy.bind(this);
       click(term, this);
@@ -1833,10 +1832,32 @@
       input(term, this);
       record(term, this);
       scroll(term, this);
-      copy(term);
+      copy(term, this);
     }
 
     createClass(Events, [{
+      key: "getLogFromEvent",
+      value: function getLogFromEvent(event) {
+        var $content = this.term.template.$content;
+        var pixelRatio = this.term.options.pixelRatio;
+        var contentRect = $content.getBoundingClientRect();
+        var left = (event.pageX - contentRect.left) * pixelRatio;
+        var top = (event.pageY - contentRect.top) * pixelRatio;
+        var _this$term$drawer = this.term.drawer,
+            renderLogs = _this$term$drawer.renderLogs,
+            logGap = _this$term$drawer.logGap,
+            fontSize = _this$term$drawer.fontSize;
+        var index = Math.floor(top / (logGap + fontSize));
+        var logs = renderLogs[index] || [];
+        var log = logs.find(function (item) {
+          return left > item.left && item.left + item.width >= left;
+        });
+        return {
+          logs: logs,
+          log: log
+        };
+      }
+    }, {
       key: "proxy",
       value: function proxy(target, name, callback) {
         var _this = this;
@@ -2302,6 +2323,10 @@
 
                 this.ctx.fillStyle = log.color || fontColor;
                 this.ctx.fillText(log.text, log.left, top);
+
+                if (log.href) {
+                  this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
+                }
               }
             }
           }
@@ -2421,6 +2446,7 @@
             var wordSize = this.ctx.measureText(word).width;
             var color = child.getAttribute ? child.getAttribute('color') : '';
             var background = child.getAttribute ? child.getAttribute('background') : '';
+            var href = child.getAttribute ? child.getAttribute('href') : '';
             var nextWordWidth = left + wordSize;
 
             if (nextWordWidth > this.contentWidth) {
@@ -2444,6 +2470,7 @@
                     left: isNewLine ? this.contentPadding[3] : lastLeft,
                     text: textTmp,
                     color: color,
+                    href: href,
                     background: background
                   });
 
@@ -2466,6 +2493,7 @@
                 left: this.contentPadding[3],
                 text: textTmp,
                 color: color,
+                href: href,
                 background: background
               });
 
@@ -2481,6 +2509,7 @@
                 text: word,
                 left: left,
                 color: color,
+                href: href,
                 background: background
               });
 
@@ -6224,7 +6253,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.0.8';
+        return '1.0.9';
       }
     }, {
       key: "utils",

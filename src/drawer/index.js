@@ -142,6 +142,9 @@ export default class Drawer {
                         }
                         this.ctx.fillStyle = log.color || fontColor;
                         this.ctx.fillText(log.text, log.left, top);
+                        if (log.href) {
+                            this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
+                        }
                     }
                 }
             }
@@ -241,6 +244,7 @@ export default class Drawer {
                 const wordSize = this.ctx.measureText(word).width;
                 const color = child.getAttribute ? child.getAttribute('color') : '';
                 const background = child.getAttribute ? child.getAttribute('background') : '';
+                const href = child.getAttribute ? child.getAttribute('href') : '';
 
                 const nextWordWidth = left + wordSize;
                 if (nextWordWidth > this.contentWidth) {
@@ -262,6 +266,7 @@ export default class Drawer {
                                 left: isNewLine ? this.contentPadding[3] : lastLeft,
                                 text: textTmp,
                                 color,
+                                href,
                                 background,
                             };
 
@@ -285,6 +290,7 @@ export default class Drawer {
                         left: this.contentPadding[3],
                         text: textTmp,
                         color,
+                        href,
                         background,
                     };
 
@@ -301,6 +307,7 @@ export default class Drawer {
                         text: word,
                         left,
                         color,
+                        href,
                         background,
                     };
                     if (result[index]) {

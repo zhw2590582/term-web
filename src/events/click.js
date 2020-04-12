@@ -12,4 +12,9 @@ export default function (term, events) {
             term.emit('blur');
         }
     });
+
+    term.on('click', (event) => {
+        const { log } = events.getLogFromEvent(event);
+        if (log && log.href) window.open(log.href);
+    });
 }

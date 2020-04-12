@@ -1,6 +1,5 @@
-export default function (term) {
-    const { $content } = term.template;
-    const { pixelRatio, backgroundColor } = term.options;
+export default function (term, events) {
+    const { backgroundColor } = term.options;
 
     const $copy = document.createElement('textarea');
     $copy.style.position = 'fixed';
@@ -32,24 +31,19 @@ export default function (term) {
 
     term.on('dblclick', (event) => {
         term.drawer.render(false);
-        const contentRect = $content.getBoundingClientRect();
-        const left = (event.pageX - contentRect.left) * pixelRatio;
-        const top = (event.pageY - contentRect.top) * pixelRatio;
-        const { renderLogs, logGap, fontSize, ctx } = term.drawer;
-        const index = Math.floor(top / (logGap + fontSize));
-        const logs = renderLogs[index] || [];
-        const target = logs.find((log) => left > log.left && log.left + log.width >= left);
+        const { logs, log } = events.getLogFromEvent(event);
         lastLogs = [];
         lastDblclickTime = 0;
         $copy.value = '';
-        if (!target) return;
+        if (!log) return;
+        const { ctx, fontSize } = term.drawer;
         lastLogs = logs;
         lastDblclickTime = Date.now();
         ctx.fillStyle = '#fff';
-        ctx.fillRect(target.left, target.top, target.width, fontSize);
+        ctx.fillRect(log.left, log.top, log.width, fontSize);
         ctx.fillStyle = backgroundColor;
-        ctx.fillText(target.text, target.left, target.top);
-        $copy.value = target.text;
+        ctx.fillText(log.text, log.left, log.top);
+        $copy.value = log.text;
         $copy.focus();
         $copy.select();
     });
