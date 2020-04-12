@@ -2240,7 +2240,8 @@
       (function loop() {
         var _this2 = this;
 
-        this.cursorTimer = setTimeout(function () {
+        setTimeout(function () {
+          if (term.isDestroy) return;
           _this2.cursor = !_this2.cursor;
 
           _this2.renderCursor();
@@ -3064,6 +3065,7 @@
               lastLetters += letter;
               this.input(lastLetters, true);
               setTimeout(function () {
+                if (_this5.term.isDestroy) return;
                 loop.call(_this5);
               }, 100);
             }
@@ -6003,7 +6005,8 @@
             duration: this.duration
           });
           this.timer = setTimeout(function () {
-            return loop.call(_this);
+            if (_this.term.isDestroy) return;
+            loop.call(_this);
           }, 1000 / this.frameRate);
         }).call(this);
       }
@@ -6443,6 +6446,7 @@
 
       _this = _super.call(this);
       _this.options = optionValidator(_objectSpread$3({}, Term.default, {}, options), Term.scheme);
+      _this.isDestroy = false;
       _this.isFocus = false;
       _this.template = new Template(assertThisInitialized(_this));
       _this.events = new Events(assertThisInitialized(_this));
@@ -6473,6 +6477,7 @@
         this.events.destroy();
         this.template.destroy();
         this.emit('destroy');
+        this.isDestroy = true;
       }
     }]);
 

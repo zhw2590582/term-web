@@ -173,6 +173,7 @@ export default class Commander {
                     lastLetters += letter;
                     this.input(lastLetters, true);
                     setTimeout(() => {
+                        if (this.term.isDestroy) return;
                         loop.call(this);
                     }, 100);
                 }

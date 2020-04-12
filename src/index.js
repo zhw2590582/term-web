@@ -97,6 +97,7 @@ export default class Term extends Emitter {
             Term.scheme,
         );
 
+        this.isDestroy = false;
         this.isFocus = false;
 
         this.template = new Template(this);
@@ -127,5 +128,6 @@ export default class Term extends Emitter {
         this.events.destroy();
         this.template.destroy();
         this.emit('destroy');
+        this.isDestroy = true;
     }
 }

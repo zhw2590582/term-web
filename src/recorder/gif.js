@@ -40,7 +40,10 @@ export default class GifRecorder {
                 size: this.size,
                 duration: this.duration,
             });
-            this.timer = setTimeout(() => loop.call(this), 1000 / this.frameRate);
+            this.timer = setTimeout(() => {
+                if (this.term.isDestroy) return;
+                loop.call(this);
+            }, 1000 / this.frameRate);
         }.call(this));
     }
 

@@ -39,7 +39,8 @@ export default class Drawer {
 
         this.cursor = false;
         (function loop() {
-            this.cursorTimer = setTimeout(() => {
+            setTimeout(() => {
+                if (term.isDestroy) return;
                 this.cursor = !this.cursor;
                 this.renderCursor();
                 loop.call(this);
