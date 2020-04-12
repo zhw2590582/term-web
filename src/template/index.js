@@ -36,6 +36,10 @@ export default class Template {
         this.$canvas.height = height * pixelRatio;
         this.$container.appendChild(this.$canvas);
 
+        this.$textarea = document.createElement('textarea');
+        this.$textarea.classList.add('term-textarea');
+        this.$container.appendChild(this.$textarea);
+
         this.$header = document.createElement('div');
         this.$header.classList.add('term-header');
         this.$container.appendChild(this.$header);
@@ -48,10 +52,6 @@ export default class Template {
         this.$scrollbar.classList.add('term-scrollbar');
         this.$scrollbar.style.height = '0';
         this.$content.appendChild(this.$scrollbar);
-
-        this.$textarea = document.createElement('textarea');
-        this.$textarea.classList.add('term-textarea');
-        this.$content.appendChild(this.$textarea);
 
         this.$footer = document.createElement('div');
         this.$footer.classList.add('term-footer');
@@ -84,7 +84,7 @@ export default class Template {
                 '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}',
                 '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}',
                 `.term-canvas{position:absolute;top:0;left:0;bottom:0;right:0;width:100%;height:100%;border-radius:${borderRadius}px;box-shadow:${boxShadow};}`,
-                '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;}',
+                '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;resize:none;}',
                 '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}',
                 '.term-content:hover{cursor:text}',
                 '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}',
