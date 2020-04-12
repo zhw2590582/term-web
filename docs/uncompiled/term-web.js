@@ -6236,41 +6236,55 @@
     errorHandle(data.length, 'Table length cannot be zero');
     var pixelRatio = this.options.pixelRatio;
     var ctx = this.drawer.ctx;
-    var gap = 5 * pixelRatio;
+    var gap = 10 * pixelRatio;
     var header = data[0] || [];
     var spaceWidth = ctx.measureText(' ').width;
-    var lineWidth = ctx.measureText('—').width;
-    var line2Width = ctx.measureText('|').width;
     var columnWidth = header.map(function (_, index) {
       var widths = data.map(function (subItem) {
         return Math.floor(ctx.measureText(subItem[index] || '').width + gap * 2);
       });
       return Math.max.apply(Math, toConsumableArray(widths));
     });
-    var tableWidth = columnWidth.reduce(function (totle, item) {
-      return totle + item;
-    }, 0) + line2Width * (header.length + 4);
-    var lineNum = Math.ceil(tableWidth / lineWidth);
-    var line = ''.repeat(lineNum);
 
     function addSpace(word, width) {
-      var wordWidth = Math.ceil(ctx.measureText(word || '').width);
+      var wordWidth = Math.floor(ctx.measureText(word || '').width);
       var spaceNum = Math.ceil((width - wordWidth) / spaceWidth);
-      var fixSpaceNum = spaceNum % 2 ? spaceNum + 1 : spaceNum;
-      return "".concat(' '.repeat(fixSpaceNum / 2), "<d>").concat(word, "</d>").concat(' '.repeat(fixSpaceNum / 2));
+      return "<d>".concat(' '.repeat(spaceNum / 2)).concat(word).concat(' '.repeat(spaceNum / 2), "</d>");
     }
 
-    var result = "".concat(line, "\n").concat(data.map(function (item) {
-      return "|".concat(item.map(function (subItem, subIndex) {
+    var wordSize = [];
+    var result = data.map(function (item) {
+      return item.map(function (subItem, subIndex) {
         if (subIndex < header.length) {
-          return addSpace(subItem, columnWidth[subIndex]);
+          var word = addSpace(subItem, columnWidth[subIndex]);
+          var size = word.length;
+
+          if (wordSize[subIndex]) {
+            wordSize[subIndex] = Math.max(wordSize[subIndex], size);
+          } else {
+            wordSize[subIndex] = size;
+          }
+
+          return word;
+        }
+
+        return null;
+      }).map(function (subItem, subIndex) {
+        if (subIndex < header.length) {
+          var miss = wordSize[subIndex] - subItem.length;
+
+          if (miss > 0) {
+            return "".concat(subItem).concat(' '.repeat(miss));
+          }
+
+          return subItem;
         }
 
         return null;
       }).filter(function (subItem) {
         return subItem !== null;
-      }).join('|'), "|");
-    }).join("\n".concat(line, "\n")), "\n").concat(line);
+      }).join('');
+    }).join("\n");
     this.output(result);
   }
 
@@ -6305,7 +6319,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.0.9';
+        return '1.1.0';
       }
     }, {
       key: "utils",

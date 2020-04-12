@@ -8,46 +8,52 @@ export default function (data = []) {
     const { pixelRatio } = this.options;
     const { ctx } = this.drawer;
 
-    const gap = 5 * pixelRatio;
+    const gap = 10 * pixelRatio;
     const header = data[0] || [];
     const spaceWidth = ctx.measureText(' ').width;
-    const lineWidth = ctx.measureText('—').width;
-    const line2Width = ctx.measureText('|').width;
 
     const columnWidth = header.map((_, index) => {
         const widths = data.map((subItem) => Math.floor(ctx.measureText(subItem[index] || '').width + gap * 2));
         return Math.max(...widths);
     });
 
-    const tableWidth =
-        columnWidth.reduce((totle, item) => {
-            return totle + item;
-        }, 0) +
-        line2Width * (header.length + 4);
-
-    const lineNum = Math.ceil(tableWidth / lineWidth);
-    const line = ''.repeat(lineNum);
-
     function addSpace(word, width) {
-        const wordWidth = Math.ceil(ctx.measureText(word || '').width);
+        const wordWidth = Math.floor(ctx.measureText(word || '').width);
         const spaceNum = Math.ceil((width - wordWidth) / spaceWidth);
-        const fixSpaceNum = spaceNum % 2 ? spaceNum + 1 : spaceNum;
-        return `${' '.repeat(fixSpaceNum / 2)}<d>${word}</d>${' '.repeat(fixSpaceNum / 2)}`;
+        return `<d>${' '.repeat(spaceNum / 2)}${word}${' '.repeat(spaceNum / 2)}</d>`;
     }
 
-    const result = `${line}\n${data
+    const wordSize = [];
+    const result = data
         .map((item) => {
-            return `|${item
+            return item
                 .map((subItem, subIndex) => {
                     if (subIndex < header.length) {
-                        return addSpace(subItem, columnWidth[subIndex]);
+                        const word = addSpace(subItem, columnWidth[subIndex]);
+                        const size = word.length;
+                        if (wordSize[subIndex]) {
+                            wordSize[subIndex] = Math.max(wordSize[subIndex], size);
+                        } else {
+                            wordSize[subIndex] = size;
+                        }
+                        return word;
+                    }
+                    return null;
+                })
+                .map((subItem, subIndex) => {
+                    if (subIndex < header.length) {
+                        const miss = wordSize[subIndex] - subItem.length;
+                        if (miss > 0) {
+                            return `${subItem}${' '.repeat(miss)}`;
+                        }
+                        return subItem;
                     }
                     return null;
                 })
                 .filter((subItem) => subItem !== null)
-                .join('|')}|`;
+                .join('');
         })
-        .join(`\n${line}\n`)}\n${line}`;
+        .join(`\n`);
 
     this.output(result);
 }
