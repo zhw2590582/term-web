@@ -90,6 +90,9 @@ var term = new Term({
     // Font family
     fontFamily: 'Arial',
 
+    // Watermark image url
+    watermark: '',
+
     // Font color
     fontColor: '#b0b2b6',
 

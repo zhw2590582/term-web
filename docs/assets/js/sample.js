@@ -3,6 +3,7 @@ var term = new Term({
     pixelRatio: 2,
     recordType: 'gif', // gif or video
     fontFamily: 'monospace',
+    watermark: '/assets/img/watermark.png',
     title: `Term Web ${Term.version}`,
     prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
     welcome: '🎉 Hello, welcome to use <d color="yellow" href="https://github.com/zhw2590582/term-web">Term Web</d>',
@@ -12,7 +13,7 @@ var term = new Term({
         {
             // Automatic input
             input: 'what is this ?',
-            output: 'This is a simple <d color="#fff" background="#ff79c6"> Terminal UI </d> that run on the web',
+            output: 'This is a simple <d color="#fff" background="#ff79c6"> Terminal UI </d> that run on the <d color="#00f501" border="#00f501"> web </d>',
         },
         {
             // Exact match

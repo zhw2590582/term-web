@@ -2195,13 +2195,16 @@
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
+      var _this = this;
+
       classCallCheck(this, Drawer);
 
       this.term = term;
       var _term$options = term.options,
           pixelRatio = _term$options.pixelRatio,
           fontSize = _term$options.fontSize,
-          backgroundColor = _term$options.backgroundColor;
+          backgroundColor = _term$options.backgroundColor,
+          watermark = _term$options.watermark;
       this.scrollHeight = 0;
       this.scrollTop = 0;
       this.cursorColor = ['#FFF', backgroundColor];
@@ -2219,17 +2222,28 @@
       this.renderLogs = [];
       this.emit = this.emit.bind(this);
       this.clear = this.clear.bind(this);
+
+      if (watermark) {
+        var $watermark = new Image();
+
+        $watermark.onload = function () {
+          _this.$watermark = $watermark;
+        };
+
+        $watermark.src = watermark;
+      }
+
       this.init();
       this.cursor = false;
       (function loop() {
-        var _this = this;
+        var _this2 = this;
 
         this.cursorTimer = setTimeout(function () {
-          _this.cursor = !_this.cursor;
+          _this2.cursor = !_this2.cursor;
 
-          _this.renderCursor();
+          _this2.renderCursor();
 
-          loop.call(_this);
+          loop.call(_this2);
         }, 500);
       }).call(this);
     }
@@ -2269,18 +2283,31 @@
     }, {
       key: "renderBackground",
       value: function renderBackground() {
-        var backgroundColor = this.term.options.backgroundColor;
+        var _this$term$options2 = this.term.options,
+            backgroundColor = _this$term$options2.backgroundColor,
+            pixelRatio = _this$term$options2.pixelRatio;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+        if (this.$watermark) {
+          var _this$$watermark = this.$watermark,
+              width = _this$$watermark.width,
+              height = _this$$watermark.height;
+          var resizeWidth = width / pixelRatio;
+          var resizeHeight = height / pixelRatio;
+          var left = this.canvasWidth - resizeWidth;
+          var top = this.canvasHeight - resizeHeight;
+          this.ctx.drawImage(this.$watermark, left, top, resizeWidth, resizeHeight);
+        }
       }
     }, {
       key: "renderTopbar",
       value: function renderTopbar() {
-        var _this2 = this;
+        var _this3 = this;
 
-        var _this$term$options2 = this.term.options,
-            title = _this$term$options2.title,
-            fontColor = _this$term$options2.fontColor;
+        var _this$term$options3 = this.term.options,
+            title = _this$term$options3.title,
+            fontColor = _this$term$options3.fontColor;
         this.ctx.fillStyle = fontColor;
 
         var _this$ctx$measureText = this.ctx.measureText(title),
@@ -2288,23 +2315,23 @@
 
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.btnSize / 2);
         this.btnColor.forEach(function (item, index) {
-          _this2.ctx.beginPath();
+          _this3.ctx.beginPath();
 
-          _this2.ctx.arc(_this2.contentPadding[3] + _this2.btnSize + index * _this2.btnSize * 3.6, _this2.contentPadding[1] + _this2.btnSize, _this2.btnSize, 0, 360, false);
+          _this3.ctx.arc(_this3.contentPadding[3] + _this3.btnSize + index * _this3.btnSize * 3.6, _this3.contentPadding[1] + _this3.btnSize, _this3.btnSize, 0, 360, false);
 
-          _this2.ctx.fillStyle = item;
+          _this3.ctx.fillStyle = item;
 
-          _this2.ctx.fill();
+          _this3.ctx.fill();
 
-          _this2.ctx.closePath();
+          _this3.ctx.closePath();
         });
       }
     }, {
       key: "renderContent",
       value: function renderContent(isAutoScroll) {
-        var _this$term$options3 = this.term.options,
-            pixelRatio = _this$term$options3.pixelRatio,
-            fontColor = _this$term$options3.fontColor;
+        var _this$term$options4 = this.term.options,
+            pixelRatio = _this$term$options4.pixelRatio,
+            fontColor = _this$term$options4.fontColor;
 
         if (this.renderLogs.length) {
           for (var i = 0; i < this.renderLogs.length; i += 1) {
@@ -2331,7 +2358,7 @@
                 if (log.border) {
                   this.ctx.fillStyle = log.border;
                   this.ctx.fillRect(log.left, top, log.width, pixelRatio);
-                  this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
+                  this.ctx.fillRect(log.left, top + this.fontSize - pixelRatio, log.width, pixelRatio);
                   this.ctx.fillRect(log.left, top, pixelRatio, this.fontSize);
                   this.ctx.fillRect(log.left + log.width - pixelRatio, top, pixelRatio, this.fontSize);
                 }
@@ -6354,6 +6381,7 @@
           dragOpt: {},
           borderRadius: 5,
           fontSize: 13,
+          watermark: '',
           fontFamily: 'Arial',
           fontColor: '#b0b2b6',
           title: 'Term Web',
@@ -6389,6 +6417,7 @@
           dragOpt: 'object',
           borderRadius: 'number',
           fontSize: 'number',
+          watermark: 'string',
           fontFamily: 'string',
           fontColor: 'string',
           title: 'string',

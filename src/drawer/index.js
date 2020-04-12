@@ -6,7 +6,7 @@ export default class Drawer {
     constructor(term) {
         this.term = term;
 
-        const { pixelRatio, fontSize, backgroundColor } = term.options;
+        const { pixelRatio, fontSize, backgroundColor, watermark } = term.options;
 
         this.scrollHeight = 0;
         this.scrollTop = 0;
@@ -25,6 +25,14 @@ export default class Drawer {
 
         this.emit = this.emit.bind(this);
         this.clear = this.clear.bind(this);
+
+        if (watermark) {
+            const $watermark = new Image();
+            $watermark.onload = () => {
+                this.$watermark = $watermark;
+            };
+            $watermark.src = watermark;
+        }
 
         this.init();
 
@@ -99,9 +107,17 @@ export default class Drawer {
     }
 
     renderBackground() {
-        const { backgroundColor } = this.term.options;
+        const { backgroundColor, pixelRatio } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+        if (this.$watermark) {
+            const { width, height } = this.$watermark;
+            const resizeWidth = width / pixelRatio;
+            const resizeHeight = height / pixelRatio;
+            const left = this.canvasWidth - resizeWidth;
+            const top = this.canvasHeight - resizeHeight;
+            this.ctx.drawImage(this.$watermark, left, top, resizeWidth, resizeHeight);
+        }
     }
 
     renderTopbar() {
@@ -148,7 +164,7 @@ export default class Drawer {
                         if (log.border) {
                             this.ctx.fillStyle = log.border;
                             this.ctx.fillRect(log.left, top, log.width, pixelRatio);
-                            this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
+                            this.ctx.fillRect(log.left, top + this.fontSize - pixelRatio, log.width, pixelRatio);
                             this.ctx.fillRect(log.left, top, pixelRatio, this.fontSize);
                             this.ctx.fillRect(log.left + log.width - pixelRatio, top, pixelRatio, this.fontSize);
                         }
