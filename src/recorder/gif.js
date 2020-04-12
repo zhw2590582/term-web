@@ -1,5 +1,5 @@
 import gifshot from 'gifshot';
-import { errorHandle, download } from './utils';
+import { errorHandle, download } from '../share/utils';
 
 export default class GifRecorder {
     constructor(term) {

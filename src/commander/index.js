@@ -1,7 +1,7 @@
 import minimist from 'minimist';
 import validator from 'option-validator';
-import { errorHandle } from './utils';
-import { INPUT, OUTPUT } from './constant';
+import { errorHandle } from '../share/utils';
+import { INPUT, OUTPUT } from '../share/constant';
 
 export default class Commander {
     constructor(term) {

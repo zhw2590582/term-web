@@ -1,5 +1,5 @@
-import { errorHandle, download } from './utils';
-import { recorderOptions } from './constant';
+import { errorHandle, download } from '../share/utils';
+import { recorderOptions } from '../share/constant';
 
 export default class VideoRecorder {
     constructor(term) {

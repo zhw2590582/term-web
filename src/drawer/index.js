@@ -1,6 +1,6 @@
 import validator from 'option-validator';
-import { INPUT, OUTPUT } from './constant';
-import { escape, uuid } from './utils';
+import { INPUT, OUTPUT } from '../share/constant';
+import { escape, uuid } from '../share/utils';
 
 export default class Drawer {
     constructor(term) {

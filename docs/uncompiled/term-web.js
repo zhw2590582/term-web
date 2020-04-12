@@ -212,6 +212,91 @@
     return Emitter;
   }();
 
+  function click (term, events) {
+    var $textarea = term.template.$textarea;
+    events.proxy(document, ['click', 'contextmenu'], function (event) {
+      if (event.composedPath && event.composedPath().indexOf(term.template.$content) > -1) {
+        term.isFocus = true;
+        $textarea.focus();
+        term.emit('focus');
+      } else {
+        term.isFocus = false;
+        term.emit('blur');
+      }
+    });
+  }
+
+  function resize (term, events) {
+    var _term$template = term.template,
+        $container = _term$template.$container,
+        $content = _term$template.$content,
+        $resize = _term$template.$resize,
+        $canvas = _term$template.$canvas,
+        $header = _term$template.$header,
+        $footer = _term$template.$footer;
+    var pixelRatio = term.options.pixelRatio;
+    var isResize = false;
+    var lastX = 0;
+    var lastY = 0;
+    var lastWidth = 0;
+    var lastHeight = 0;
+    events.proxy($resize, 'mousedown', function (event) {
+      isResize = true;
+      var clientWidth = $container.clientWidth,
+          clientHeight = $container.clientHeight;
+      lastWidth = clientWidth;
+      lastHeight = clientHeight;
+      lastX = event.pageX;
+      lastY = event.pageY;
+    });
+    events.proxy(document, 'mousemove', function (event) {
+      if (isResize) {
+        $content.style.visibility = 'hidden';
+        var width = lastWidth + event.pageX - lastX;
+        var height = lastHeight + event.pageY - lastY;
+
+        if (width >= 300 && height >= 300) {
+          $container.style.width = "".concat(width, "px");
+          $container.style.height = "".concat(height, "px");
+        }
+      }
+    });
+    events.proxy(document, 'mouseup', function () {
+      if (isResize) {
+        isResize = false;
+        lastX = 0;
+        lastY = 0;
+        lastWidth = 0;
+        lastHeight = 0;
+        $content.style.visibility = 'visible';
+        var clientWidth = $container.clientWidth,
+            clientHeight = $container.clientHeight;
+        term.emit('resize', {
+          width: clientWidth,
+          height: clientHeight
+        });
+      }
+    });
+    term.on('resize', function (_ref) {
+      var width = _ref.width,
+          height = _ref.height;
+      $container.style.width = "".concat(width, "px");
+      $container.style.height = "".concat(height, "px");
+      $canvas.width = width * pixelRatio;
+      $canvas.height = height * pixelRatio;
+      term.drawer.init();
+    });
+    term.on('size', function (_ref2) {
+      var header = _ref2.header,
+          content = _ref2.content,
+          footer = _ref2.footer;
+      $header.style.height = "".concat(header, "px");
+      $footer.style.height = "".concat(footer, "px");
+      $content.style.top = "".concat(header, "px");
+      $content.style.height = "".concat(content, "px");
+    });
+  }
+
   var getSize = createCommonjsModule(function (module) {
   /*!
    * getSize v2.0.3
@@ -1540,209 +1625,148 @@
   function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  function drag (term, events) {
+    var _term$options = term.options,
+        dragOpt = _term$options.dragOpt,
+        draggable = _term$options.draggable;
+    var $container = term.template.$container;
+
+    if (draggable) {
+      events.draggie = new draggabilly($container, _objectSpread({
+        handle: '.term-header'
+      }, dragOpt));
+      term.on('destroy', function () {
+        events.draggie.destroy();
+      });
+    }
+  }
+
+  function input (term, events) {
+    var $textarea = term.template.$textarea;
+    events.proxy($textarea, 'input', function () {
+      term.emit('input', $textarea.value.trim());
+    });
+    events.proxy($textarea, 'paste', function () {
+      term.emit('input', $textarea.value.trim());
+    });
+    events.proxy($textarea, 'keydown', function (event) {
+      var key = event.keyCode;
+
+      if (key === 13) {
+        setTimeout(function () {
+          term.emit('enter', $textarea.value.trim());
+          $textarea.value = '';
+        });
+      }
+
+      if ([37, 38, 39, 40].includes(key)) {
+        $textarea.blur();
+        setTimeout(function () {
+          return $textarea.focus();
+        });
+      }
+
+      term.emit('keydown', event);
+    });
+    term.on('cursor', function (_ref) {
+      var left = _ref.left,
+          top = _ref.top;
+      $textarea.style.top = "".concat(top, "px");
+      $textarea.style.left = "".concat(left, "px");
+    });
+  }
+
+  function record (term, events) {
+    var _term$options = term.options,
+        recordType = _term$options.recordType,
+        recorder = _term$options.recorder;
+    var _term$template = term.template,
+        $recorderBtn = _term$template.$recorderBtn,
+        $recorder = _term$template.$recorder,
+        $recorderSize = _term$template.$recorderSize,
+        $recorderDuration = _term$template.$recorderDuration;
+    events.proxy($recorderBtn, 'click', function () {
+      if (term[recordType].recording) {
+        term[recordType].end();
+      } else {
+        term[recordType].start();
+      }
+    });
+    term.on('start', function () {
+      if (recorder) {
+        $recorder.classList.add('recording');
+      }
+    });
+    term.on('recording', function (_ref) {
+      var size = _ref.size,
+          duration = _ref.duration;
+
+      if (recorder) {
+        $recorderSize.innerText = "".concat(Math.ceil(size / 1024 / 1024) || 0, "mb");
+        $recorderDuration.innerText = "".concat(duration || 0, "s");
+      }
+    });
+    term.on('creating', function () {
+      if (recorder) {
+        $recorderSize.innerText = '';
+        $recorderDuration.innerText = "".concat(recordType, " is creating...");
+      }
+    });
+    term.on('end', function () {
+      if (recorder) {
+        $recorder.classList.remove('recording');
+      }
+    });
+  }
+
+  function scroll (term, events) {
+    var _term$template = term.template,
+        $content = _term$template.$content,
+        $scrollbar = _term$template.$scrollbar;
+    var canRenderByTop = false;
+    events.proxy($content, 'scroll', function () {
+      if (canRenderByTop) {
+        term.drawer.renderByTop($content.scrollTop);
+      } else {
+        canRenderByTop = true;
+      }
+    });
+    term.on('scrollTop', function (scrollTop) {
+      if (canRenderByTop) {
+        canRenderByTop = false;
+      } else {
+        $content.scrollTop = scrollTop;
+      }
+    });
+    term.on('scrollHeight', function (scrollHeight) {
+      $scrollbar.style.height = "".concat(scrollHeight, "px");
+    });
+  }
 
   var Events = /*#__PURE__*/function () {
     function Events(term) {
-      var _this = this;
-
       classCallCheck(this, Events);
 
       this.destroyEvents = [];
       this.proxy = this.proxy.bind(this);
-      var _term$options = term.options,
-          recorder = _term$options.recorder,
-          draggable = _term$options.draggable,
-          dragOpt = _term$options.dragOpt,
-          pixelRatio = _term$options.pixelRatio,
-          recordType = _term$options.recordType,
-          _term$template = term.template,
-          $container = _term$template.$container,
-          $canvas = _term$template.$canvas,
-          $textarea = _term$template.$textarea,
-          $content = _term$template.$content,
-          $scrollbar = _term$template.$scrollbar,
-          $header = _term$template.$header,
-          $footer = _term$template.$footer,
-          $recorder = _term$template.$recorder,
-          $recorderSize = _term$template.$recorderSize,
-          $recorderDuration = _term$template.$recorderDuration,
-          $recorderBtn = _term$template.$recorderBtn,
-          $resize = _term$template.$resize;
-      this.proxy(document, ['click', 'contextmenu'], function (event) {
-        if (event.composedPath && event.composedPath().indexOf($content) > -1) {
-          term.isFocus = true;
-          term.emit('focus');
-        } else {
-          term.isFocus = false;
-          term.emit('blur');
-        }
-      });
-      var isResize = false;
-      var lastX = 0;
-      var lastY = 0;
-      var lastWidth = 0;
-      var lastHeight = 0;
-      this.proxy($resize, 'mousedown', function (event) {
-        isResize = true;
-        var clientWidth = $container.clientWidth,
-            clientHeight = $container.clientHeight;
-        lastWidth = clientWidth;
-        lastHeight = clientHeight;
-        lastX = event.pageX;
-        lastY = event.pageY;
-      });
-      this.proxy(document, 'mousemove', function (event) {
-        if (isResize) {
-          $content.style.visibility = 'hidden';
-          var width = lastWidth + event.pageX - lastX;
-          var height = lastHeight + event.pageY - lastY;
-
-          if (width >= 300 && height >= 300) {
-            $container.style.width = "".concat(width, "px");
-            $container.style.height = "".concat(height, "px");
-          }
-        }
-      });
-      this.proxy(document, 'mouseup', function () {
-        if (isResize) {
-          isResize = false;
-          lastX = 0;
-          lastY = 0;
-          lastWidth = 0;
-          lastHeight = 0;
-          $content.style.visibility = 'visible';
-          var clientWidth = $container.clientWidth,
-              clientHeight = $container.clientHeight;
-          term.emit('resize', {
-            width: clientWidth,
-            height: clientHeight
-          });
-        }
-      });
-      term.on('resize', function (_ref) {
-        var width = _ref.width,
-            height = _ref.height;
-        $container.style.width = "".concat(width, "px");
-        $container.style.height = "".concat(height, "px");
-        $canvas.width = width * pixelRatio;
-        $canvas.height = height * pixelRatio;
-        term.drawer.init();
-      });
-
-      if (draggable) {
-        this.draggie = new draggabilly($container, _objectSpread({
-          handle: '.term-header'
-        }, dragOpt));
-        term.on('destroy', function () {
-          _this.draggie.destroy();
-        });
-      }
-
-      this.proxy($textarea, 'input', function () {
-        term.emit('input', $textarea.value.trim());
-      });
-      this.proxy($textarea, 'paste', function () {
-        term.emit('input', $textarea.value.trim());
-      });
-      this.proxy($textarea, 'keydown', function (event) {
-        var key = event.keyCode;
-
-        if (key === 13) {
-          setTimeout(function () {
-            term.emit('enter', $textarea.value.trim());
-            $textarea.value = '';
-          });
-        }
-
-        if ([37, 38, 39, 40].includes(key)) {
-          $textarea.blur();
-          setTimeout(function () {
-            return $textarea.focus();
-          });
-        }
-
-        term.emit('keydown', event);
-      });
-      this.proxy($recorderBtn, 'click', function () {
-        if (term[recordType].recording) {
-          term[recordType].end();
-        } else {
-          term[recordType].start();
-        }
-      });
-      var canRenderByTop = false;
-      this.proxy($content, 'scroll', function () {
-        if (canRenderByTop) {
-          term.drawer.renderByTop($content.scrollTop);
-        } else {
-          canRenderByTop = true;
-        }
-      });
-      term.on('scrollTop', function (scrollTop) {
-        if (canRenderByTop) {
-          canRenderByTop = false;
-        } else {
-          $content.scrollTop = scrollTop;
-        }
-      });
-      term.on('scrollHeight', function (scrollHeight) {
-        $scrollbar.style.height = "".concat(scrollHeight, "px");
-      });
-      term.on('cursor', function (_ref2) {
-        var left = _ref2.left,
-            top = _ref2.top;
-        $textarea.style.top = "".concat(top, "px");
-        $textarea.style.left = "".concat(left, "px");
-      });
-      term.on('size', function (_ref3) {
-        var header = _ref3.header,
-            content = _ref3.content,
-            footer = _ref3.footer;
-        $header.style.height = "".concat(header, "px");
-        $footer.style.height = "".concat(footer, "px");
-        $content.style.top = "".concat(header, "px");
-        $content.style.height = "".concat(content, "px");
-      });
-      term.on('focus', function () {
-        $textarea.focus();
-      });
-      term.on('start', function () {
-        if (recorder) {
-          $recorder.classList.add('recording');
-        }
-      });
-      term.on('recording', function (_ref4) {
-        var size = _ref4.size,
-            duration = _ref4.duration;
-
-        if (recorder) {
-          $recorderSize.innerText = "".concat(Math.ceil(size / 1024 / 1024) || 0, "mb");
-          $recorderDuration.innerText = "".concat(duration || 0, "s");
-        }
-      });
-      term.on('creating', function () {
-        if (recorder) {
-          $recorderSize.innerText = '';
-          $recorderDuration.innerText = "".concat(recordType, " is creating...");
-        }
-      });
-      term.on('end', function () {
-        if (recorder) {
-          $recorder.classList.remove('recording');
-        }
-      });
+      click(term, this);
+      resize(term, this);
+      drag(term, this);
+      input(term, this);
+      record(term, this);
+      scroll(term, this);
     }
 
     createClass(Events, [{
       key: "proxy",
       value: function proxy(target, name, callback) {
-        var _this2 = this;
+        var _this = this;
 
         var option = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
         if (Array.isArray(name)) {
           name.forEach(function (item) {
-            return _this2.proxy(target, item, callback, option);
+            return _this.proxy(target, item, callback, option);
           });
         } else {
           target.addEventListener(name, callback, option);
@@ -6120,7 +6144,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.0.6';
+        return '1.0.8';
       }
     }, {
       key: "utils",

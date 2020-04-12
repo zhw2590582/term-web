@@ -1,4 +1,4 @@
-import { errorHandle } from './utils';
+import { errorHandle } from '../share/utils';
 
 export default class Template {
     constructor(term) {

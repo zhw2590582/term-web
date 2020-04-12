@@ -1,6 +1,6 @@
 import validator from 'option-validator';
-import { errorHandle } from './utils';
-import { OUTPUT, RADIO, CHECKBOX } from './constant';
+import { errorHandle } from '../share/utils';
+import { OUTPUT, RADIO, CHECKBOX } from '../share/constant';
 
 export default class Inquirer {
     constructor(term) {

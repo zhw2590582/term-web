@@ -1,13 +1,13 @@
 import validator from 'option-validator';
-import Emitter from './emitter';
+import Emitter from './share/emitter';
 import Events from './events';
 import Template from './template';
 import Drawer from './drawer';
 import Commander from './commander';
-import VideoRecorder from './videoRecorder';
-import GifRecorder from './gifRecorder';
+import Video from './recorder/video';
+import Gif from './recorder/gif';
 import Inquirer from './inquirer';
-import * as utils from './utils';
+import * as utils from './share/utils';
 
 let id = 0;
 const instances = [];
@@ -101,8 +101,8 @@ export default class Term extends Emitter {
         this.drawer = new Drawer(this);
         this.commander = new Commander(this);
         this.inquirer = new Inquirer(this);
-        this.video = new VideoRecorder(this);
-        this.gif = new GifRecorder(this);
+        this.video = new Video(this);
+        this.gif = new Gif(this);
 
         this.ask = this.commander.ask;
         this.type = this.commander.type;
