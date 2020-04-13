@@ -1819,74 +1819,6 @@
     });
   }
 
-  var Events = /*#__PURE__*/function () {
-    function Events(term) {
-      classCallCheck(this, Events);
-
-      this.term = term;
-      this.destroyEvents = [];
-      this.proxy = this.proxy.bind(this);
-      click(term, this);
-      resize(term, this);
-      drag(term, this);
-      input(term, this);
-      record(term, this);
-      scroll(term, this);
-      copy(term, this);
-    }
-
-    createClass(Events, [{
-      key: "getLogFromEvent",
-      value: function getLogFromEvent(event) {
-        var $content = this.term.template.$content;
-        var pixelRatio = this.term.options.pixelRatio;
-        var contentRect = $content.getBoundingClientRect();
-        var left = (event.pageX - contentRect.left) * pixelRatio;
-        var top = (event.pageY - contentRect.top) * pixelRatio;
-        var _this$term$drawer = this.term.drawer,
-            renderLogs = _this$term$drawer.renderLogs,
-            logGap = _this$term$drawer.logGap,
-            fontSize = _this$term$drawer.fontSize;
-        var index = Math.floor(top / (logGap + fontSize));
-        var logs = renderLogs[index] || [];
-        var log = logs.find(function (item) {
-          return left > item.left && item.left + item.width >= left;
-        });
-        return {
-          logs: logs,
-          log: log
-        };
-      }
-    }, {
-      key: "proxy",
-      value: function proxy(target, name, callback) {
-        var _this = this;
-
-        var option = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
-        if (Array.isArray(name)) {
-          name.forEach(function (item) {
-            return _this.proxy(target, item, callback, option);
-          });
-        } else {
-          target.addEventListener(name, callback, option);
-          this.destroyEvents.push(function () {
-            target.removeEventListener(name, callback, option);
-          });
-        }
-      }
-    }, {
-      key: "destroy",
-      value: function destroy() {
-        this.destroyEvents.forEach(function (event) {
-          return event();
-        });
-      }
-    }]);
-
-    return Events;
-  }();
-
   function _isNativeFunction(fn) {
     return Function.toString.call(fn).indexOf("[native code]") !== -1;
   }
@@ -2007,6 +1939,22 @@
     elink.click();
     document.body.removeChild(elink);
   }
+  function debounce(func, wait, context) {
+    var timeout;
+    return function fn() {
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      var later = function later() {
+        timeout = null;
+        func.apply(context, args);
+      };
+
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
   function uuid() {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
       return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
@@ -2041,10 +1989,177 @@
     errorHandle: errorHandle,
     clamp: clamp,
     download: download,
+    debounce: debounce,
     uuid: uuid,
     escape: escape,
     unescape: unescape
   });
+
+  function control (term, events) {
+    var _term$template = term.template,
+        $container = _term$template.$container,
+        $header = _term$template.$header,
+        pixelRatio = term.options.pixelRatio;
+    var isMini = false;
+    var isFullscreen = false;
+    var debounceResize = debounce(function () {
+      var _document$body$getBou = document.body.getBoundingClientRect(),
+          width = _document$body$getBou.width,
+          height = _document$body$getBou.height;
+
+      term.emit('resize', {
+        width: width,
+        height: height
+      });
+    }, 100);
+
+    function miniToggle() {
+      if (isMini) {
+        $container.classList.remove('is-mini');
+        term.emit('resize', {
+          width: term.options.width,
+          height: term.options.height
+        });
+
+        if (events.draggie) {
+          events.draggie.enable();
+        }
+      } else {
+        $container.classList.add('is-mini');
+
+        if (events.draggie) {
+          events.draggie.disable();
+        }
+      }
+
+      isMini = !isMini;
+      term.emit('mini', isMini);
+    }
+
+    function fullscreenToggle() {
+      if (isFullscreen) {
+        $container.classList.remove('is-fullscreen');
+        term.emit('resize', {
+          width: term.options.width,
+          height: term.options.height
+        });
+
+        if (events.draggie) {
+          events.draggie.enable();
+        }
+      } else {
+        debounceResize();
+        $container.classList.add('is-fullscreen');
+
+        if (events.draggie) {
+          events.draggie.disable();
+        }
+      }
+
+      isFullscreen = !isFullscreen;
+      term.emit('fullscreen', isFullscreen);
+    }
+
+    events.proxy($header, 'click', function (event) {
+      var contentRect = $header.getBoundingClientRect();
+      var left = (event.pageX - contentRect.left) * pixelRatio;
+      var top = (event.pageY - contentRect.top) * pixelRatio;
+      var target = term.drawer.controls.findIndex(function (item) {
+        return left > item.left && item.left + item.size * 2 > left && top > item.top && item.top + item.size * 2 > top;
+      });
+      if (target < 0) return;
+
+      switch (target) {
+        case 0:
+          term.destroy();
+          break;
+
+        case 1:
+          miniToggle();
+          break;
+
+        case 2:
+          fullscreenToggle();
+          break;
+      }
+    });
+    events.proxy($header, 'dblclick', function () {
+      fullscreenToggle();
+    });
+    events.proxy(window, 'resize', function () {
+      if (isFullscreen) {
+        debounceResize();
+      }
+    });
+  }
+
+  var Events = /*#__PURE__*/function () {
+    function Events(term) {
+      classCallCheck(this, Events);
+
+      this.term = term;
+      this.destroyEvents = [];
+      this.proxy = this.proxy.bind(this);
+      click(term, this);
+      resize(term, this);
+      drag(term, this);
+      input(term, this);
+      record(term, this);
+      scroll(term, this);
+      copy(term, this);
+      control(term, this);
+    }
+
+    createClass(Events, [{
+      key: "getLogFromEvent",
+      value: function getLogFromEvent(event) {
+        var $content = this.term.template.$content;
+        var pixelRatio = this.term.options.pixelRatio;
+        var contentRect = $content.getBoundingClientRect();
+        var left = (event.pageX - contentRect.left) * pixelRatio;
+        var top = (event.pageY - contentRect.top) * pixelRatio;
+        var _this$term$drawer = this.term.drawer,
+            renderLogs = _this$term$drawer.renderLogs,
+            lineHeight = _this$term$drawer.lineHeight;
+        var index = Math.floor(top / lineHeight);
+        var logs = renderLogs[index] || [];
+        var log = logs.find(function (item) {
+          return left > item.left && item.left + item.width >= left;
+        });
+        return {
+          logs: logs,
+          log: log
+        };
+      }
+    }, {
+      key: "proxy",
+      value: function proxy(target, name, callback) {
+        var _this = this;
+
+        var option = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+        if (Array.isArray(name)) {
+          name.forEach(function (item) {
+            return _this.proxy(target, item, callback, option);
+          });
+        } else {
+          target.addEventListener(name, callback, option);
+          this.destroyEvents.push(function () {
+            target.removeEventListener(name, callback, option);
+          });
+        }
+      }
+    }, {
+      key: "destroy",
+      value: function destroy() {
+        this.destroyEvents.forEach(function (event) {
+          return event();
+        });
+      }
+    }]);
+
+    return Events;
+  }();
 
   var Template = /*#__PURE__*/function () {
     function Template(term) {
@@ -2114,7 +2229,7 @@
       if (!document.getElementById('term-ui-style')) {
         this.$style = document.createElement('style');
         this.$style.id = 'term-ui-style';
-        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;user-select:none;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{position:absolute;top:0;left:0;bottom:0;right:0;width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;resize:none;}', '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-content:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.term-resize{position: absolute;right: 0;bottom: 0;width: 20px;height: 20px;cursor: nwse-resize;}', '.is-dragging.term-container{opacity:.95};'].join('');
+        this.$style.textContent = [".term-container{font-family:".concat(fontFamily, ";font-size:").concat(fontSize, "px;color:").concat(fontColor, ";position:relative;user-select:none;}"), '.term-container ::-webkit-scrollbar{width:5px;}', '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}', '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}', ".term-canvas{position:absolute;top:0;left:0;bottom:0;right:0;width:100%;height:100%;border-radius:".concat(borderRadius, "px;box-shadow:").concat(boxShadow, ";}"), '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;resize:none;}', '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}', '.term-content:hover{cursor:text}', '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}', '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}', '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}', '.term-recorder.recording .term-recorder-btn{background:#FFC107;}', '.term-recorder.recording .term-recorder-size{display:block;}', '.term-recorder.recording .term-recorder-duration{display:block;}', '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}', '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}', '.term-resize{position: absolute;right: 0;bottom: 0;width: 20px;height: 20px;cursor: nwse-resize;}', '.is-dragging.term-container{opacity:.95;}', '.is-fullscreen.term-container{position:fixed;z-index:99;top:0!important;left:0!important;bottom:0!important;right:0!important;width:100%!important;height:100%!important;}'].join('');
         document.head.appendChild(this.$style);
       }
     }
@@ -2209,14 +2324,24 @@
       this.scrollTop = 0;
       this.cursorColor = ['#FFF', backgroundColor];
       this.cursorSize = 5 * pixelRatio;
-      this.logGap = 10 * pixelRatio;
+      this.lineGap = 10 * pixelRatio;
       this.fontSize = fontSize * pixelRatio;
-      this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
-      this.btnSize = 6 * pixelRatio;
+      this.lineHeight = this.lineGap + this.fontSize;
       this.contentPadding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
       this.$tmp = document.createElement('div');
+      this.controls = ['#FF5F56', '#FFBD2E', '#27C93F'].map(function (item, index) {
+        var size = 6 * pixelRatio;
+        var left = _this.contentPadding[3] + index * size * 3.6;
+        var top = _this.contentPadding[1];
+        return {
+          color: item,
+          left: left,
+          top: top,
+          size: size
+        };
+      });
       this.cacheEmits = [];
       this.cacheLogs = [];
       this.renderLogs = [];
@@ -2263,7 +2388,7 @@
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
         this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
-        this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
+        this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
         this.ctx = $canvas.getContext('2d');
         this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
         this.ctx.textBaseline = 'top';
@@ -2321,13 +2446,13 @@
         var _this$ctx$measureText = this.ctx.measureText(title),
             width = _this$ctx$measureText.width;
 
-        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.btnSize / 2);
-        this.btnColor.forEach(function (item, index) {
+        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.controlSize / 2);
+        this.controls.forEach(function (item) {
           _this3.ctx.beginPath();
 
-          _this3.ctx.arc(_this3.contentPadding[3] + _this3.btnSize + index * _this3.btnSize * 3.6, _this3.contentPadding[1] + _this3.btnSize, _this3.btnSize, 0, 360, false);
+          _this3.ctx.arc(item.left + item.size, item.top + item.size, item.size, 0, 360, false);
 
-          _this3.ctx.fillStyle = item;
+          _this3.ctx.fillStyle = item.color;
 
           _this3.ctx.fill();
 
@@ -2348,7 +2473,7 @@
             if (logs && logs.length) {
               for (var j = 0; j < logs.length; j += 1) {
                 var log = logs[j];
-                var top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
+                var top = this.contentPadding[0] + this.lineHeight * i;
                 log.top = top;
 
                 if (log.background) {
@@ -2385,7 +2510,7 @@
           });
         }
 
-        this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
+        this.scrollHeight = this.cacheLogs.length * this.lineHeight / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
       }
     }, {
@@ -2394,7 +2519,7 @@
         var pixelRatio = this.term.options.pixelRatio;
         var lastlogs = this.renderLogs[this.renderLogs.length - 1];
         var lastIndex = this.cacheLogs.indexOf(lastlogs);
-        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+        this.scrollTop = ((lastIndex + 1) * this.lineHeight - this.contentHeight) / pixelRatio;
         this.term.emit('scrollTop', this.scrollTop);
       }
     }, {
@@ -2407,7 +2532,7 @@
       key: "renderByTop",
       value: function renderByTop(top) {
         var pixelRatio = this.term.options.pixelRatio;
-        var index = Math.ceil(top * pixelRatio / (this.fontSize + this.logGap));
+        var index = Math.ceil(top * pixelRatio / this.lineHeight);
         this.renderByIndex(index);
       }
     }, {
@@ -2608,7 +2733,7 @@
         if (this.renderEditable) {
           var pixelRatio = this.term.options.pixelRatio;
           var left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 4;
-          var top = this.contentPadding[0] + (this.fontSize + this.logGap) * (this.renderLogs.length - 1);
+          var top = this.contentPadding[0] + this.lineHeight * (this.renderLogs.length - 1);
           return {
             left: left,
             top: top

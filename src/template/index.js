@@ -96,7 +96,8 @@ export default class Template {
                 '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}',
                 '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}',
                 '.term-resize{position: absolute;right: 0;bottom: 0;width: 20px;height: 20px;cursor: nwse-resize;}',
-                '.is-dragging.term-container{opacity:.95};',
+                '.is-dragging.term-container{opacity:.95;}',
+                '.is-fullscreen.term-container{position:fixed;z-index:99;top:0!important;left:0!important;bottom:0!important;right:0!important;width:100%!important;height:100%!important;}',
             ].join('');
             document.head.appendChild(this.$style);
         }

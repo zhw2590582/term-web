@@ -10,14 +10,28 @@ export default class Drawer {
 
         this.scrollHeight = 0;
         this.scrollTop = 0;
+
         this.cursorColor = ['#FFF', backgroundColor];
         this.cursorSize = 5 * pixelRatio;
-        this.logGap = 10 * pixelRatio;
+
+        this.lineGap = 10 * pixelRatio;
         this.fontSize = fontSize * pixelRatio;
-        this.btnColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
-        this.btnSize = 6 * pixelRatio;
+        this.lineHeight = this.lineGap + this.fontSize;
+
         this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
         this.$tmp = document.createElement('div');
+
+        this.controls = ['#FF5F56', '#FFBD2E', '#27C93F'].map((item, index) => {
+            const size = 6 * pixelRatio;
+            const left = this.contentPadding[3] + index * size * 3.6;
+            const top = this.contentPadding[1];
+            return {
+                color: item,
+                left,
+                top,
+                size,
+            };
+        });
 
         this.cacheEmits = [];
         this.cacheLogs = [];
@@ -58,7 +72,7 @@ export default class Drawer {
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
         this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
-        this.maxLength = Math.floor(this.contentHeight / (this.fontSize + this.logGap));
+        this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
 
         this.ctx = $canvas.getContext('2d');
         this.ctx.font = `${this.fontSize}px ${fontFamily}`;
@@ -95,7 +109,7 @@ export default class Drawer {
         if (this.renderEditable) {
             const { pixelRatio } = this.term.options;
             const left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 4;
-            const top = this.contentPadding[0] + (this.fontSize + this.logGap) * (this.renderLogs.length - 1);
+            const top = this.contentPadding[0] + this.lineHeight * (this.renderLogs.length - 1);
             return { left, top };
         }
         return { left: 0, top: 0 };
@@ -129,18 +143,11 @@ export default class Drawer {
         const { title, fontColor } = this.term.options;
         this.ctx.fillStyle = fontColor;
         const { width } = this.ctx.measureText(title);
-        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.btnSize / 2);
-        this.btnColor.forEach((item, index) => {
+        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.controlSize / 2);
+        this.controls.forEach((item) => {
             this.ctx.beginPath();
-            this.ctx.arc(
-                this.contentPadding[3] + this.btnSize + index * this.btnSize * 3.6,
-                this.contentPadding[1] + this.btnSize,
-                this.btnSize,
-                0,
-                360,
-                false,
-            );
-            this.ctx.fillStyle = item;
+            this.ctx.arc(item.left + item.size, item.top + item.size, item.size, 0, 360, false);
+            this.ctx.fillStyle = item.color;
             this.ctx.fill();
             this.ctx.closePath();
         });
@@ -155,7 +162,7 @@ export default class Drawer {
                 if (logs && logs.length) {
                     for (let j = 0; j < logs.length; j += 1) {
                         const log = logs[j];
-                        const top = this.contentPadding[0] + (this.fontSize + this.logGap) * i;
+                        const top = this.contentPadding[0] + this.lineHeight * i;
                         log.top = top;
                         if (log.background) {
                             this.ctx.fillStyle = log.background;
@@ -186,7 +193,7 @@ export default class Drawer {
             });
         }
 
-        this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
+        this.scrollHeight = (this.cacheLogs.length * this.lineHeight) / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
     }
 
@@ -194,7 +201,7 @@ export default class Drawer {
         const { pixelRatio } = this.term.options;
         const lastlogs = this.renderLogs[this.renderLogs.length - 1];
         const lastIndex = this.cacheLogs.indexOf(lastlogs);
-        this.scrollTop = ((lastIndex + 1) * (this.fontSize + this.logGap) - this.contentHeight) / pixelRatio;
+        this.scrollTop = ((lastIndex + 1) * this.lineHeight - this.contentHeight) / pixelRatio;
         this.term.emit('scrollTop', this.scrollTop);
     }
 
@@ -205,7 +212,7 @@ export default class Drawer {
 
     renderByTop(top) {
         const { pixelRatio } = this.term.options;
-        const index = Math.ceil((top * pixelRatio) / (this.fontSize + this.logGap));
+        const index = Math.ceil((top * pixelRatio) / this.lineHeight);
         this.renderByIndex(index);
     }
 

@@ -5,6 +5,7 @@ import input from './input';
 import record from './record';
 import scroll from './scroll';
 import copy from './copy';
+import control from './control';
 
 export default class Events {
     constructor(term) {
@@ -19,6 +20,7 @@ export default class Events {
         record(term, this);
         scroll(term, this);
         copy(term, this);
+        control(term, this);
     }
 
     getLogFromEvent(event) {
@@ -27,8 +29,8 @@ export default class Events {
         const contentRect = $content.getBoundingClientRect();
         const left = (event.pageX - contentRect.left) * pixelRatio;
         const top = (event.pageY - contentRect.top) * pixelRatio;
-        const { renderLogs, logGap, fontSize } = this.term.drawer;
-        const index = Math.floor(top / (logGap + fontSize));
+        const { renderLogs, lineHeight } = this.term.drawer;
+        const index = Math.floor(top / lineHeight);
         const logs = renderLogs[index] || [];
         const log = logs.find((item) => left > item.left && item.left + item.width >= left);
         return {
