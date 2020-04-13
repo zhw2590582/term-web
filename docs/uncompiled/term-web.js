@@ -2293,6 +2293,7 @@
       this.contentPadding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
+      this.renderIndex = -1;
       this.$tmp = document.createElement('div');
       this.controls = ['#FF5F56', '#FFBD2E', '#27C93F'].map(function (item, index) {
         var size = 6 * pixelRatio;
@@ -2489,6 +2490,8 @@
     }, {
       key: "renderByIndex",
       value: function renderByIndex(index) {
+        if (this.renderIndex === index) return;
+        this.renderIndex = index;
         this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
         this.render(false);
       }

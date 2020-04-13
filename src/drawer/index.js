@@ -19,6 +19,8 @@ export default class Drawer {
         this.lineHeight = this.lineGap + this.fontSize;
 
         this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
+
+        this.renderIndex = -1;
         this.$tmp = document.createElement('div');
 
         this.controls = ['#FF5F56', '#FFBD2E', '#27C93F'].map((item, index) => {
@@ -206,6 +208,8 @@ export default class Drawer {
     }
 
     renderByIndex(index) {
+        if (this.renderIndex === index) return;
+        this.renderIndex = index;
         this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
         this.render(false);
     }
