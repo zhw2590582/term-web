@@ -6,6 +6,7 @@ import record from './record';
 import scroll from './scroll';
 import copy from './copy';
 import fullscreen from './fullscreen';
+import history from './history';
 
 export default class Events {
     constructor(term) {
@@ -21,6 +22,7 @@ export default class Events {
         scroll(term, this);
         copy(term, this);
         fullscreen(term, this);
+        history(term, this);
     }
 
     getLogFromEvent(event) {

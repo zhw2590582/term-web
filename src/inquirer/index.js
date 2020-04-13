@@ -26,12 +26,11 @@ export default class Inquirer {
 
         term.on('keydown', (event) => {
             const last = term.drawer.lastCacheLog;
-            const key = event.keyCode;
             if (last.style === RADIO && this.radioList === last.list) {
-                this.radioEvent(key);
+                this.radioEvent(event);
             }
             if (last.style === CHECKBOX && this.checkboxList === last.list) {
-                this.checkboxEvent(key);
+                this.checkboxEvent(event);
             }
         });
     }
@@ -86,9 +85,11 @@ export default class Inquirer {
         });
     }
 
-    radioEvent(key) {
+    radioEvent(event) {
+        const key = event.keyCode;
         const index = this.radioList.findIndex((item) => item.key === this.radioKey);
         if (key === 38) {
+            event.preventDefault();
             if (index <= 0) {
                 this.radioKey = this.radioList[this.radioList.length - 1].key;
                 this.radioRender(this.radioList, this.radioKey);
@@ -98,6 +99,7 @@ export default class Inquirer {
             }
         }
         if (key === 40) {
+            event.preventDefault();
             if (index === this.radioList.length - 1) {
                 this.radioKey = this.radioList[0].key;
                 this.radioRender(this.radioList, this.radioKey);
@@ -133,8 +135,10 @@ export default class Inquirer {
         });
     }
 
-    checkboxEvent(key) {
+    checkboxEvent(event) {
+        const key = event.keyCode;
         if (key === 38) {
+            event.preventDefault();
             if (this.checkboxIndex <= 0) {
                 this.checkboxIndex = this.checkboxList.length - 1;
                 this.radioKey = this.checkboxList[this.checkboxIndex].key;
@@ -146,6 +150,7 @@ export default class Inquirer {
             }
         }
         if (key === 40) {
+            event.preventDefault();
             if (this.checkboxIndex === this.checkboxList.length - 1) {
                 this.checkboxIndex = 0;
                 this.checkboxRender();

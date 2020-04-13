@@ -10,18 +10,31 @@ export default function (term, events) {
     });
 
     events.proxy($textarea, 'keydown', (event) => {
+        term.emit('keydown', event);
         const key = event.keyCode;
+
         if (key === 13) {
             setTimeout(() => {
                 term.emit('enter', $textarea.value.trim());
                 $textarea.value = '';
             });
         }
+
+        if (term.drawer.renderEditable) {
+            if (key === 38) {
+                event.preventDefault();
+                term.emit('history', -1);
+            }
+            if (key === 40) {
+                event.preventDefault();
+                term.emit('history', 1);
+            }
+        }
+
         if ([37, 38, 39, 40].includes(key)) {
             $textarea.blur();
             setTimeout(() => $textarea.focus());
         }
-        term.emit('keydown', event);
     });
 
     term.on('cursor', ({ left, top }) => {

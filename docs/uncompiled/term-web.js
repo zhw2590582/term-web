@@ -1657,6 +1657,7 @@
       term.emit('input', $textarea.value.trim());
     });
     events.proxy($textarea, 'keydown', function (event) {
+      term.emit('keydown', event);
       var key = event.keyCode;
 
       if (key === 13) {
@@ -1666,14 +1667,24 @@
         });
       }
 
+      if (term.drawer.renderEditable) {
+        if (key === 38) {
+          event.preventDefault();
+          term.emit('history', -1);
+        }
+
+        if (key === 40) {
+          event.preventDefault();
+          term.emit('history', 1);
+        }
+      }
+
       if ([37, 38, 39, 40].includes(key)) {
         $textarea.blur();
         setTimeout(function () {
           return $textarea.focus();
         });
       }
-
-      term.emit('keydown', event);
     });
     term.on('cursor', function (_ref) {
       var left = _ref.left,
@@ -2042,6 +2053,45 @@
     });
   }
 
+  var INPUT = 'input';
+  var OUTPUT = 'output';
+  var RADIO = 'radio';
+  var CHECKBOX = 'checkbox';
+  var recorderOptions = {
+    videoBitsPerSecond: 5000000,
+    mimeType: 'video/webm'
+  };
+
+  function history (term) {
+    var $textarea = term.template.$textarea;
+    var currentIndex = 0;
+
+    function history(step) {
+      var cacheEmits = term.drawer.cacheEmits;
+      var inputs = cacheEmits.filter(function (item, index) {
+        return item.type === INPUT && item.text.trim() && index !== cacheEmits.length - 1;
+      });
+      var input = inputs[inputs.length + currentIndex + step];
+
+      if (input) {
+        currentIndex += step;
+        $textarea.value = input.text;
+        term.drawer.emit({
+          type: INPUT,
+          text: input.text,
+          replace: true
+        });
+      }
+    }
+
+    term.on('enter', function () {
+      currentIndex = 0;
+    });
+    term.on('history', function (step) {
+      history(step);
+    });
+  }
+
   var Events = /*#__PURE__*/function () {
     function Events(term) {
       classCallCheck(this, Events);
@@ -2057,6 +2107,7 @@
       scroll(term, this);
       copy(term, this);
       fullscreen(term, this);
+      history(term);
     }
 
     createClass(Events, [{
@@ -2257,15 +2308,6 @@
   }
 
   var toConsumableArray = _toConsumableArray;
-
-  var INPUT = 'input';
-  var OUTPUT = 'output';
-  var RADIO = 'radio';
-  var CHECKBOX = 'checkbox';
-  var recorderOptions = {
-    videoBitsPerSecond: 5000000,
-    mimeType: 'video/webm'
-  };
 
   function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -2668,6 +2710,7 @@
     }, {
       key: "clear",
       value: function clear() {
+        this.cacheEmits = [];
         this.cacheLogs = [];
         this.renderLogs = [];
         this.render();
@@ -6189,14 +6232,13 @@
 
       term.on('keydown', function (event) {
         var last = term.drawer.lastCacheLog;
-        var key = event.keyCode;
 
         if (last.style === RADIO && _this.radioList === last.list) {
-          _this.radioEvent(key);
+          _this.radioEvent(event);
         }
 
         if (last.style === CHECKBOX && _this.checkboxList === last.list) {
-          _this.checkboxEvent(key);
+          _this.checkboxEvent(event);
         }
       });
     }
@@ -6258,14 +6300,17 @@
       }
     }, {
       key: "radioEvent",
-      value: function radioEvent(key) {
+      value: function radioEvent(event) {
         var _this4 = this;
 
+        var key = event.keyCode;
         var index = this.radioList.findIndex(function (item) {
           return item.key === _this4.radioKey;
         });
 
         if (key === 38) {
+          event.preventDefault();
+
           if (index <= 0) {
             this.radioKey = this.radioList[this.radioList.length - 1].key;
             this.radioRender(this.radioList, this.radioKey);
@@ -6276,6 +6321,8 @@
         }
 
         if (key === 40) {
+          event.preventDefault();
+
           if (index === this.radioList.length - 1) {
             this.radioKey = this.radioList[0].key;
             this.radioRender(this.radioList, this.radioKey);
@@ -6314,8 +6361,12 @@
       }
     }, {
       key: "checkboxEvent",
-      value: function checkboxEvent(key) {
+      value: function checkboxEvent(event) {
+        var key = event.keyCode;
+
         if (key === 38) {
+          event.preventDefault();
+
           if (this.checkboxIndex <= 0) {
             this.checkboxIndex = this.checkboxList.length - 1;
             this.radioKey = this.checkboxList[this.checkboxIndex].key;
@@ -6328,6 +6379,8 @@
         }
 
         if (key === 40) {
+          event.preventDefault();
+
           if (this.checkboxIndex === this.checkboxList.length - 1) {
             this.checkboxIndex = 0;
             this.checkboxRender();

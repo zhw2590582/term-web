@@ -367,6 +367,7 @@ export default class Drawer {
     }
 
     clear() {
+        this.cacheEmits = [];
         this.cacheLogs = [];
         this.renderLogs = [];
         this.render();
