@@ -3056,9 +3056,10 @@
 
     createClass(Commander, [{
       key: "execute",
-      value: function execute(text) {
+      value: function execute() {
         var _this2 = this;
 
+        var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         if (!text.trim()) return this.input('');
         var _this$term$options = this.term.options,
             parseOpt = _this$term$options.parseOpt,
@@ -3129,7 +3130,8 @@
       }
     }, {
       key: "output",
-      value: function output(text) {
+      value: function output() {
+        var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         this.term.drawer.emit({
           type: OUTPUT,
@@ -3140,7 +3142,8 @@
       }
     }, {
       key: "input",
-      value: function input(text) {
+      value: function input() {
+        var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         var replace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         this.term.drawer.emit({
           type: INPUT,
@@ -3151,8 +3154,10 @@
       }
     }, {
       key: "question",
-      value: function question(_question) {
+      value: function question() {
         var _this3 = this;
+
+        var _question = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 
         var answer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
@@ -3178,9 +3183,10 @@
       }
     }, {
       key: "type",
-      value: function type(text) {
+      value: function type() {
         var _this4 = this;
 
+        var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         var isExecute = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
         if (this.isTyping) return Promise.reject();
         var $textarea = this.term.template.$textarea;

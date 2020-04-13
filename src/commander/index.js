@@ -53,7 +53,7 @@ export default class Commander {
         return cacheEditable && lastCacheLog.prefix && typeof this.askResolve === 'function';
     }
 
-    execute(text) {
+    execute(text = '') {
         if (!text.trim()) return this.input('');
         const { parseOpt, notFound, loading } = this.term.options;
         const action = this.findAction(text);
@@ -114,7 +114,7 @@ export default class Commander {
         });
     }
 
-    output(text, replace = false) {
+    output(text = '', replace = false) {
         this.term.drawer.emit({
             type: OUTPUT,
             replace,
@@ -123,7 +123,7 @@ export default class Commander {
         return this;
     }
 
-    input(text, replace = false) {
+    input(text = '', replace = false) {
         this.term.drawer.emit({
             type: INPUT,
             replace,
@@ -132,7 +132,7 @@ export default class Commander {
         return this;
     }
 
-    question(question, answer = '') {
+    question(question = '', answer = '') {
         if (this.isQuestion) {
             return this.term.drawer.emit({
                 type: INPUT,
@@ -152,7 +152,7 @@ export default class Commander {
         });
     }
 
-    type(text, isExecute = true) {
+    type(text = '', isExecute = true) {
         if (this.isTyping) return Promise.reject();
         const { $textarea } = this.term.template;
         return new Promise((resolve) => {
