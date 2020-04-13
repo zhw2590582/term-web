@@ -26,8 +26,8 @@
     }
 
     &.is-fullscreen {
-        position: fixed;
-        z-index: 9999;
+        position: fixed !important;
+        z-index: 9999 !important;
         top: 0 !important;
         left: 0 !important;
         bottom: 0 !important;
