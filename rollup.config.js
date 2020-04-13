@@ -21,7 +21,7 @@ export default {
     },
     plugins: [
         eslint({
-            exclude: ['node_modules/**', 'src/template/*.scss'],
+            exclude: ['node_modules/**', 'src/style/*.scss'],
         }),
         postcss({
             plugins: [

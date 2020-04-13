@@ -1,4 +1,3 @@
-import './style.scss';
 import { errorHandle } from '../share/utils';
 
 export default class Template {
