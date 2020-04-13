@@ -1,20 +1,10 @@
+import './style.scss';
 import { errorHandle } from '../share/utils';
 
 export default class Template {
     constructor(term) {
         this.term = term;
-        const {
-            container,
-            fontFamily,
-            fontSize,
-            fontColor,
-            pixelRatio,
-            width,
-            height,
-            borderRadius,
-            boxShadow,
-            recorder,
-        } = term.options;
+        const { container, pixelRatio, width, height, recorder } = term.options;
 
         this.$container = container;
         if (typeof term.options.container === 'string') {
@@ -74,39 +64,9 @@ export default class Template {
             this.$recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
             this.$header.appendChild(this.$recorder);
         }
-
-        if (!document.getElementById('term-ui-style')) {
-            this.$style = document.createElement('style');
-            this.$style.id = 'term-ui-style';
-            this.$style.textContent = [
-                `.term-container{font-family:${fontFamily};font-size:${fontSize}px;color:${fontColor};position:relative;user-select:none;}`,
-                '.term-container ::-webkit-scrollbar{width:5px;}',
-                '.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px;}',
-                '.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc;}',
-                `.term-canvas{position:absolute;top:0;left:0;bottom:0;right:0;width:100%;height:100%;border-radius:${borderRadius}px;box-shadow:${boxShadow};}`,
-                '.term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;resize:none;}',
-                '.term-content{position:absolute;width:100%;right:0;left:0; overflow: auto;}',
-                '.term-content:hover{cursor:text}',
-                '.term-recorder{display:flex;align-items:center;position:absolute;right:10px;top:10px;}',
-                '.term-recorder-size, .term-recorder-duration{display:none;margin-right:10px;}',
-                '.term-recorder-btn{height:18px;width:18px;background:#F44336;border-radius:3px;cursor:pointer;}',
-                '.term-recorder.recording .term-recorder-btn{background:#FFC107;}',
-                '.term-recorder.recording .term-recorder-size{display:block;}',
-                '.term-recorder.recording .term-recorder-duration{display:block;}',
-                '.term-header{position:absolute;width:100%;top:0;left:0;right:0;}',
-                '.term-footer{position:absolute;width:100%;bottom:0;left:0;right:0;}',
-                '.term-resize{position: absolute;right: 0;bottom: 0;width: 20px;height: 20px;cursor: nwse-resize;}',
-                '.is-dragging.term-container{opacity:.95;}',
-                '.is-fullscreen.term-container{position:fixed;z-index:99;top:0!important;left:0!important;bottom:0!important;right:0!important;width:100%!important;height:100%!important;}',
-            ].join('');
-            document.head.appendChild(this.$style);
-        }
     }
 
     destroy() {
         this.$container.innerHTML = '';
-        if (!this.term.constructor.instances.length) {
-            document.head.removeChild(this.$style);
-        }
     }
 }

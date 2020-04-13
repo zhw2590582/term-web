@@ -4,6 +4,9 @@ import nodeResolve from 'rollup-plugin-node-resolve';
 import { eslint } from 'rollup-plugin-eslint';
 import replace from 'rollup-plugin-replace';
 import { uglify } from 'rollup-plugin-uglify';
+import postcss from 'rollup-plugin-postcss';
+import autoprefixer from 'autoprefixer';
+import cssnano from 'cssnano';
 import { version, homepage } from './package.json';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -18,7 +21,17 @@ export default {
     },
     plugins: [
         eslint({
-            exclude: ['node_modules/**'],
+            exclude: ['node_modules/**', 'src/template/*.scss'],
+        }),
+        postcss({
+            plugins: [
+                autoprefixer(),
+                cssnano({
+                    preset: ['default'],
+                }),
+            ],
+            sourceMap: isProd,
+            extract: false,
         }),
         nodeResolve(),
         commonjs(),

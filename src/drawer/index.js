@@ -23,8 +23,8 @@ export default class Drawer {
 
         this.controls = ['#FF5F56', '#FFBD2E', '#27C93F'].map((item, index) => {
             const size = 6 * pixelRatio;
-            const left = this.contentPadding[3] + index * size * 3.6;
-            const top = this.contentPadding[1];
+            const left = this.contentPadding[3] + index * size * 3.6 + size;
+            const top = this.contentPadding[1] + size;
             return {
                 color: item,
                 left,
@@ -140,13 +140,13 @@ export default class Drawer {
     }
 
     renderTopbar() {
-        const { title, fontColor } = this.term.options;
+        const { title, fontColor, pixelRatio } = this.term.options;
         this.ctx.fillStyle = fontColor;
         const { width } = this.ctx.measureText(title);
-        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - this.controlSize / 2);
+        this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - pixelRatio / 3);
         this.controls.forEach((item) => {
             this.ctx.beginPath();
-            this.ctx.arc(item.left + item.size, item.top + item.size, item.size, 0, 360, false);
+            this.ctx.arc(item.left, item.top, item.size, 0, 360, false);
             this.ctx.fillStyle = item.color;
             this.ctx.fill();
             this.ctx.closePath();

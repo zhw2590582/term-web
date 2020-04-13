@@ -5,7 +5,7 @@ import input from './input';
 import record from './record';
 import scroll from './scroll';
 import copy from './copy';
-import control from './control';
+import fullscreen from './fullscreen';
 
 export default class Events {
     constructor(term) {
@@ -20,7 +20,7 @@ export default class Events {
         record(term, this);
         scroll(term, this);
         copy(term, this);
-        control(term, this);
+        fullscreen(term, this);
     }
 
     getLogFromEvent(event) {
