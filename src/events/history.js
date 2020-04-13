@@ -25,6 +25,12 @@ export default function (term) {
         currentIndex = 0;
     });
 
+    term.on('render', () => {
+        if (term.drawer && !term.drawer.renderEditable) {
+            currentIndex = 0;
+        }
+    });
+
     term.on('history', (step) => {
         history(step);
     });

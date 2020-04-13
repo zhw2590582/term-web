@@ -2087,6 +2087,11 @@
     term.on('enter', function () {
       currentIndex = 0;
     });
+    term.on('render', function () {
+      if (term.drawer && !term.drawer.renderEditable) {
+        currentIndex = 0;
+      }
+    });
     term.on('history', function (step) {
       history(step);
     });
@@ -2417,6 +2422,7 @@
           this.autoScroll();
         }
 
+        this.term.emit('render');
         return this;
       }
     }, {

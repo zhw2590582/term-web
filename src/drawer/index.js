@@ -124,6 +124,7 @@ export default class Drawer {
         if (isAutoScroll) {
             this.autoScroll();
         }
+        this.term.emit('render');
         return this;
     }
 
