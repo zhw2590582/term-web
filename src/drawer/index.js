@@ -104,7 +104,10 @@ export default class Drawer {
     render(isAutoScroll = true) {
         this.renderBackground();
         this.renderTopbar();
-        this.renderContent(isAutoScroll);
+        this.renderContent();
+        if (isAutoScroll) {
+            this.autoScroll();
+        }
         return this;
     }
 
@@ -143,7 +146,7 @@ export default class Drawer {
         });
     }
 
-    renderContent(isAutoScroll) {
+    renderContent() {
         const { pixelRatio, fontColor } = this.term.options;
 
         if (this.renderLogs.length) {
@@ -185,10 +188,6 @@ export default class Drawer {
 
         this.scrollHeight = (this.cacheLogs.length * (this.fontSize + this.logGap)) / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
-
-        if (isAutoScroll) {
-            this.autoScroll();
-        }
     }
 
     autoScroll() {

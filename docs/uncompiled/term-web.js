@@ -2280,7 +2280,12 @@
         var isAutoScroll = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
         this.renderBackground();
         this.renderTopbar();
-        this.renderContent(isAutoScroll);
+        this.renderContent();
+
+        if (isAutoScroll) {
+          this.autoScroll();
+        }
+
         return this;
       }
     }, {
@@ -2331,7 +2336,7 @@
       }
     }, {
       key: "renderContent",
-      value: function renderContent(isAutoScroll) {
+      value: function renderContent() {
         var _this$term$options4 = this.term.options,
             pixelRatio = _this$term$options4.pixelRatio,
             fontColor = _this$term$options4.fontColor;
@@ -2382,10 +2387,6 @@
 
         this.scrollHeight = this.cacheLogs.length * (this.fontSize + this.logGap) / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
-
-        if (isAutoScroll) {
-          this.autoScroll();
-        }
       }
     }, {
       key: "autoScroll",
@@ -6363,7 +6364,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.1.0';
+        return '1.0.6';
       }
     }, {
       key: "utils",

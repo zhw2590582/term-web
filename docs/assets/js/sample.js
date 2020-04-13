@@ -1,7 +1,6 @@
 var term = new Term({
     container: '#term',
     pixelRatio: 2,
-    recordType: 'gif', // gif or video
     fontFamily: 'monospace',
     watermark: '/assets/img/watermark.png',
     title: `Term Web ${Term.version}`,
