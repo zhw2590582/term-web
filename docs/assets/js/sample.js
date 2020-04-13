@@ -90,7 +90,7 @@ var term = new Term({
             input: /^ask$/i,
             output() {
                 this.ask(`<d color='#27C93F'>> How are you ? </d>`).then((answer) => {
-                    this.output(`<d color='yellow'>${answer}</d>`, true).input('');
+                    this.output(`<d color='yellow'>${answer}</d>`, true).input();
                 });
             },
         },
@@ -108,7 +108,7 @@ var term = new Term({
                         text: 'bye',
                     },
                 ]).then((key) => {
-                    this.output(`<d color='yellow'>${key}</d>`, true).input('');
+                    this.output(`<d color='yellow'>${key}</d>`, true).input();
                 });
             },
         },
@@ -126,8 +126,26 @@ var term = new Term({
                         text: 'bye',
                     },
                 ]).then((key) => {
-                    this.output(`<d color='yellow'>${key}</d>`, true).input('');
+                    this.output(`<d color='yellow'>${key}</d>`, true).input();
                 });
+            },
+        },
+        {
+            // Loading
+            input: /^loading$/i,
+            output() {
+                let progress = 0;
+                (function loop() {
+                    if (progress >= 100) {
+                        this.output(`<d color='yellow'>Done</d>`, true).input();
+                    } else {
+                        this.output(`<d color='#00f501'>${progress}% ${'-'.repeat(progress)}</d>`, true);
+                        progress += 1;
+                        setTimeout(() => {
+                            loop.call(this);
+                        }, 100);
+                    }
+                }).call(this);
             },
         },
     ],
