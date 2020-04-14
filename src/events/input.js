@@ -18,6 +18,12 @@ export default function (term, events) {
             $textarea.value = '';
         }
 
+        if (event.ctrlKey && key === 67) {
+            $textarea.value = '';
+            term.input();
+            term.emit('abort');
+        }
+
         if (term.drawer.renderEditable) {
             if (key === 38) {
                 event.preventDefault();

@@ -1695,6 +1695,12 @@
         $textarea.value = '';
       }
 
+      if (event.ctrlKey && key === 67) {
+        $textarea.value = '';
+        term.input();
+        term.emit('abort');
+      }
+
       if (term.drawer.renderEditable) {
         if (key === 38) {
           event.preventDefault();
@@ -2122,17 +2128,6 @@
     });
   }
 
-  function abort (term) {
-    var $textarea = term.template.$textarea;
-    term.on('keydown', function (event) {
-      if (event.ctrlKey && event.keyCode === 67) {
-        $textarea.value = '';
-        term.input();
-        term.emit('abort');
-      }
-    });
-  }
-
   var Events = /*#__PURE__*/function () {
     function Events(term) {
       classCallCheck(this, Events);
@@ -2149,7 +2144,6 @@
       copy(term, this);
       fullscreen(term, this);
       history(term);
-      abort(term);
     }
 
     createClass(Events, [{
