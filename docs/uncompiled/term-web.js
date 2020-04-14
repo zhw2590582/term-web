@@ -2500,12 +2500,15 @@
                 this.ctx.fillStyle = log.color || fontColor;
                 this.ctx.fillText(log.text, log.left, top);
 
-                if (log.href) {
+                if (log.href || log.underline) {
                   this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
                 }
 
+                if (log.del) {
+                  this.ctx.fillRect(log.left, top + Math.ceil(this.fontSize / 2), log.width, pixelRatio);
+                }
+
                 if (log.border) {
-                  this.ctx.fillStyle = log.border;
                   this.ctx.fillRect(log.left, top, log.width, pixelRatio);
                   this.ctx.fillRect(log.left, top + this.fontSize - pixelRatio, log.width, pixelRatio);
                   this.ctx.fillRect(log.left, top, pixelRatio, this.fontSize);
@@ -2626,10 +2629,17 @@
             var child = this.$tmp.childNodes[j];
             var word = child.textContent;
             var wordSize = this.ctx.measureText(word).width;
-            var color = child.getAttribute ? child.getAttribute('color') : '';
-            var background = child.getAttribute ? child.getAttribute('background') : '';
-            var href = child.getAttribute ? child.getAttribute('href') : '';
-            var border = child.getAttribute ? child.getAttribute('border') : '';
+            var attr = {};
+
+            if (child.tagName) {
+              attr.color = child.getAttribute('color');
+              attr.background = child.getAttribute('background');
+              attr.href = child.getAttribute('href');
+              attr.border = child.hasAttribute('border');
+              attr.underline = child.hasAttribute('underline');
+              attr.del = child.hasAttribute('del');
+            }
+
             var nextWordWidth = left + wordSize;
 
             if (nextWordWidth > this.contentWidth) {
@@ -2648,14 +2658,10 @@
                   textTmp += letter;
                   left = nextLetterWidth;
                 } else {
-                  var _log = _objectSpread$1({}, data, {
+                  var _log = _objectSpread$1({}, data, {}, attr, {
                     width: this.ctx.measureText(textTmp).width,
                     left: isNewLine ? this.contentPadding[3] : lastLeft,
-                    text: textTmp,
-                    color: color,
-                    href: href,
-                    border: border,
-                    background: background
+                    text: textTmp
                   });
 
                   if (result[index]) {
@@ -2672,14 +2678,10 @@
                 }
               }
 
-              var log = _objectSpread$1({}, data, {
+              var log = _objectSpread$1({}, data, {}, attr, {
                 width: this.ctx.measureText(textTmp).width,
                 left: this.contentPadding[3],
-                text: textTmp,
-                color: color,
-                href: href,
-                border: border,
-                background: background
+                text: textTmp
               });
 
               if (result[index]) {
@@ -2689,14 +2691,10 @@
                 result[index].group = group;
               }
             } else {
-              var _log2 = _objectSpread$1({}, data, {
+              var _log2 = _objectSpread$1({}, data, {}, attr, {
                 width: wordSize,
-                text: word,
                 left: left,
-                color: color,
-                href: href,
-                border: border,
-                background: background
+                text: word
               });
 
               if (result[index]) {

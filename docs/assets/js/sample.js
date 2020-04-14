@@ -12,7 +12,7 @@ var term = new Term({
         {
             // Automatic input
             input: 'what is this ?',
-            output: 'This is a simple <d color="#fff" background="#ff79c6"> Terminal UI </d> that run on the <d color="#00f501" border="#00f501"> web </d>',
+            output: 'This is a <d color="#66d9ef" del> most </d> simple <d color="#fff" background="#ff79c6"> Terminal UI </d> that run on the <d color="#00f501" border> web </d>',
         },
         {
             // Exact match
@@ -139,7 +139,7 @@ var term = new Term({
                     if (progress >= 100) {
                         this.output(`<d color='yellow'>Done</d>`, true).input();
                     } else {
-                        this.output(`<d color='#00f501'>${progress}% ${'-'.repeat(progress)}</d>`, true);
+                        this.output(`<d color='#00f501'>${progress}% ${'='.repeat(Math.ceil(progress / 5))}></d>`, true);
                         progress += 1;
                         setTimeout(() => {
                             loop.call(this);

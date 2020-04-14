@@ -174,11 +174,13 @@ export default class Drawer {
                         }
                         this.ctx.fillStyle = log.color || fontColor;
                         this.ctx.fillText(log.text, log.left, top);
-                        if (log.href) {
+                        if (log.href || log.underline) {
                             this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
                         }
+                        if (log.del) {
+                            this.ctx.fillRect(log.left, top + Math.ceil(this.fontSize / 2), log.width, pixelRatio);
+                        }
                         if (log.border) {
-                            this.ctx.fillStyle = log.border;
                             this.ctx.fillRect(log.left, top, log.width, pixelRatio);
                             this.ctx.fillRect(log.left, top + this.fontSize - pixelRatio, log.width, pixelRatio);
                             this.ctx.fillRect(log.left, top, pixelRatio, this.fontSize);
@@ -280,10 +282,15 @@ export default class Drawer {
                 const word = child.textContent;
                 const wordSize = this.ctx.measureText(word).width;
 
-                const color = child.getAttribute ? child.getAttribute('color') : '';
-                const background = child.getAttribute ? child.getAttribute('background') : '';
-                const href = child.getAttribute ? child.getAttribute('href') : '';
-                const border = child.getAttribute ? child.getAttribute('border') : '';
+                const attr = {};
+                if (child.tagName) {
+                    attr.color = child.getAttribute('color');
+                    attr.background = child.getAttribute('background');
+                    attr.href = child.getAttribute('href');
+                    attr.border = child.hasAttribute('border');
+                    attr.underline = child.hasAttribute('underline');
+                    attr.del = child.hasAttribute('del');
+                }
 
                 const nextWordWidth = left + wordSize;
                 if (nextWordWidth > this.contentWidth) {
@@ -301,13 +308,10 @@ export default class Drawer {
                         } else {
                             const log = {
                                 ...data,
+                                ...attr,
                                 width: this.ctx.measureText(textTmp).width,
                                 left: isNewLine ? this.contentPadding[3] : lastLeft,
                                 text: textTmp,
-                                color,
-                                href,
-                                border,
-                                background,
                             };
 
                             if (result[index]) {
@@ -326,13 +330,10 @@ export default class Drawer {
 
                     const log = {
                         ...data,
+                        ...attr,
                         width: this.ctx.measureText(textTmp).width,
                         left: this.contentPadding[3],
                         text: textTmp,
-                        color,
-                        href,
-                        border,
-                        background,
                     };
 
                     if (result[index]) {
@@ -344,13 +345,10 @@ export default class Drawer {
                 } else {
                     const log = {
                         ...data,
+                        ...attr,
                         width: wordSize,
-                        text: word,
                         left,
-                        color,
-                        href,
-                        border,
-                        background,
+                        text: word,
                     };
                     if (result[index]) {
                         result[index].push(log);
