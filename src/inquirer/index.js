@@ -92,20 +92,20 @@ export default class Inquirer {
             event.preventDefault();
             if (index <= 0) {
                 this.radioKey = this.radioList[this.radioList.length - 1].key;
-                this.radioRender(this.radioList, this.radioKey);
+                this.radioRender();
             } else {
                 this.radioKey = this.radioList[index - 1].key;
-                this.radioRender(this.radioList, this.radioKey);
+                this.radioRender();
             }
         }
         if (key === 40) {
             event.preventDefault();
             if (index === this.radioList.length - 1) {
                 this.radioKey = this.radioList[0].key;
-                this.radioRender(this.radioList, this.radioKey);
+                this.radioRender();
             } else {
                 this.radioKey = this.radioList[index + 1].key;
-                this.radioRender(this.radioList, this.radioKey);
+                this.radioRender();
             }
         }
         if (key === 13) {
