@@ -189,6 +189,54 @@ term.checkbox([
 });
 ```
 
+## Style attribute
+
+The output interface supports multiple styles through a html tag, currently does not support tag nesting effect
+
+#### color
+
+```js
+term.output('<d color="#666">some text</d>');
+```
+
+#### background
+
+```js
+term.output('<d color="#fff" background="red">some text</d>');
+```
+
+#### border
+
+Select the color attribute or fontColor attribute of the option by default
+
+```js
+term.output('<d color="yellow" border>some text</d>');
+```
+
+#### underline
+
+Select the color attribute or fontColor attribute of the option by default
+
+```js
+term.output('<d color="yellow" underline>some text</d>');
+```
+
+#### del
+
+Select the color attribute or fontColor attribute of the option by default
+
+```js
+term.output('<d color="yellow" del>some text</d>');
+```
+
+#### href
+
+Link jump behavior
+
+```js
+term.output('<d href="www.google.com" del>google</d>');
+```
+
 ## Donations
 
 We accept donations through these channels:
