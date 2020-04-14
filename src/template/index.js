@@ -66,6 +66,7 @@ export default class Template {
     }
 
     destroy() {
+        this.$container.classList.remove('term-container');
         this.$container.innerHTML = '';
     }
 }

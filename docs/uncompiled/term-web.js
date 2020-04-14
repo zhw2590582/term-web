@@ -2127,6 +2127,15 @@
     });
   }
 
+  function abort (term) {
+    term.on('keydown', function (event) {
+      if (event.ctrlKey && event.keyCode === 67) {
+        term.input();
+        term.emit('abort');
+      }
+    });
+  }
+
   var Events = /*#__PURE__*/function () {
     function Events(term) {
       classCallCheck(this, Events);
@@ -2143,6 +2152,7 @@
       copy(term, this);
       fullscreen(term, this);
       history(term);
+      abort(term);
     }
 
     createClass(Events, [{
@@ -2260,6 +2270,7 @@
     createClass(Template, [{
       key: "destroy",
       value: function destroy() {
+        this.$container.classList.remove('term-container');
         this.$container.innerHTML = '';
       }
     }]);
@@ -2414,6 +2425,7 @@
       key: "render",
       value: function render() {
         var isAutoScroll = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        if (this.term.isDestroy) return this;
         this.renderBackground();
         this.renderTopbar();
         this.renderContent();
@@ -3022,6 +3034,7 @@
           welcome = term.options.welcome;
       this.isTyping = false;
       this.askResolve = null;
+      this.typeTimer = null;
       this.type = this.type.bind(this);
       this.input = this.input.bind(this);
       this.output = this.output.bind(this);
@@ -3051,6 +3064,9 @@
             _this.execute(text);
           }
         }
+      });
+      term.on('abort', function () {
+        clearTimeout(_this.typeTimer);
       });
     }
 
@@ -3212,7 +3228,7 @@
               var letter = letters.shift();
               lastLetters += letter;
               this.input(lastLetters, true);
-              setTimeout(function () {
+              this.typeTimer = setTimeout(function () {
                 if (_this5.term.isDestroy) return;
                 loop.call(_this5);
               }, 100);

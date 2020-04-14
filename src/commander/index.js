@@ -14,6 +14,7 @@ export default class Commander {
 
         this.isTyping = false;
         this.askResolve = null;
+        this.typeTimer = null;
 
         this.type = this.type.bind(this);
         this.input = this.input.bind(this);
@@ -45,6 +46,10 @@ export default class Commander {
                     this.execute(text);
                 }
             }
+        });
+
+        term.on('abort', () => {
+            clearTimeout(this.typeTimer);
         });
     }
 
@@ -172,7 +177,7 @@ export default class Commander {
                     const letter = letters.shift();
                     lastLetters += letter;
                     this.input(lastLetters, true);
-                    setTimeout(() => {
+                    this.typeTimer = setTimeout(() => {
                         if (this.term.isDestroy) return;
                         loop.call(this);
                     }, 100);

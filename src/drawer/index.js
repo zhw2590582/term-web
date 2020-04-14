@@ -118,6 +118,7 @@ export default class Drawer {
     }
 
     render(isAutoScroll = true) {
+        if (this.term.isDestroy) return this;
         this.renderBackground();
         this.renderTopbar();
         this.renderContent();
