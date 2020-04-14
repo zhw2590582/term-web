@@ -13,8 +13,8 @@ export default class Commander {
         } = term;
 
         this.isTyping = false;
-        this.askResolve = null;
         this.typeTimer = null;
+        this.askResolve = null;
 
         this.type = this.type.bind(this);
         this.input = this.input.bind(this);
@@ -49,7 +49,7 @@ export default class Commander {
         });
 
         term.on('abort', () => {
-            clearTimeout(this.typeTimer);
+            this.stopType();
         });
     }
 
@@ -184,5 +184,9 @@ export default class Commander {
                 }
             }.call(this));
         });
+    }
+
+    stopType() {
+        clearTimeout(this.typeTimer);
     }
 }

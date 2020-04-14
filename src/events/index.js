@@ -7,6 +7,7 @@ import scroll from './scroll';
 import copy from './copy';
 import fullscreen from './fullscreen';
 import history from './history';
+import keydown from './keydown';
 
 export default class Events {
     constructor(term) {
@@ -23,6 +24,7 @@ export default class Events {
         copy(term, this);
         fullscreen(term, this);
         history(term, this);
+        keydown(term, this);
     }
 
     getLogFromEvent(event) {

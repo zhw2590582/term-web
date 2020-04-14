@@ -121,7 +121,7 @@ export default class Term extends Emitter {
         instances.splice(instances.indexOf(this), 1);
         this.events.destroy();
         this.template.destroy();
-        this.emit('destroy');
         this.isDestroy = true;
+        this.emit('destroy');
     }
 }
