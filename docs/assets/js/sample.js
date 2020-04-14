@@ -135,6 +135,7 @@ var term = new Term({
             input: /^loading$/i,
             output() {
                 let progress = 0;
+                this.output(`<d color='yellow'>Loading...</d>`);
                 (function loop() {
                     if (progress >= 100) {
                         this.output(`<d color='yellow'>Done</d>`, true).input();
