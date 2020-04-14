@@ -14,10 +14,8 @@ export default function (term, events) {
         const key = event.keyCode;
 
         if (key === 13) {
-            setTimeout(() => {
-                term.emit('enter', $textarea.value.trim());
-                $textarea.value = '';
-            });
+            term.emit('enter', $textarea.value.trim());
+            $textarea.value = '';
         }
 
         if (term.drawer.renderEditable) {
@@ -32,8 +30,7 @@ export default function (term, events) {
         }
 
         if ([37, 38, 39, 40].includes(key)) {
-            $textarea.blur();
-            setTimeout(() => $textarea.focus());
+            event.preventDefault();
         }
     });
 

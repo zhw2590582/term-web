@@ -1691,10 +1691,8 @@
       var key = event.keyCode;
 
       if (key === 13) {
-        setTimeout(function () {
-          term.emit('enter', $textarea.value.trim());
-          $textarea.value = '';
-        });
+        term.emit('enter', $textarea.value.trim());
+        $textarea.value = '';
       }
 
       if (term.drawer.renderEditable) {
@@ -1710,10 +1708,7 @@
       }
 
       if ([37, 38, 39, 40].includes(key)) {
-        $textarea.blur();
-        setTimeout(function () {
-          return $textarea.focus();
-        });
+        event.preventDefault();
       }
     });
     term.on('cursor', function (_ref) {
@@ -2128,8 +2123,10 @@
   }
 
   function abort (term) {
+    var $textarea = term.template.$textarea;
     term.on('keydown', function (event) {
       if (event.ctrlKey && event.keyCode === 67) {
+        $textarea.value = '';
         term.input();
         term.emit('abort');
       }
