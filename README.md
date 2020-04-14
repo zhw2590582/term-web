@@ -81,9 +81,6 @@ var term = new Term({
     // Is it draggable
     draggable: true,
 
-    // Border radius
-    borderRadius: 5,
-
     // Font size
     fontSize: 13,
 
@@ -95,9 +92,6 @@ var term = new Term({
 
     // Font color
     fontColor: '#b0b2b6',
-
-    // Box shadow
-    boxShadow: 'rgba(0, 0, 0, 0.55) 0px 20px 68px',
 
     // Background color
     backgroundColor: 'rgb(42, 39, 52)',
