@@ -247,13 +247,15 @@
     events.proxy(document, ['click', 'contextmenu', 'dblclick'], function (event) {
       if (event.composedPath && event.composedPath().indexOf(term.template.$content) > -1) {
         term.isFocus = true;
-        $textarea.focus();
         term.emit('focus');
         term.emit(event.type, event);
       } else {
         term.isFocus = false;
         term.emit('blur');
       }
+    });
+    term.on('focus', function () {
+      $textarea.focus();
     });
     term.on('click', function (event) {
       var _events$getLogFromEve = events.getLogFromEvent(event),
@@ -1686,37 +1688,6 @@
     events.proxy($textarea, 'paste', function () {
       term.emit('input', $textarea.value.trim());
     });
-    events.proxy($textarea, 'keydown', function (event) {
-      term.emit('keydown', event);
-      var key = event.keyCode;
-
-      if (key === 13) {
-        term.emit('enter', $textarea.value.trim());
-        $textarea.value = '';
-      }
-
-      if (event.ctrlKey && key === 67) {
-        $textarea.value = '';
-        term.input();
-        term.emit('abort');
-      }
-
-      if (term.drawer.renderEditable) {
-        if (key === 38) {
-          event.preventDefault();
-          term.emit('history', -1);
-        }
-
-        if (key === 40) {
-          event.preventDefault();
-          term.emit('history', 1);
-        }
-      }
-
-      if ([37, 38, 39, 40].includes(key)) {
-        event.preventDefault();
-      }
-    });
     term.on('cursor', function (_ref) {
       var left = _ref.left,
           top = _ref.top;
@@ -2128,6 +2099,44 @@
     });
   }
 
+  function keydown (term, events) {
+    var $textarea = term.template.$textarea;
+    events.proxy($textarea, 'keydown', function (event) {
+      term.emit('keydown', event);
+      var key = event.keyCode; // Send input commands and clear input status
+
+      if (key === 13) {
+        term.emit('enter', $textarea.value.trim());
+        $textarea.value = '';
+      } // Exit the current command and wrap
+
+
+      if (event.ctrlKey && key === 67) {
+        $textarea.value = '';
+        term.input();
+        term.emit('abort');
+      } // Access input history
+
+
+      if (term.drawer.renderEditable) {
+        if (key === 38) {
+          event.preventDefault();
+          term.emit('history', -1);
+        }
+
+        if (key === 40) {
+          event.preventDefault();
+          term.emit('history', 1);
+        }
+      } // Disable arrow keys during input
+
+
+      if ([37, 38, 39, 40].includes(key)) {
+        event.preventDefault();
+      }
+    });
+  }
+
   var Events = /*#__PURE__*/function () {
     function Events(term) {
       classCallCheck(this, Events);
@@ -2144,6 +2153,7 @@
       copy(term, this);
       fullscreen(term, this);
       history(term);
+      keydown(term, this);
     }
 
     createClass(Events, [{
@@ -3022,8 +3032,8 @@
       var drawer = term.drawer,
           welcome = term.options.welcome;
       this.isTyping = false;
-      this.askResolve = null;
       this.typeTimer = null;
+      this.askResolve = null;
       this.type = this.type.bind(this);
       this.input = this.input.bind(this);
       this.output = this.output.bind(this);
@@ -3055,7 +3065,7 @@
         }
       });
       term.on('abort', function () {
-        clearTimeout(_this.typeTimer);
+        _this.stopType();
       });
     }
 
@@ -3224,6 +3234,11 @@
             }
           }).call(_this4);
         });
+      }
+    }, {
+      key: "stopType",
+      value: function stopType() {
+        clearTimeout(this.typeTimer);
       }
     }, {
       key: "isQuestion",
@@ -6270,7 +6285,7 @@
             key: 'string|number',
             text: 'string|number'
           }]);
-          errorHandle(list.length, 'Array cannot be empty');
+          errorHandle(list.length, "".concat(type, " array cannot be empty"));
           errorHandle(list.map(function (item) {
             return item.key;
           }).every(function (item, _, arr) {
@@ -6330,10 +6345,10 @@
 
           if (index <= 0) {
             this.radioKey = this.radioList[this.radioList.length - 1].key;
-            this.radioRender(this.radioList, this.radioKey);
+            this.radioRender();
           } else {
             this.radioKey = this.radioList[index - 1].key;
-            this.radioRender(this.radioList, this.radioKey);
+            this.radioRender();
           }
         }
 
@@ -6342,10 +6357,10 @@
 
           if (index === this.radioList.length - 1) {
             this.radioKey = this.radioList[0].key;
-            this.radioRender(this.radioList, this.radioKey);
+            this.radioRender();
           } else {
             this.radioKey = this.radioList[index + 1].key;
-            this.radioRender(this.radioList, this.radioKey);
+            this.radioRender();
           }
         }
 
@@ -6437,6 +6452,25 @@
     return Inquirer;
   }();
 
+  function tree (term, list) {
+    var h = '-';
+    var v = '|';
+    var s = ' ';
+
+    function getString(array) {
+      var deep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+      return array.map(function (item) {
+        var hasChild = item.child && item.child.length;
+        var border = deep ? v : '';
+        var value = "".concat(s.repeat(deep ? deep * 4 - 1 : 0)).concat(v + h.repeat(2), " ").concat(item.value);
+        var child = hasChild ? "\n".concat(getString(item.child, deep + 1)) : '';
+        return border + value + child;
+      }).join('\n');
+    }
+
+    return term.output(getString(list));
+  }
+
   function ownKeys$3(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread$3(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$3(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$3(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -6460,7 +6494,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.1.5';
+        return '1.1.6';
       }
     }, {
       key: "utils",
@@ -6555,6 +6589,11 @@
       _this.clear = _this.drawer.clear;
       _this.radio = _this.inquirer.radio;
       _this.checkbox = _this.inquirer.checkbox;
+
+      _this.tree = function (list) {
+        return tree(assertThisInitialized(_this), list);
+      };
+
       id += 1;
       _this.id = id;
       instances.push(assertThisInitialized(_this));
@@ -6567,8 +6606,8 @@
         instances.splice(instances.indexOf(this), 1);
         this.events.destroy();
         this.template.destroy();
-        this.emit('destroy');
         this.isDestroy = true;
+        this.emit('destroy');
       }
     }]);
 

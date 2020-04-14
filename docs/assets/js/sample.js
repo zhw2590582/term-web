@@ -12,7 +12,8 @@ var term = new Term({
         {
             // Automatic input
             input: 'what is this ?',
-            output: 'This is a <d color="#66d9ef" del> most </d> simple <d color="#fff" background="#ff79c6"> Terminal UI </d> that run on the <d color="#00f501" border> web </d>',
+            output:
+                'This is a <d color="#66d9ef" del> most </d> simple <d color="#fff" background="#ff79c6"> Terminal UI </d> that run on the <d color="#00f501" border> web </d>',
         },
         {
             // Exact match
@@ -24,7 +25,7 @@ var term = new Term({
             input: /^bye/i,
             output(input, args) {
                 return JSON.stringify({
-                    input: `<d color='#00BCD4' border="#00BCD4"> ${input} </d>`,
+                    input: `<d color='#00BCD4' border> ${input} </d>`,
                     args: args,
                 });
             },
@@ -71,7 +72,9 @@ var term = new Term({
                             .map((item) => {
                                 const color = randomColor();
                                 const random = Math.random() > 0.5;
-                                return `<d color="${random ? color : '#fff'}" background="${random ? '' : color}">${item}</d>`;
+                                return `<d color="${random ? color : '#fff'}" background="${
+                                    random ? '' : color
+                                }">${item}</d>`;
                             })
                             .join(' ');
                     });
@@ -140,13 +143,60 @@ var term = new Term({
                     if (progress >= 100) {
                         this.output(`<d color='yellow'>Done</d>`, true).input();
                     } else {
-                        this.output(`<d color='#00f501'>${progress}% ${'='.repeat(Math.ceil(progress / 5))}></d>`, true);
+                        this.output(
+                            `<d color='#00f501'>${progress}% ${'='.repeat(Math.ceil(progress / 5))}></d>`,
+                            true,
+                        );
                         progress += 1;
                         setTimeout(() => {
                             loop.call(this);
                         }, 100);
                     }
-                }).call(this);
+                }.call(this));
+            },
+        },
+        {
+            // Tree
+            input: /^tree$/i,
+            output() {
+                this.tree([
+                    {
+                        value: 'a',
+                        child: [
+                            {
+                                value: 'b',
+                            },
+                            {
+                                value: 'c',
+                                child: [
+                                    {
+                                        value: 'd',
+                                    },
+                                    {
+                                        value: 'e',
+                                    },
+                                    {
+                                        value: 'f',
+                                        child: [
+                                            {
+                                                value: 'g',
+                                            },
+                                            {
+                                                value: 'h',
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        value: 'i',
+                    },
+                    {
+                        value: 'j',
+                    },
+                ]).input();
             },
         },
     ],

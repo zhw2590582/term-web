@@ -44,7 +44,7 @@ export default class Inquirer {
                 },
             ]);
 
-            errorHandle(list.length, 'Array cannot be empty');
+            errorHandle(list.length, `${type} array cannot be empty`);
             errorHandle(
                 list.map((item) => item.key).every((item, _, arr) => arr.indexOf(item) === arr.lastIndexOf(item)),
                 'The key value in the array element must be unique',
