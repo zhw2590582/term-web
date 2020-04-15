@@ -1,5 +1,5 @@
 import validator from 'option-validator';
-// import fixTextBaseline from 'fix-text-baseline';
+import fixTextBaseline from 'fix-text-baseline';
 import { INPUT, OUTPUT } from '../share/constant';
 import { escape, uuid } from '../share/utils';
 
@@ -56,7 +56,7 @@ export default class Drawer {
         this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
 
-        this.ctx = $canvas.getContext('2d');
+        this.ctx = fixTextBaseline($canvas.getContext('2d'));
         this.ctx.font = `${this.fontSize}px ${fontFamily}`;
         this.ctx.textBaseline = 'top';
 
