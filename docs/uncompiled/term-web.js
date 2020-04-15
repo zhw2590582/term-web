@@ -1700,6 +1700,7 @@
     var _term$options = term.options,
         recordType = _term$options.recordType,
         recorder = _term$options.recorder;
+    if (!recorder) return;
     var $recorder = term.template.$recorder;
     events.proxy($recorder, 'click', function () {
       if (term[recordType].recording) {
@@ -1709,22 +1710,16 @@
       }
     });
     term.on('start', function () {
-      if (recorder) {
-        $recorder.classList.remove('creating');
-        $recorder.classList.add('recording');
-      }
+      $recorder.classList.remove('creating');
+      $recorder.classList.add('recording');
     });
     term.on('creating', function () {
-      if (recorder) {
-        $recorder.classList.remove('recording');
-        $recorder.classList.add('creating');
-      }
+      $recorder.classList.remove('recording');
+      $recorder.classList.add('creating');
     });
     term.on('end', function () {
-      if (recorder) {
-        $recorder.classList.remove('recording');
-        $recorder.classList.remove('creating');
-      }
+      $recorder.classList.remove('recording');
+      $recorder.classList.remove('creating');
     });
   }
 
