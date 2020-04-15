@@ -183,6 +183,32 @@ term.checkbox([
 });
 ```
 
+## Dynamically modify the UI
+
+#### term.color
+
+Modify font color
+
+```js
+term.color = '#fff';
+```
+
+#### term.background
+
+Modify background color
+
+```js
+term.background = '#000';
+```
+
+#### term.watermark
+
+Modify watermark image
+
+```js
+term.watermark = 'img.png';
+```
+
 ## Style attribute
 
 The output interface supports multiple styles through a html tag, currently does not support tag nesting effect
