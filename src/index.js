@@ -130,11 +130,6 @@ export default class Term extends Emitter {
         this.drawer.init();
     }
 
-    set font(value) {
-        this.options.fontFamily = value;
-        this.drawer.init();
-    }
-
     set watermark(value) {
         this.options.watermark = value;
         this.drawer.init();

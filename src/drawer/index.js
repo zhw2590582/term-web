@@ -11,9 +11,6 @@ export default class Drawer {
         this.scrollTop = 0;
         this.scrollHeight = 0;
 
-        this.cursorColor = '#FFF';
-        this.cursorSize = 5 * pixelRatio;
-
         this.lineGap = 10 * pixelRatio;
         this.fontSize = fontSize * pixelRatio;
         this.lineHeight = this.lineGap + this.fontSize;
@@ -224,10 +221,11 @@ export default class Drawer {
     }
 
     renderCursor() {
-        const { left, top, backgroundColor } = this.cursorPos;
+        const { backgroundColor, fontColor, pixelRatio } = this.term.options;
+        const { left, top } = this.cursorPos;
         if (this.renderEditable && left && top) {
-            this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
-            this.ctx.fillRect(left, top, this.cursorSize, this.fontSize);
+            this.ctx.fillStyle = this.cursor ? fontColor : backgroundColor;
+            this.ctx.fillRect(left, top, 5 * pixelRatio, this.fontSize);
         }
     }
 

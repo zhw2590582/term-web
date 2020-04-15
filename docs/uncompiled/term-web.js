@@ -2336,8 +2336,6 @@
           fontSize = _term$options.fontSize;
       this.scrollTop = 0;
       this.scrollHeight = 0;
-      this.cursorColor = '#FFF';
-      this.cursorSize = 5 * pixelRatio;
       this.lineGap = 10 * pixelRatio;
       this.fontSize = fontSize * pixelRatio;
       this.lineHeight = this.lineGap + this.fontSize;
@@ -2565,14 +2563,17 @@
     }, {
       key: "renderCursor",
       value: function renderCursor() {
+        var _this$term$options5 = this.term.options,
+            backgroundColor = _this$term$options5.backgroundColor,
+            fontColor = _this$term$options5.fontColor,
+            pixelRatio = _this$term$options5.pixelRatio;
         var _this$cursorPos2 = this.cursorPos,
             left = _this$cursorPos2.left,
-            top = _this$cursorPos2.top,
-            backgroundColor = _this$cursorPos2.backgroundColor;
+            top = _this$cursorPos2.top;
 
         if (this.renderEditable && left && top) {
-          this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
-          this.ctx.fillRect(left, top, this.cursorSize, this.fontSize);
+          this.ctx.fillStyle = this.cursor ? fontColor : backgroundColor;
+          this.ctx.fillRect(left, top, 5 * pixelRatio, this.fontSize);
         }
       }
     }, {
@@ -6616,12 +6617,6 @@
       key: "background",
       set: function set(value) {
         this.options.backgroundColor = value;
-        this.drawer.init();
-      }
-    }, {
-      key: "font",
-      set: function set(value) {
-        this.options.fontFamily = value;
         this.drawer.init();
       }
     }, {
