@@ -8,6 +8,7 @@ export default class Drawer {
         this.term = term;
 
         const { pixelRatio, fontSize } = term.options;
+        const { $canvas } = this.term.template;
 
         this.scrollTop = 0;
         this.scrollHeight = 0;
@@ -22,6 +23,7 @@ export default class Drawer {
         this.renderIndex = -1;
         this.$watermark = null;
         this.$tmp = document.createElement('div');
+        this.ctx = fixTextBaseline($canvas.getContext('2d'));
         this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
 
         this.cacheEmits = [];
@@ -56,9 +58,8 @@ export default class Drawer {
         this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
 
-        this.ctx = fixTextBaseline($canvas.getContext('2d'));
-        this.ctx.font = `${this.fontSize}px ${fontFamily}`;
         this.ctx.textBaseline = 'top';
+        this.ctx.font = `${this.fontSize}px ${fontFamily}`;
 
         this.term.emit('size', {
             header: this.contentPadding[0] / pixelRatio,
@@ -167,7 +168,7 @@ export default class Drawer {
                         log.top = top;
                         if (log.background) {
                             this.ctx.fillStyle = log.background;
-                            this.ctx.fillRect(log.left, top, log.width, this.fontSize);
+                            this.ctx.fillRect(log.left, top - pixelRatio, log.width, this.fontSize + pixelRatio * 2);
                         }
                         this.ctx.fillStyle = log.color || fontColor;
                         this.ctx.fillText(log.text, log.left, top);

@@ -2372,6 +2372,7 @@
       var _term$options = term.options,
           pixelRatio = _term$options.pixelRatio,
           fontSize = _term$options.fontSize;
+      var $canvas = this.term.template.$canvas;
       this.scrollTop = 0;
       this.scrollHeight = 0;
       this.lineGap = 10 * pixelRatio;
@@ -2382,6 +2383,7 @@
       this.renderIndex = -1;
       this.$watermark = null;
       this.$tmp = document.createElement('div');
+      this.ctx = fixTextBaseline($canvas.getContext('2d'));
       this.contentPadding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
       });
@@ -2419,9 +2421,8 @@
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
         this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
-        this.ctx = fixTextBaseline($canvas.getContext('2d'));
-        this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
         this.ctx.textBaseline = 'top';
+        this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
         this.term.emit('size', {
           header: this.contentPadding[0] / pixelRatio,
           content: this.contentHeight / pixelRatio,
@@ -2536,7 +2537,7 @@
 
                 if (log.background) {
                   this.ctx.fillStyle = log.background;
-                  this.ctx.fillRect(log.left, top, log.width, this.fontSize);
+                  this.ctx.fillRect(log.left, top - pixelRatio, log.width, this.fontSize + pixelRatio * 2);
                 }
 
                 this.ctx.fillStyle = log.color || fontColor;
