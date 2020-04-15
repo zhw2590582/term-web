@@ -84,6 +84,13 @@ body {
     margin-right: 10px;
 }
 
+.video {
+    position: fixed;
+    z-index: 9;
+    left: -999px;
+    top: -999px;
+}
+
 .github-corner:hover .octo-arm {
     animation: octocat-wave 560ms ease-in-out;
 }

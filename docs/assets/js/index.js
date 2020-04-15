@@ -102,3 +102,21 @@ var $watermark = document.querySelector('.watermark');
 $watermark.addEventListener('click', function () {
     Term.instances[0].watermark = `/assets/img/watermark${randomIndex()}.png`;
 });
+
+var $pip = document.querySelector('.pip');
+var $video = document.querySelector('.video');
+$pip.addEventListener('click', function () {
+    var canvas = Term.instances[0].template.$canvas;
+    var steam = canvas.captureStream(30);
+    $video.srcObject = steam;
+    setTimeout(function () {
+        $video.play();
+        if (document.pictureInPictureEnabled) {
+            $video.requestPictureInPicture();
+        } else if ($video.webkitSupportsPresentationMode) {
+            $video.webkitSetPresentationMode('picture-in-picture');
+        } else {
+            $video.srcObject = null;
+        }
+    }, 1000);
+});
