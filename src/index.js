@@ -40,7 +40,7 @@ export default class Term extends Emitter {
             dragOpt: {},
             fontSize: 13,
             watermark: '',
-            fontFamily: 'Arial',
+            fontFamily: 'monospace',
             fontColor: '#b0b2b6',
             title: 'Term Web',
             prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
