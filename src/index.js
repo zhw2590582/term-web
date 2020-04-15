@@ -120,6 +120,26 @@ export default class Term extends Emitter {
         instances.push(this);
     }
 
+    set color(value) {
+        this.options.fontColor = value;
+        this.drawer.init();
+    }
+
+    set background(value) {
+        this.options.backgroundColor = value;
+        this.drawer.init();
+    }
+
+    set font(value) {
+        this.options.fontFamily = value;
+        this.drawer.init();
+    }
+
+    set watermark(value) {
+        this.options.watermark = value;
+        this.drawer.init();
+    }
+
     destroy() {
         instances.splice(instances.indexOf(this), 1);
         this.events.destroy();

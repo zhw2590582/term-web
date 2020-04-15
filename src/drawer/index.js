@@ -6,34 +6,25 @@ export default class Drawer {
     constructor(term) {
         this.term = term;
 
-        const { pixelRatio, fontSize, backgroundColor, watermark } = term.options;
+        const { pixelRatio, fontSize } = term.options;
 
-        this.scrollHeight = 0;
         this.scrollTop = 0;
+        this.scrollHeight = 0;
 
-        this.cursorColor = ['#FFF', backgroundColor];
+        this.cursorColor = '#FFF';
         this.cursorSize = 5 * pixelRatio;
 
         this.lineGap = 10 * pixelRatio;
         this.fontSize = fontSize * pixelRatio;
         this.lineHeight = this.lineGap + this.fontSize;
 
-        this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
+        this.controlSize = 6 * pixelRatio;
+        this.controlColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
 
         this.renderIndex = -1;
+        this.$watermark = null;
         this.$tmp = document.createElement('div');
-
-        this.controls = ['#FF5F56', '#FFBD2E', '#27C93F'].map((item, index) => {
-            const size = 6 * pixelRatio;
-            const left = this.contentPadding[3] + index * size * 3.6 + size;
-            const top = this.contentPadding[1] + size;
-            return {
-                color: item,
-                left,
-                top,
-                size,
-            };
-        });
+        this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
 
         this.cacheEmits = [];
         this.cacheLogs = [];
@@ -41,15 +32,6 @@ export default class Drawer {
 
         this.emit = this.emit.bind(this);
         this.clear = this.clear.bind(this);
-
-        if (watermark) {
-            const $watermark = new Image();
-            $watermark.onload = () => {
-                this.$watermark = $watermark;
-                this.render(false);
-            };
-            $watermark.src = watermark;
-        }
 
         this.init();
 
@@ -86,6 +68,7 @@ export default class Drawer {
             footer: this.contentPadding[2] / pixelRatio,
         });
 
+        this.loadWatermark();
         this.render();
     }
 
@@ -143,15 +126,31 @@ export default class Drawer {
         }
     }
 
+    loadWatermark() {
+        const { watermark } = this.term.options;
+        if (watermark) {
+            if (!this.$watermark || this.$watermark.src !== watermark) {
+                const $watermark = new Image();
+                $watermark.onload = () => {
+                    this.$watermark = $watermark;
+                    this.render(false);
+                };
+                $watermark.src = watermark;
+            }
+        }
+    }
+
     renderTopbar() {
         const { title, fontColor, pixelRatio } = this.term.options;
         this.ctx.fillStyle = fontColor;
         const { width } = this.ctx.measureText(title);
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - pixelRatio / 3);
-        this.controls.forEach((item) => {
+        this.controlColor.forEach((color, index) => {
             this.ctx.beginPath();
-            this.ctx.arc(item.left, item.top, item.size, 0, 360, false);
-            this.ctx.fillStyle = item.color;
+            const left = this.contentPadding[3] + index * this.controlSize * 3.6 + this.controlSize;
+            const top = this.contentPadding[1] + this.controlSize;
+            this.ctx.arc(left, top, this.controlSize, 0, 360, false);
+            this.ctx.fillStyle = color;
             this.ctx.fill();
             this.ctx.closePath();
         });
@@ -225,9 +224,9 @@ export default class Drawer {
     }
 
     renderCursor() {
-        const { left, top } = this.cursorPos;
+        const { left, top, backgroundColor } = this.cursorPos;
         if (this.renderEditable && left && top) {
-            this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
+            this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
             this.ctx.fillRect(left, top, this.cursorSize, this.fontSize);
         }
     }

@@ -2328,69 +2328,44 @@
 
   var Drawer = /*#__PURE__*/function () {
     function Drawer(term) {
-      var _this = this;
-
       classCallCheck(this, Drawer);
 
       this.term = term;
       var _term$options = term.options,
           pixelRatio = _term$options.pixelRatio,
-          fontSize = _term$options.fontSize,
-          backgroundColor = _term$options.backgroundColor,
-          watermark = _term$options.watermark;
-      this.scrollHeight = 0;
+          fontSize = _term$options.fontSize;
       this.scrollTop = 0;
-      this.cursorColor = ['#FFF', backgroundColor];
+      this.scrollHeight = 0;
+      this.cursorColor = '#FFF';
       this.cursorSize = 5 * pixelRatio;
       this.lineGap = 10 * pixelRatio;
       this.fontSize = fontSize * pixelRatio;
       this.lineHeight = this.lineGap + this.fontSize;
+      this.controlSize = 6 * pixelRatio;
+      this.controlColor = ['#FF5F56', '#FFBD2E', '#27C93F'];
+      this.renderIndex = -1;
+      this.$watermark = null;
+      this.$tmp = document.createElement('div');
       this.contentPadding = [45, 15, 15, 15].map(function (item) {
         return item * pixelRatio;
-      });
-      this.renderIndex = -1;
-      this.$tmp = document.createElement('div');
-      this.controls = ['#FF5F56', '#FFBD2E', '#27C93F'].map(function (item, index) {
-        var size = 6 * pixelRatio;
-        var left = _this.contentPadding[3] + index * size * 3.6 + size;
-        var top = _this.contentPadding[1] + size;
-        return {
-          color: item,
-          left: left,
-          top: top,
-          size: size
-        };
       });
       this.cacheEmits = [];
       this.cacheLogs = [];
       this.renderLogs = [];
       this.emit = this.emit.bind(this);
       this.clear = this.clear.bind(this);
-
-      if (watermark) {
-        var $watermark = new Image();
-
-        $watermark.onload = function () {
-          _this.$watermark = $watermark;
-
-          _this.render(false);
-        };
-
-        $watermark.src = watermark;
-      }
-
       this.init();
       this.cursor = false;
       (function loop() {
-        var _this2 = this;
+        var _this = this;
 
         setTimeout(function () {
           if (term.isDestroy) return;
-          _this2.cursor = !_this2.cursor;
+          _this.cursor = !_this.cursor;
 
-          _this2.renderCursor();
+          _this.renderCursor();
 
-          loop.call(_this2);
+          loop.call(_this);
         }, 500);
       }).call(this);
     }
@@ -2416,6 +2391,7 @@
           content: this.contentHeight / pixelRatio,
           footer: this.contentPadding[2] / pixelRatio
         });
+        this.loadWatermark();
         this.render();
       }
     }, {
@@ -2455,6 +2431,27 @@
         }
       }
     }, {
+      key: "loadWatermark",
+      value: function loadWatermark() {
+        var _this2 = this;
+
+        var watermark = this.term.options.watermark;
+
+        if (watermark) {
+          if (!this.$watermark || this.$watermark.src !== watermark) {
+            var $watermark = new Image();
+
+            $watermark.onload = function () {
+              _this2.$watermark = $watermark;
+
+              _this2.render(false);
+            };
+
+            $watermark.src = watermark;
+          }
+        }
+      }
+    }, {
       key: "renderTopbar",
       value: function renderTopbar() {
         var _this3 = this;
@@ -2469,12 +2466,15 @@
             width = _this$ctx$measureText.width;
 
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - pixelRatio / 3);
-        this.controls.forEach(function (item) {
+        this.controlColor.forEach(function (color, index) {
           _this3.ctx.beginPath();
 
-          _this3.ctx.arc(item.left, item.top, item.size, 0, 360, false);
+          var left = _this3.contentPadding[3] + index * _this3.controlSize * 3.6 + _this3.controlSize;
+          var top = _this3.contentPadding[1] + _this3.controlSize;
 
-          _this3.ctx.fillStyle = item.color;
+          _this3.ctx.arc(left, top, _this3.controlSize, 0, 360, false);
+
+          _this3.ctx.fillStyle = color;
 
           _this3.ctx.fill();
 
@@ -2567,10 +2567,11 @@
       value: function renderCursor() {
         var _this$cursorPos2 = this.cursorPos,
             left = _this$cursorPos2.left,
-            top = _this$cursorPos2.top;
+            top = _this$cursorPos2.top,
+            backgroundColor = _this$cursorPos2.backgroundColor;
 
         if (this.renderEditable && left && top) {
-          this.ctx.fillStyle = this.cursor ? this.cursorColor[0] : this.cursorColor[1];
+          this.ctx.fillStyle = this.cursor ? this.cursorColor : backgroundColor;
           this.ctx.fillRect(left, top, this.cursorSize, this.fontSize);
         }
       }
@@ -6604,6 +6605,30 @@
         this.template.destroy();
         this.isDestroy = true;
         this.emit('destroy');
+      }
+    }, {
+      key: "color",
+      set: function set(value) {
+        this.options.fontColor = value;
+        this.drawer.init();
+      }
+    }, {
+      key: "background",
+      set: function set(value) {
+        this.options.backgroundColor = value;
+        this.drawer.init();
+      }
+    }, {
+      key: "font",
+      set: function set(value) {
+        this.options.fontFamily = value;
+        this.drawer.init();
+      }
+    }, {
+      key: "watermark",
+      set: function set(value) {
+        this.options.watermark = value;
+        this.drawer.init();
       }
     }]);
 
