@@ -3026,7 +3026,7 @@
         return _this.question(question);
       };
 
-      this.output(welcome).input('');
+      this.output(welcome).input();
       term.on('input', function (text) {
         if (drawer.cacheEditable) {
           if (_this.isQuestion) {
@@ -3058,7 +3058,7 @@
         var _this2 = this;
 
         var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-        if (!text.trim()) return this.input('');
+        if (!text.trim()) return this.input();
         var _this$term$options = this.term.options,
             parseOpt = _this$term$options.parseOpt,
             notFound = _this$term$options.notFound,
@@ -3077,7 +3077,7 @@
                 this.output(loadingText);
                 return result.then(function (data) {
                   if (typeof data !== 'undefined') {
-                    return _this2.output(data, true).input('');
+                    return _this2.output(data, true).input();
                   }
 
                   return _this2;
@@ -3085,26 +3085,26 @@
                   var errorType = optionValidator.kindOf(error);
                   var errorText = errorType === 'error' ? "".concat(String(error)) : "Error: ".concat(String(error));
                   var message = "<d color=\"red\">".concat(errorText, "</d>");
-                  return _this2.output(message, true).input('');
+                  return _this2.output(message, true).input();
                 });
               }
 
               if (typeof result !== 'undefined') {
-                return this.output(result).input('');
+                return this.output(result).input();
               }
 
               return this;
             } catch (error) {
               var message = "<d color=\"red\">".concat(String(error), "</d>");
-              return this.output(message).input('');
+              return this.output(message).input();
             }
           } else {
-            return this.output(action.output).input('');
+            return this.output(action.output).input();
           }
         } else {
           var _result = notFound.call(this.term, text, argv);
 
-          return this.output(_result).input('');
+          return this.output(_result).input();
         }
       }
     }, {

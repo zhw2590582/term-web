@@ -25,7 +25,7 @@ export default class Commander {
             return this.question(question);
         };
 
-        this.output(welcome).input('');
+        this.output(welcome).input();
 
         term.on('input', (text) => {
             if (drawer.cacheEditable) {
@@ -59,7 +59,7 @@ export default class Commander {
     }
 
     execute(text = '') {
-        if (!text.trim()) return this.input('');
+        if (!text.trim()) return this.input();
         const { parseOpt, notFound, loading } = this.term.options;
         const action = this.findAction(text);
         const argv = minimist(text.split(' '), parseOpt);
@@ -75,7 +75,7 @@ export default class Commander {
                         return result
                             .then((data) => {
                                 if (typeof data !== 'undefined') {
-                                    return this.output(data, true).input('');
+                                    return this.output(data, true).input();
                                 }
                                 return this;
                             })
@@ -84,23 +84,23 @@ export default class Commander {
                                 const errorText =
                                     errorType === 'error' ? `${String(error)}` : `Error: ${String(error)}`;
                                 const message = `<d color="red">${errorText}</d>`;
-                                return this.output(message, true).input('');
+                                return this.output(message, true).input();
                             });
                     }
                     if (typeof result !== 'undefined') {
-                        return this.output(result).input('');
+                        return this.output(result).input();
                     }
                     return this;
                 } catch (error) {
                     const message = `<d color="red">${String(error)}</d>`;
-                    return this.output(message).input('');
+                    return this.output(message).input();
                 }
             } else {
-                return this.output(action.output).input('');
+                return this.output(action.output).input();
             }
         } else {
             const result = notFound.call(this.term, text, argv);
-            return this.output(result).input('');
+            return this.output(result).input();
         }
     }
 
