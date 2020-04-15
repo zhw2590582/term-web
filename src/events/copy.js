@@ -1,5 +1,4 @@
 export default function (term, events) {
-    const { backgroundColor } = term.options;
     const { $copy } = term.template;
 
     let lastLogs = [];
@@ -9,8 +8,9 @@ export default function (term, events) {
         term.drawer.render(false);
         if (lastDblclickTime && lastLogs.length && Date.now() - lastDblclickTime <= 300) {
             const { fontSize, ctx, contentWidth, contentPadding } = term.drawer;
+            const { backgroundColor, fontColor } = term.options;
             const text = lastLogs.reduce((result, item) => result + item.text, '');
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = fontColor;
             ctx.fillRect(contentPadding[3], lastLogs[0].top, contentWidth, fontSize);
             ctx.fillStyle = backgroundColor;
             ctx.fillText(text, contentPadding[3], lastLogs[0].top);
@@ -32,9 +32,10 @@ export default function (term, events) {
         $copy.value = '';
         if (!log) return;
         const { ctx, fontSize } = term.drawer;
+        const { backgroundColor, fontColor } = term.options;
         lastLogs = logs;
         lastDblclickTime = Date.now();
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = fontColor;
         ctx.fillRect(log.left, log.top, log.width, fontSize);
         ctx.fillStyle = backgroundColor;
         ctx.fillText(log.text, log.left, log.top);

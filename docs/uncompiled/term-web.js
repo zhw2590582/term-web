@@ -1764,7 +1764,6 @@
   }
 
   function copy (term, events) {
-    var backgroundColor = term.options.backgroundColor;
     var $copy = term.template.$copy;
     var lastLogs = [];
     var lastDblclickTime = 0;
@@ -1777,10 +1776,13 @@
             ctx = _term$drawer.ctx,
             contentWidth = _term$drawer.contentWidth,
             contentPadding = _term$drawer.contentPadding;
+        var _term$options = term.options,
+            backgroundColor = _term$options.backgroundColor,
+            fontColor = _term$options.fontColor;
         var text = lastLogs.reduce(function (result, item) {
           return result + item.text;
         }, '');
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = fontColor;
         ctx.fillRect(contentPadding[3], lastLogs[0].top, contentWidth, fontSize);
         ctx.fillStyle = backgroundColor;
         ctx.fillText(text, contentPadding[3], lastLogs[0].top);
@@ -1807,9 +1809,12 @@
       var _term$drawer2 = term.drawer,
           ctx = _term$drawer2.ctx,
           fontSize = _term$drawer2.fontSize;
+      var _term$options2 = term.options,
+          backgroundColor = _term$options2.backgroundColor,
+          fontColor = _term$options2.fontColor;
       lastLogs = logs;
       lastDblclickTime = Date.now();
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = fontColor;
       ctx.fillRect(log.left, log.top, log.width, fontSize);
       ctx.fillStyle = backgroundColor;
       ctx.fillText(log.text, log.left, log.top);
