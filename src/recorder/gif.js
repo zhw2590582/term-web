@@ -28,14 +28,10 @@ export default class GifRecorder {
         this.recording = true;
         this.term.emit('start');
         (function loop() {
-            $canvas.toBlob(
-                (blob) => {
-                    this.blobs.push(blob);
-                    this.images.push(URL.createObjectURL(blob));
-                },
-                'image/png',
-                0.5,
-            );
+            $canvas.toBlob((blob) => {
+                this.blobs.push(blob);
+                this.images.push(URL.createObjectURL(blob));
+            });
             this.term.emit('recording', {
                 size: this.size,
                 duration: this.duration,

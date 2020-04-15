@@ -6155,7 +6155,7 @@
             _this.blobs.push(blob);
 
             _this.images.push(URL.createObjectURL(blob));
-          }, 'image/png', 0.5);
+          });
           this.term.emit('recording', {
             size: this.size,
             duration: this.duration
