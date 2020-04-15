@@ -2307,61 +2307,6 @@
 
   var toConsumableArray = _toConsumableArray;
 
-  var fixTextBaseline = createCommonjsModule(function (module, exports) {
-  (function (global, factory) {
-     (module.exports = factory())
-      ;
-  })(commonjsGlobal, function () {
-    var canvas = document.createElement("canvas");
-    canvas.style.position = "fixed";
-    canvas.style.left = "-999px";
-    canvas.style.top = "-999px";
-    canvas.width = 100;
-    canvas.height = 100;
-    document.body.appendChild(canvas);
-    var ctx = canvas.getContext("2d");
-    ctx.textBaseline = "top";
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.fillRect(0, 0, 100, 100);
-    ctx.fillStyle = "rgb(255, 255, 255)";
-    ctx.fillText("T", 0, 10);
-    var result = {};
-    for (let f = 1; f < 100; f++) {
-      ctx.fillStyle = "rgb(0, 0, 0)";
-      ctx.fillRect(0, 0, 100, 100);
-      ctx.fillStyle = "rgb(255, 255, 255)";
-      ctx.font = f + "px Arial";
-      ctx.fillText("T", 0, 10);
-      var x = (5 * f) / 10;
-      for (var y = 0; y < 20; y++) {
-        var color = ctx.getImageData(x, y, 1, 1).data;
-        if (color[0] !== 0 && color[1] !== 0 && color[2] !== 0) {
-          result[f] = y - 10;
-          break;
-        }
-      }
-    }
-    document.body.removeChild(canvas);
-    return function (ctx) {
-      var originalFillText = ctx.fillText;
-      ctx.fillText = function () {
-        var y = arguments[2];
-        if (typeof y === "number") {
-          var fontSizeMatch = ctx.font.match(/(\d+)(\.\d?)?px/i);
-          if (fontSizeMatch && fontSizeMatch[1]) {
-            var diff = result[fontSizeMatch[1]];
-            if (diff) {
-              arguments[2] = y - diff;
-            }
-          }
-        }
-        return originalFillText.apply(this, arguments);
-      };
-      return ctx;
-    };
-  });
-  });
-
   function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
   function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -2421,7 +2366,7 @@
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
         this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
-        this.ctx = fixTextBaseline($canvas.getContext('2d'));
+        this.ctx = $canvas.getContext('2d');
         this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
         this.ctx.textBaseline = 'top';
         this.term.emit('size', {

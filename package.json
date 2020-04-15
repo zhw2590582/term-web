@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "draggabilly": "^2.2.0",
-    "fix-text-baseline": "^1.0.0",
+    "fix-text-baseline": "^1.0.1",
     "gifshot": "^0.4.5",
     "minimist": "^1.2.5",
     "option-validator": "^2.0.5"
