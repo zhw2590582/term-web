@@ -49,6 +49,4 @@ export default function (term, events) {
         lastDblclickTime = 0;
         $copy.value = '';
     });
-
-    // term.on('destroy', () => document.body.removeChild($copy));
 }

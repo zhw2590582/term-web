@@ -1822,7 +1822,7 @@
       lastLogs = [];
       lastDblclickTime = 0;
       $copy.value = '';
-    }); // term.on('destroy', () => document.body.removeChild($copy));
+    });
   }
 
   function _isNativeFunction(fn) {
