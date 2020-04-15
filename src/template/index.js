@@ -29,6 +29,10 @@ export default class Template {
         this.$textarea.classList.add('term-textarea');
         this.$container.appendChild(this.$textarea);
 
+        this.$copy = document.createElement('textarea');
+        this.$copy.classList.add('term-copy');
+        this.$container.appendChild(this.$copy);
+
         this.$header = document.createElement('div');
         this.$header.classList.add('term-header');
         this.$container.appendChild(this.$header);

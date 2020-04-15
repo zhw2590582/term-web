@@ -1,11 +1,6 @@
 export default function (term, events) {
     const { backgroundColor } = term.options;
-
-    const $copy = document.createElement('textarea');
-    $copy.style.position = 'fixed';
-    $copy.style.left = '-999px';
-    $copy.style.top = '-999px';
-    document.body.appendChild($copy);
+    const { $copy } = term.template;
 
     let lastLogs = [];
     let lastDblclickTime = 0;
@@ -55,5 +50,5 @@ export default function (term, events) {
         $copy.value = '';
     });
 
-    term.on('destroy', () => document.body.removeChild($copy));
+    // term.on('destroy', () => document.body.removeChild($copy));
 }

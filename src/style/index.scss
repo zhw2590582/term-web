@@ -38,6 +38,7 @@
 
     .term-canvas {
         position: absolute;
+        z-index: 1;
         top: 0;
         left: 0;
         bottom: 0;
@@ -48,6 +49,17 @@
 
     .term-textarea {
         position: absolute;
+        z-index: 2;
+        width: 20px;
+        height: 20px;
+        opacity: 0;
+        pointer-events: none;
+        resize: none;
+    }
+
+    .term-copy {
+        position: absolute;
+        z-index: 3;
         width: 20px;
         height: 20px;
         opacity: 0;
@@ -57,6 +69,7 @@
 
     .term-header {
         position: absolute;
+        z-index: 4;
         width: 100%;
         top: 0;
         left: 0;
@@ -99,6 +112,7 @@
 
     .term-content {
         position: absolute;
+        z-index: 5;
         width: 100%;
         right: 0;
         left: 0;
@@ -111,6 +125,7 @@
 
     .term-footer {
         position: absolute;
+        z-index: 6;
         width: 100%;
         bottom: 0;
         left: 0;
