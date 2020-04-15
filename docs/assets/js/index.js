@@ -88,7 +88,6 @@ $background
         $background.hide();
     })
     .on('change', function (color) {
-        console.log(color)
         Term.instances[0].background = color.toHEXA().toString();
     });
 

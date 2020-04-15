@@ -2338,14 +2338,14 @@
     }
     document.body.removeChild(canvas);
     return function (ctx) {
-      if (Object.prototype.hasOwnProperty.call(ctx, "fillText")) {
-        delete ctx["fillText"];
-      }
-      var originalFillText = ctx.fillText;
+      if (typeof ctx !== "object") return ctx;
+      var prototype = Object.getPrototypeOf(ctx);
+      var originalFillText = prototype.fillText;
+      if (typeof originalFillText !== "function") return ctx;
       ctx.fillText = function () {
         var y = arguments[2];
         if (typeof y === "number") {
-          var fontSizeMatch = ctx.font.match(/(\d+)(\.\d?)?px/i);
+          var fontSizeMatch = ctx.font.match(/(\d+)(?:\.\d?)?px/i);
           if (fontSizeMatch && fontSizeMatch[1]) {
             var diff = result[fontSizeMatch[1]];
             if (diff) {
