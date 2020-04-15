@@ -91,7 +91,14 @@ $background
         Term.instances[0].background = color.toRGBA().toString();
     });
 
+var lastIndex = -1;
+function randomIndex() {
+    var index = parseInt(Math.random() * 19 + 1, 10);
+    if (index === lastIndex) return randomIndex();
+    return index;
+}
+
 var $watermark = document.querySelector('.watermark');
 $watermark.addEventListener('click', function () {
-    console.log('watermark');
+    Term.instances[0].watermark = `/assets/img/watermark${randomIndex()}.png`;
 });
