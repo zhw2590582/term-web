@@ -161,7 +161,7 @@
     }
   }
 
-  var css_248z = ".term-container{font-family:monospace,Arial,sans-serif;font-size:13px;color:#b0b2b6;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;overflow:hidden;border-radius:5px;-webkit-box-shadow:rgba(0,0,0,.55) 0 20px 68px;box-shadow:0 20px 68px rgba(0,0,0,.55)}.term-container ::-webkit-scrollbar{width:5px}.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px}.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc}.term-container.is-dragging{opacity:.95}.term-container.is-fullscreen{position:fixed!important;z-index:9999!important;top:0!important;left:0!important;bottom:0!important;right:0!important;width:100%!important;height:100%!important}.term-container .term-canvas{position:absolute;z-index:1;top:0;left:0;bottom:0;right:0;width:100%;height:100%}.term-container .term-textarea{z-index:2}.term-container .term-copy,.term-container .term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;resize:none}.term-container .term-copy{z-index:3}.term-container .term-header{position:absolute;z-index:4;width:100%;top:0;left:0;right:0}.term-container .term-header .term-recorder{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;position:absolute;right:10px;top:10px}.term-container .term-header .term-recorder .term-recorder-duration,.term-container .term-header .term-recorder .term-recorder-size{display:none;margin-right:10px}.term-container .term-header .term-recorder .term-recorder-btn{height:18px;width:18px;background:#f44336;border-radius:3px;cursor:pointer}.term-container .term-header .term-recorder.recording .term-recorder-btn{background:#ffc107}.term-container .term-header .term-recorder.recording .term-recorder-duration,.term-container .term-header .term-recorder.recording .term-recorder-size{display:block}.term-container .term-content{position:absolute;z-index:5;width:100%;right:0;left:0;overflow:auto}.term-container .term-content:hover{cursor:text}.term-container .term-footer{position:absolute;z-index:6;width:100%;bottom:0;left:0;right:0}.term-container .term-footer .term-resize{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize}";
+  var css_248z = ".term-container{position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;overflow:hidden;border-radius:5px;-webkit-box-shadow:rgba(0,0,0,.55) 0 20px 68px;box-shadow:0 20px 68px rgba(0,0,0,.55)}.term-container ::-webkit-scrollbar{width:5px}.term-container ::-webkit-scrollbar-thumb{background-color:#666;border-radius:5px}.term-container ::-webkit-scrollbar-thumb:hover{background-color:#ccc}.term-container.is-dragging{opacity:.95}.term-container.is-fullscreen{position:fixed!important;z-index:9999!important;top:0!important;left:0!important;bottom:0!important;right:0!important;width:100%!important;height:100%!important}.term-container .term-canvas{position:absolute;z-index:1;top:0;left:0;bottom:0;right:0;width:100%;height:100%}.term-container .term-textarea{z-index:2}.term-container .term-copy,.term-container .term-textarea{position:absolute;width:20px;height:20px;opacity:0;pointer-events:none;resize:none}.term-container .term-copy{z-index:3}.term-container .term-header{position:absolute;z-index:4;width:100%;top:0;left:0;right:0}.term-container .term-header .term-recorder{position:absolute;right:10px;top:10px;height:18px;width:18px;border-radius:3px;cursor:pointer;border-style:solid;border-width:0;background:#f44336;-webkit-transition:all .2s ease;transition:all .2s ease}@-webkit-keyframes loop{0%{border-width:1px}50%{border-width:6px}to{border-width:1px}}@keyframes loop{0%{border-width:1px}50%{border-width:6px}to{border-width:1px}}.term-container .term-header .term-recorder.recording{background:#ff5722}.term-container .term-header .term-recorder.creating,.term-container .term-header .term-recorder.recording{border-color:rgba(255,254,254,.5);border-radius:50%;-webkit-animation:loop 1s linear infinite;animation:loop 1s linear infinite}.term-container .term-header .term-recorder.creating{background:#009688}.term-container .term-content{position:absolute;z-index:5;width:100%;right:0;left:0;overflow:auto}.term-container .term-content:hover{cursor:text}.term-container .term-footer{position:absolute;z-index:6;width:100%;bottom:0;left:0;right:0}.term-container .term-footer .term-resize{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize}";
   styleInject(css_248z);
 
   var optionValidator = createCommonjsModule(function (module, exports) {
@@ -1700,12 +1700,8 @@
     var _term$options = term.options,
         recordType = _term$options.recordType,
         recorder = _term$options.recorder;
-    var _term$template = term.template,
-        $recorderBtn = _term$template.$recorderBtn,
-        $recorder = _term$template.$recorder,
-        $recorderSize = _term$template.$recorderSize,
-        $recorderDuration = _term$template.$recorderDuration;
-    events.proxy($recorderBtn, 'click', function () {
+    var $recorder = term.template.$recorder;
+    events.proxy($recorder, 'click', function () {
       if (term[recordType].recording) {
         term[recordType].end();
       } else {
@@ -1714,27 +1710,20 @@
     });
     term.on('start', function () {
       if (recorder) {
+        $recorder.classList.remove('creating');
         $recorder.classList.add('recording');
-      }
-    });
-    term.on('recording', function (_ref) {
-      var size = _ref.size,
-          duration = _ref.duration;
-
-      if (recorder) {
-        $recorderSize.innerText = "".concat(Math.ceil(size / 1024 / 1024) || 0, "mb");
-        $recorderDuration.innerText = "".concat(duration || 0, "s");
       }
     });
     term.on('creating', function () {
       if (recorder) {
-        $recorderSize.innerText = '';
-        $recorderDuration.innerText = "".concat(recordType, " is creating...");
+        $recorder.classList.remove('recording');
+        $recorder.classList.add('creating');
       }
     });
     term.on('end', function () {
       if (recorder) {
         $recorder.classList.remove('recording');
+        $recorder.classList.remove('creating');
       }
     });
   }
@@ -2261,10 +2250,6 @@
       if (recorder) {
         this.$recorder = document.createElement('div');
         this.$recorder.classList.add('term-recorder');
-        this.$recorder.innerHTML = "\n                <div class=\"term-recorder-size\"></div>\n                <div class=\"term-recorder-duration\"></div>\n                <div class=\"term-recorder-btn\"></div> \n            ";
-        this.$recorderSize = this.$recorder.querySelector('.term-recorder-size');
-        this.$recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
-        this.$recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
         this.$header.appendChild(this.$recorder);
       }
     }

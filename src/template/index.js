@@ -57,14 +57,6 @@ export default class Template {
         if (recorder) {
             this.$recorder = document.createElement('div');
             this.$recorder.classList.add('term-recorder');
-            this.$recorder.innerHTML = `
-                <div class="term-recorder-size"></div>
-                <div class="term-recorder-duration"></div>
-                <div class="term-recorder-btn"></div> 
-            `;
-            this.$recorderSize = this.$recorder.querySelector('.term-recorder-size');
-            this.$recorderDuration = this.$recorder.querySelector('.term-recorder-duration');
-            this.$recorderBtn = this.$recorder.querySelector('.term-recorder-btn');
             this.$header.appendChild(this.$recorder);
         }
     }
