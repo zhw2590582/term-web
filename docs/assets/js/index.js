@@ -65,11 +65,11 @@ var $color = Pickr.create(
 
 $color
     .on('save', function (color) {
-        Term.instances[0].color = color.toRGBA().toString();
+        Term.instances[0].color = color.toHEXA().toString();
         $color.hide();
     })
     .on('change', function (color) {
-        Term.instances[0].color = color.toRGBA().toString();
+        Term.instances[0].color = color.toHEXA().toString();
     });
 
 var $background = Pickr.create(
@@ -84,11 +84,12 @@ var $background = Pickr.create(
 
 $background
     .on('save', function (color) {
-        Term.instances[0].background = color.toRGBA().toString();
+        Term.instances[0].background = color.toHEXA().toString();
         $background.hide();
     })
     .on('change', function (color) {
-        Term.instances[0].background = color.toRGBA().toString();
+        console.log(color)
+        Term.instances[0].background = color.toHEXA().toString();
     });
 
 var lastIndex = -1;
