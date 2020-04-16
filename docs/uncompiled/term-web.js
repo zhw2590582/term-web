@@ -2419,7 +2419,7 @@
         this.canvasHeight = $canvas.height;
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
+        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1];
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
         this.ctx.textBaseline = 'top';
         this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
@@ -2718,7 +2718,7 @@
                 var letterSize = this.ctx.measureText(letter).width;
                 var nextLetterWidth = left + letterSize;
 
-                if (nextLetterWidth <= this.contentWidth) {
+                if (left <= this.contentWidth) {
                   textTmp += letter;
                   left = nextLetterWidth;
                 } else {
@@ -2813,7 +2813,7 @@
       get: function get() {
         if (this.renderEditable) {
           var pixelRatio = this.term.options.pixelRatio;
-          var left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 4;
+          var left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 2;
           var top = this.contentPadding[0] + this.lineHeight * (this.renderLogs.length - 1);
           return {
             left: left,

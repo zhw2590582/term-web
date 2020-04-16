@@ -55,7 +55,7 @@ export default class Drawer {
         this.canvasHeight = $canvas.height;
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
+        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1];
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
 
         this.ctx.textBaseline = 'top';
@@ -92,7 +92,7 @@ export default class Drawer {
     get cursorPos() {
         if (this.renderEditable) {
             const { pixelRatio } = this.term.options;
-            const left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 4;
+            const left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 2;
             const top = this.contentPadding[0] + this.lineHeight * (this.renderLogs.length - 1);
             return { left, top };
         }
@@ -313,7 +313,7 @@ export default class Drawer {
                         const letter = letters[k];
                         const letterSize = this.ctx.measureText(letter).width;
                         const nextLetterWidth = left + letterSize;
-                        if (nextLetterWidth <= this.contentWidth) {
+                        if (left <= this.contentWidth) {
                             textTmp += letter;
                             left = nextLetterWidth;
                         } else {
