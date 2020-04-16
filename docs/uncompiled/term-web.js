@@ -6712,7 +6712,7 @@
       set: function set(value) {
         this.emit('resize', {
           width: value,
-          height: this.template.$container.clientHeight
+          height: this.height
         });
       },
       get: function get() {
@@ -6722,7 +6722,7 @@
       key: "height",
       set: function set(value) {
         this.emit('resize', {
-          width: this.template.$container.clientWidth,
+          width: this.width,
           height: value
         });
       },

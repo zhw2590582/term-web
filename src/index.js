@@ -164,7 +164,7 @@ export default class Term extends Emitter {
     set width(value) {
         this.emit('resize', {
             width: value,
-            height: this.template.$container.clientHeight,
+            height: this.height,
         });
     }
 
@@ -174,7 +174,7 @@ export default class Term extends Emitter {
 
     set height(value) {
         this.emit('resize', {
-            width: this.template.$container.clientWidth,
+            width: this.width,
             height: value,
         });
     }
