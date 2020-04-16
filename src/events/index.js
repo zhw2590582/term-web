@@ -33,12 +33,12 @@ export default class Events {
         const contentRect = $content.getBoundingClientRect();
         const left = (event.pageX - contentRect.left) * pixelRatio;
         const top = (event.pageY - contentRect.top) * pixelRatio;
-        const { renderLogs, lineHeight } = this.term.drawer;
+        const { renderLines, lineHeight } = this.term.drawer;
         const index = Math.floor(top / lineHeight);
-        const logs = renderLogs[index] || [];
-        const log = logs.find((item) => left > item.left && item.left + item.width >= left);
+        const line = renderLines[index] || [];
+        const log = line.find((item) => left > item.left && item.left + item.width >= left);
         return {
-            logs,
+            line,
             log,
         };
     }

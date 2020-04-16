@@ -1,24 +1,24 @@
 export default function (term, events) {
     const { $copy } = term.template;
 
-    let lastLogs = [];
+    let lastLine = [];
     let lastDblclickTime = 0;
 
     term.on('click', () => {
         term.drawer.render(false);
-        if (lastDblclickTime && lastLogs.length && Date.now() - lastDblclickTime <= 300) {
+        if (lastDblclickTime && lastLine.length && Date.now() - lastDblclickTime <= 300) {
             const { fontSize, ctx, contentWidth, contentPadding } = term.drawer;
             const { background, color } = term.options;
-            const text = lastLogs.reduce((result, item) => result + item.text, '');
+            const text = lastLine.reduce((result, item) => result + item.text, '');
             ctx.fillStyle = color;
-            ctx.fillRect(contentPadding[3], lastLogs[0].top, contentWidth, fontSize);
+            ctx.fillRect(contentPadding[3], lastLine[0].top, contentWidth, fontSize);
             ctx.fillStyle = background;
-            ctx.fillText(text, contentPadding[3], lastLogs[0].top);
+            ctx.fillText(text, contentPadding[3], lastLine[0].top);
             $copy.value = text;
             $copy.focus();
             $copy.select();
         } else {
-            lastLogs = [];
+            lastLine = [];
             lastDblclickTime = 0;
             $copy.value = '';
         }
@@ -26,14 +26,14 @@ export default function (term, events) {
 
     term.on('dblclick', (event) => {
         term.drawer.render(false);
-        const { logs, log } = events.getLogFromEvent(event);
-        lastLogs = [];
+        const { line, log } = events.getLogFromEvent(event);
+        lastLine = [];
         lastDblclickTime = 0;
         $copy.value = '';
         if (!log) return;
         const { ctx, fontSize } = term.drawer;
         const { background, color } = term.options;
-        lastLogs = logs;
+        lastLine = line;
         lastDblclickTime = Date.now();
         ctx.fillStyle = color;
         ctx.fillRect(log.left, log.top, log.width, fontSize);
@@ -46,7 +46,7 @@ export default function (term, events) {
 
     term.on('blur', () => {
         term.drawer.render(false);
-        lastLogs = [];
+        lastLine = [];
         lastDblclickTime = 0;
         $copy.value = '';
     });

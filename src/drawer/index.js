@@ -27,8 +27,8 @@ export default class Drawer {
         this.contentPadding = [45, 15, 15, 15].map((item) => item * pixelRatio);
 
         this.cacheEmits = [];
-        this.cacheLogs = [];
-        this.renderLogs = [];
+        this.cacheLines = [];
+        this.renderLines = [];
 
         this.emit = this.emit.bind(this);
         this.clear = this.clear.bind(this);
@@ -72,13 +72,13 @@ export default class Drawer {
     }
 
     get lastCacheLog() {
-        const logs = this.cacheLogs[this.cacheLogs.length - 1];
-        return logs && logs[logs.length - 1];
+        const line = this.cacheLines[this.cacheLines.length - 1];
+        return line && line[line.length - 1];
     }
 
     get lastRenderLog() {
-        const logs = this.renderLogs[this.renderLogs.length - 1];
-        return logs && logs[logs.length - 1];
+        const line = this.renderLines[this.renderLines.length - 1];
+        return line && line[line.length - 1];
     }
 
     get cacheEditable() {
@@ -93,7 +93,7 @@ export default class Drawer {
         if (this.renderEditable) {
             const { pixelRatio } = this.term.options;
             const left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 2;
-            const top = this.contentPadding[0] + this.lineHeight * (this.renderLogs.length - 1);
+            const top = this.contentPadding[0] + this.lineHeight * (this.renderLines.length - 1);
             return { left, top };
         }
         return { left: 0, top: 0 };
@@ -151,12 +151,12 @@ export default class Drawer {
         this.ctx.fillStyle = color;
         const { width } = this.ctx.measureText(title);
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - pixelRatio / 3);
-        this.controlColor.forEach((color, index) => {
+        this.controlColor.forEach((item, index) => {
             this.ctx.beginPath();
             const left = this.contentPadding[3] + index * this.controlSize * 3.6 + this.controlSize;
             const top = this.contentPadding[1] + this.controlSize;
             this.ctx.arc(left, top, this.controlSize, 0, 360, false);
-            this.ctx.fillStyle = color;
+            this.ctx.fillStyle = item;
             this.ctx.fill();
             this.ctx.closePath();
         });
@@ -165,12 +165,12 @@ export default class Drawer {
     renderContent() {
         const { pixelRatio, color, debug } = this.term.options;
 
-        if (this.renderLogs.length) {
-            for (let i = 0; i < this.renderLogs.length; i += 1) {
-                const logs = this.renderLogs[i];
-                if (logs && logs.length) {
-                    for (let j = 0; j < logs.length; j += 1) {
-                        const log = logs[j];
+        if (this.renderLines.length) {
+            for (let i = 0; i < this.renderLines.length; i += 1) {
+                const line = this.renderLines[i];
+                if (line && line.length) {
+                    for (let j = 0; j < line.length; j += 1) {
+                        const log = line[j];
                         const top = this.contentPadding[0] + this.lineHeight * i;
                         if (debug) {
                             this.ctx.fillStyle = 'red';
@@ -209,14 +209,14 @@ export default class Drawer {
             });
         }
 
-        this.scrollHeight = (this.cacheLogs.length * this.lineHeight) / pixelRatio;
+        this.scrollHeight = (this.cacheLines.length * this.lineHeight) / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
     }
 
     autoScroll() {
         const { pixelRatio } = this.term.options;
-        const lastlogs = this.renderLogs[this.renderLogs.length - 1];
-        const lastIndex = this.cacheLogs.indexOf(lastlogs);
+        const lastLine = this.renderLines[this.renderLines.length - 1];
+        const lastIndex = this.cacheLines.indexOf(lastLine);
         this.scrollTop = ((lastIndex + 1) * this.lineHeight - this.contentHeight) / pixelRatio;
         this.term.emit('scrollTop', this.scrollTop);
     }
@@ -224,7 +224,7 @@ export default class Drawer {
     renderByIndex(index) {
         if (this.renderIndex === index) return;
         this.renderIndex = index;
-        this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
+        this.renderLines = this.cacheLines.slice(index, index + this.maxLength);
         this.render(false);
     }
 
@@ -258,16 +258,16 @@ export default class Drawer {
 
         if (data.replace) {
             this.cacheEmits.pop();
-            const lastLogs = this.cacheLogs[this.cacheLogs.length - 1];
-            if (lastLogs && lastLogs.group) {
-                this.cacheLogs = this.cacheLogs.filter((item) => item.group !== lastLogs.group);
+            const lastLine = this.cacheLines[this.cacheLines.length - 1];
+            if (lastLine && lastLine.groupId) {
+                this.cacheLines = this.cacheLines.filter((item) => item.groupId !== lastLine.groupId);
             }
         }
 
         this.cacheEmits.push({ ...data });
-        const logs = this.parse(data);
-        this.cacheLogs.push(...logs);
-        this.renderLogs = this.cacheLogs.slice(-this.maxLength);
+        const group = this.parse(data);
+        this.cacheLines.push(...group);
+        this.renderLines = this.cacheLines.slice(-this.maxLength);
         this.render();
     }
 
@@ -278,8 +278,8 @@ export default class Drawer {
             data.text = (data.prefix || prefix) + escape(data.text);
         }
 
-        const group = uuid();
-        const result = [];
+        const groupId = uuid();
+        const group = [];
         const lines = data.text.split(/\r?\n/);
         const scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
 
@@ -325,11 +325,11 @@ export default class Drawer {
                                 text: textTmp,
                             };
 
-                            if (result[index]) {
-                                result[index].push(log);
+                            if (group[index]) {
+                                group[index].push(log);
                             } else {
-                                result[index] = [log];
-                                result[index].group = group;
+                                group[index] = [log];
+                                group[index].groupId = groupId;
                             }
 
                             index += 1;
@@ -347,11 +347,11 @@ export default class Drawer {
                         text: textTmp,
                     };
 
-                    if (result[index]) {
-                        result[index].push(log);
+                    if (group[index]) {
+                        group[index].push(log);
                     } else {
-                        result[index] = [log];
-                        result[index].group = group;
+                        group[index] = [log];
+                        group[index].groupId = groupId;
                     }
                 } else {
                     const log = {
@@ -361,11 +361,11 @@ export default class Drawer {
                         left,
                         text: word,
                     };
-                    if (result[index]) {
-                        result[index].push(log);
+                    if (group[index]) {
+                        group[index].push(log);
                     } else {
-                        result[index] = [log];
-                        result[index].group = group;
+                        group[index] = [log];
+                        group[index].groupId = groupId;
                     }
                     left = nextWordWidth;
                 }
@@ -374,13 +374,13 @@ export default class Drawer {
             left = this.contentPadding[3];
         }
 
-        return result.filter(Boolean);
+        return group.filter(Boolean);
     }
 
     clear() {
         this.cacheEmits = [];
-        this.cacheLogs = [];
-        this.renderLogs = [];
+        this.cacheLines = [];
+        this.renderLines = [];
         this.render();
     }
 }

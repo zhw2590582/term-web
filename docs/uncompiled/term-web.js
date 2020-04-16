@@ -246,8 +246,11 @@
     var $textarea = term.template.$textarea;
     events.proxy(document, ['click', 'contextmenu', 'dblclick'], function (event) {
       if (event.composedPath && event.composedPath().indexOf(term.template.$content) > -1) {
-        term.isFocus = true;
-        term.emit('focus');
+        if (!term.isFocus) {
+          term.isFocus = true;
+          term.emit('focus');
+        }
+
         term.emit(event.type, event);
       } else if (term.isFocus) {
         term.isFocus = false;
@@ -1749,12 +1752,12 @@
 
   function copy (term, events) {
     var $copy = term.template.$copy;
-    var lastLogs = [];
+    var lastLine = [];
     var lastDblclickTime = 0;
     term.on('click', function () {
       term.drawer.render(false);
 
-      if (lastDblclickTime && lastLogs.length && Date.now() - lastDblclickTime <= 300) {
+      if (lastDblclickTime && lastLine.length && Date.now() - lastDblclickTime <= 300) {
         var _term$drawer = term.drawer,
             fontSize = _term$drawer.fontSize,
             ctx = _term$drawer.ctx,
@@ -1763,18 +1766,18 @@
         var _term$options = term.options,
             background = _term$options.background,
             color = _term$options.color;
-        var text = lastLogs.reduce(function (result, item) {
+        var text = lastLine.reduce(function (result, item) {
           return result + item.text;
         }, '');
         ctx.fillStyle = color;
-        ctx.fillRect(contentPadding[3], lastLogs[0].top, contentWidth, fontSize);
+        ctx.fillRect(contentPadding[3], lastLine[0].top, contentWidth, fontSize);
         ctx.fillStyle = background;
-        ctx.fillText(text, contentPadding[3], lastLogs[0].top);
+        ctx.fillText(text, contentPadding[3], lastLine[0].top);
         $copy.value = text;
         $copy.focus();
         $copy.select();
       } else {
-        lastLogs = [];
+        lastLine = [];
         lastDblclickTime = 0;
         $copy.value = '';
       }
@@ -1783,10 +1786,10 @@
       term.drawer.render(false);
 
       var _events$getLogFromEve = events.getLogFromEvent(event),
-          logs = _events$getLogFromEve.logs,
+          line = _events$getLogFromEve.line,
           log = _events$getLogFromEve.log;
 
-      lastLogs = [];
+      lastLine = [];
       lastDblclickTime = 0;
       $copy.value = '';
       if (!log) return;
@@ -1796,7 +1799,7 @@
       var _term$options2 = term.options,
           background = _term$options2.background,
           color = _term$options2.color;
-      lastLogs = logs;
+      lastLine = line;
       lastDblclickTime = Date.now();
       ctx.fillStyle = color;
       ctx.fillRect(log.left, log.top, log.width, fontSize);
@@ -1808,7 +1811,7 @@
     });
     term.on('blur', function () {
       term.drawer.render(false);
-      lastLogs = [];
+      lastLine = [];
       lastDblclickTime = 0;
       $copy.value = '';
     });
@@ -2142,15 +2145,15 @@
         var left = (event.pageX - contentRect.left) * pixelRatio;
         var top = (event.pageY - contentRect.top) * pixelRatio;
         var _this$term$drawer = this.term.drawer,
-            renderLogs = _this$term$drawer.renderLogs,
+            renderLines = _this$term$drawer.renderLines,
             lineHeight = _this$term$drawer.lineHeight;
         var index = Math.floor(top / lineHeight);
-        var logs = renderLogs[index] || [];
-        var log = logs.find(function (item) {
+        var line = renderLines[index] || [];
+        var log = line.find(function (item) {
           return left > item.left && item.left + item.width >= left;
         });
         return {
-          logs: logs,
+          line: line,
           log: log
         };
       }
@@ -2388,8 +2391,8 @@
         return item * pixelRatio;
       });
       this.cacheEmits = [];
-      this.cacheLogs = [];
-      this.renderLogs = [];
+      this.cacheLines = [];
+      this.renderLines = [];
       this.emit = this.emit.bind(this);
       this.clear = this.clear.bind(this);
       this.init();
@@ -2512,7 +2515,7 @@
             width = _this$ctx$measureText.width;
 
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - pixelRatio / 3);
-        this.controlColor.forEach(function (color, index) {
+        this.controlColor.forEach(function (item, index) {
           _this3.ctx.beginPath();
 
           var left = _this3.contentPadding[3] + index * _this3.controlSize * 3.6 + _this3.controlSize;
@@ -2520,7 +2523,7 @@
 
           _this3.ctx.arc(left, top, _this3.controlSize, 0, 360, false);
 
-          _this3.ctx.fillStyle = color;
+          _this3.ctx.fillStyle = item;
 
           _this3.ctx.fill();
 
@@ -2535,13 +2538,13 @@
             color = _this$term$options4.color,
             debug = _this$term$options4.debug;
 
-        if (this.renderLogs.length) {
-          for (var i = 0; i < this.renderLogs.length; i += 1) {
-            var logs = this.renderLogs[i];
+        if (this.renderLines.length) {
+          for (var i = 0; i < this.renderLines.length; i += 1) {
+            var line = this.renderLines[i];
 
-            if (logs && logs.length) {
-              for (var j = 0; j < logs.length; j += 1) {
-                var log = logs[j];
+            if (line && line.length) {
+              for (var j = 0; j < line.length; j += 1) {
+                var log = line[j];
                 var top = this.contentPadding[0] + this.lineHeight * i;
 
                 if (debug) {
@@ -2589,15 +2592,15 @@
           });
         }
 
-        this.scrollHeight = this.cacheLogs.length * this.lineHeight / pixelRatio;
+        this.scrollHeight = this.cacheLines.length * this.lineHeight / pixelRatio;
         this.term.emit('scrollHeight', this.scrollHeight);
       }
     }, {
       key: "autoScroll",
       value: function autoScroll() {
         var pixelRatio = this.term.options.pixelRatio;
-        var lastlogs = this.renderLogs[this.renderLogs.length - 1];
-        var lastIndex = this.cacheLogs.indexOf(lastlogs);
+        var lastLine = this.renderLines[this.renderLines.length - 1];
+        var lastIndex = this.cacheLines.indexOf(lastLine);
         this.scrollTop = ((lastIndex + 1) * this.lineHeight - this.contentHeight) / pixelRatio;
         this.term.emit('scrollTop', this.scrollTop);
       }
@@ -2606,7 +2609,7 @@
       value: function renderByIndex(index) {
         if (this.renderIndex === index) return;
         this.renderIndex = index;
-        this.renderLogs = this.cacheLogs.slice(index, index + this.maxLength);
+        this.renderLines = this.cacheLines.slice(index, index + this.maxLength);
         this.render(false);
       }
     }, {
@@ -2635,7 +2638,7 @@
     }, {
       key: "emit",
       value: function emit(data) {
-        var _this$cacheLogs;
+        var _this$cacheLines;
 
         optionValidator(data, {
           type: function type(_type) {
@@ -2652,21 +2655,21 @@
 
         if (data.replace) {
           this.cacheEmits.pop();
-          var lastLogs = this.cacheLogs[this.cacheLogs.length - 1];
+          var lastLine = this.cacheLines[this.cacheLines.length - 1];
 
-          if (lastLogs && lastLogs.group) {
-            this.cacheLogs = this.cacheLogs.filter(function (item) {
-              return item.group !== lastLogs.group;
+          if (lastLine && lastLine.groupId) {
+            this.cacheLines = this.cacheLines.filter(function (item) {
+              return item.groupId !== lastLine.groupId;
             });
           }
         }
 
         this.cacheEmits.push(_objectSpread$1({}, data));
-        var logs = this.parse(data);
+        var group = this.parse(data);
 
-        (_this$cacheLogs = this.cacheLogs).push.apply(_this$cacheLogs, toConsumableArray(logs));
+        (_this$cacheLines = this.cacheLines).push.apply(_this$cacheLines, toConsumableArray(group));
 
-        this.renderLogs = this.cacheLogs.slice(-this.maxLength);
+        this.renderLines = this.cacheLines.slice(-this.maxLength);
         this.render();
       }
     }, {
@@ -2678,8 +2681,8 @@
           data.text = (data.prefix || prefix) + escape(data.text);
         }
 
-        var group = uuid();
-        var result = [];
+        var groupId = uuid();
+        var group = [];
         var lines = data.text.split(/\r?\n/);
         var scriptReg = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
         var index = 0;
@@ -2728,11 +2731,11 @@
                     text: textTmp
                   });
 
-                  if (result[index]) {
-                    result[index].push(_log);
+                  if (group[index]) {
+                    group[index].push(_log);
                   } else {
-                    result[index] = [_log];
-                    result[index].group = group;
+                    group[index] = [_log];
+                    group[index].groupId = groupId;
                   }
 
                   index += 1;
@@ -2748,11 +2751,11 @@
                 text: textTmp
               });
 
-              if (result[index]) {
-                result[index].push(log);
+              if (group[index]) {
+                group[index].push(log);
               } else {
-                result[index] = [log];
-                result[index].group = group;
+                group[index] = [log];
+                group[index].groupId = groupId;
               }
             } else {
               var _log2 = _objectSpread$1({}, data, {}, attr, {
@@ -2761,11 +2764,11 @@
                 text: word
               });
 
-              if (result[index]) {
-                result[index].push(_log2);
+              if (group[index]) {
+                group[index].push(_log2);
               } else {
-                result[index] = [_log2];
-                result[index].group = group;
+                group[index] = [_log2];
+                group[index].groupId = groupId;
               }
 
               left = nextWordWidth;
@@ -2776,27 +2779,27 @@
           left = this.contentPadding[3];
         }
 
-        return result.filter(Boolean);
+        return group.filter(Boolean);
       }
     }, {
       key: "clear",
       value: function clear() {
         this.cacheEmits = [];
-        this.cacheLogs = [];
-        this.renderLogs = [];
+        this.cacheLines = [];
+        this.renderLines = [];
         this.render();
       }
     }, {
       key: "lastCacheLog",
       get: function get() {
-        var logs = this.cacheLogs[this.cacheLogs.length - 1];
-        return logs && logs[logs.length - 1];
+        var line = this.cacheLines[this.cacheLines.length - 1];
+        return line && line[line.length - 1];
       }
     }, {
       key: "lastRenderLog",
       get: function get() {
-        var logs = this.renderLogs[this.renderLogs.length - 1];
-        return logs && logs[logs.length - 1];
+        var line = this.renderLines[this.renderLines.length - 1];
+        return line && line[line.length - 1];
       }
     }, {
       key: "cacheEditable",
@@ -2814,7 +2817,7 @@
         if (this.renderEditable) {
           var pixelRatio = this.term.options.pixelRatio;
           var left = this.lastRenderLog.left + this.lastRenderLog.width + pixelRatio * 2;
-          var top = this.contentPadding[0] + this.lineHeight * (this.renderLogs.length - 1);
+          var top = this.contentPadding[0] + this.lineHeight * (this.renderLines.length - 1);
           return {
             left: left,
             top: top
