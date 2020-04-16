@@ -29,6 +29,7 @@ export default class Term extends Emitter {
     static get default() {
         return {
             container: '#term',
+            debug: false,
             width: 600,
             height: 500,
             actions: [],
@@ -55,6 +56,7 @@ export default class Term extends Emitter {
     static get scheme() {
         return {
             container: 'string|htmldivelement',
+            debug: 'boolean',
             width: 'number',
             height: 'number',
             actions: [
@@ -125,14 +127,26 @@ export default class Term extends Emitter {
         this.drawer.init();
     }
 
+    get color() {
+        return this.options.fontColor;
+    }
+
     set background(value) {
         this.options.backgroundColor = value;
         this.drawer.init();
     }
 
+    get background() {
+        return this.options.backgroundColor;
+    }
+
     set watermark(value) {
         this.options.watermark = value;
         this.drawer.init();
+    }
+
+    get watermark() {
+        return this.options.watermark;
     }
 
     set width(value) {
@@ -142,11 +156,28 @@ export default class Term extends Emitter {
         });
     }
 
+    get width() {
+        return this.template.$container.clientWidth;
+    }
+
     set height(value) {
         this.emit('resize', {
             width: this.template.$container.clientWidth,
             height: value,
         });
+    }
+
+    get height() {
+        return this.template.$container.clientHeight;
+    }
+
+    set debug(value) {
+        this.options.debug = value;
+        this.drawer.init();
+    }
+
+    get debug() {
+        return this.options.debug;
     }
 
     destroy() {

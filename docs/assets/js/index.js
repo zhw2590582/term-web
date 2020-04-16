@@ -125,3 +125,9 @@ $pip.addEventListener('click', function () {
         }
     }, 1000);
 });
+
+var $debug = document.querySelector('.debug');
+$debug.addEventListener('click', function () {
+    var term = Term.instances[0];
+    term.debug = !term.debug;
+});

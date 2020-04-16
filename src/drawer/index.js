@@ -112,7 +112,7 @@ export default class Drawer {
     }
 
     renderBackground() {
-        const { backgroundColor, pixelRatio } = this.term.options;
+        const { backgroundColor, pixelRatio, debug } = this.term.options;
         this.ctx.fillStyle = backgroundColor;
         this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
         if (this.$watermark) {
@@ -122,6 +122,13 @@ export default class Drawer {
             const left = this.canvasWidth - resizeWidth;
             const top = this.canvasHeight - resizeHeight;
             this.ctx.drawImage(this.$watermark, left, top, resizeWidth, resizeHeight);
+        }
+        if (debug) {
+            this.ctx.fillStyle = 'green';
+            this.ctx.fillRect(0, this.contentPadding[0], this.canvasWidth, pixelRatio);
+            this.ctx.fillRect(0, this.contentPadding[0] + this.contentHeight, this.canvasWidth, pixelRatio);
+            this.ctx.fillRect(this.contentPadding[3], 0, pixelRatio, this.canvasHeight);
+            this.ctx.fillRect(this.contentPadding[3] + this.contentWidth, 0, pixelRatio, this.canvasHeight);
         }
     }
 
@@ -156,7 +163,7 @@ export default class Drawer {
     }
 
     renderContent() {
-        const { pixelRatio, fontColor } = this.term.options;
+        const { pixelRatio, fontColor, debug } = this.term.options;
 
         if (this.renderLogs.length) {
             for (let i = 0; i < this.renderLogs.length; i += 1) {
@@ -165,6 +172,11 @@ export default class Drawer {
                     for (let j = 0; j < logs.length; j += 1) {
                         const log = logs[j];
                         const top = this.contentPadding[0] + this.lineHeight * i;
+                        if (debug) {
+                            this.ctx.fillStyle = 'red';
+                            this.ctx.fillRect(0, top, this.canvasWidth, pixelRatio);
+                            this.ctx.fillRect(0, top + this.fontSize, this.canvasWidth, pixelRatio);
+                        }
                         log.top = top;
                         if (log.background) {
                             this.ctx.fillStyle = log.background;
