@@ -343,7 +343,7 @@ export default class Drawer {
                         ...data,
                         ...attr,
                         width: this.ctx.measureText(textTmp).width,
-                        left: this.contentPadding[3],
+                        left: isNewLine ? this.contentPadding[3] : lastLeft,
                         text: textTmp,
                     };
 
