@@ -42,12 +42,12 @@ export default class Term extends Emitter {
             fontSize: 13,
             watermark: '',
             fontFamily: 'monospace',
-            fontColor: '#b0b2b6',
+            color: '#b0b2b6',
             title: 'Term Web',
             prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
             welcome: `Last login: ${new Date()}`,
             loading: () => '<d color="yellow">Loading...</d>',
-            backgroundColor: 'rgb(42, 39, 52)',
+            background: 'rgb(42, 39, 52)',
             pixelRatio: window.devicePixelRatio,
             notFound: (val) => `-bash: <d color='red'>${val}</d>: command not found`,
         };
@@ -74,12 +74,12 @@ export default class Term extends Emitter {
             fontSize: 'number',
             watermark: 'string',
             fontFamily: 'string',
-            fontColor: 'string',
+            color: 'string',
             title: 'string',
             prefix: 'string',
             welcome: 'string',
             loading: 'function',
-            backgroundColor: 'string',
+            background: 'string',
             pixelRatio: 'number',
             notFound: 'function',
         };
@@ -123,21 +123,21 @@ export default class Term extends Emitter {
     }
 
     set color(value) {
-        this.options.fontColor = value;
+        this.options.color = value;
         this.drawer.init();
     }
 
     get color() {
-        return this.options.fontColor;
+        return this.options.color;
     }
 
     set background(value) {
-        this.options.backgroundColor = value;
+        this.options.background = value;
         this.drawer.init();
     }
 
     get background() {
-        return this.options.backgroundColor;
+        return this.options.background;
     }
 
     set watermark(value) {

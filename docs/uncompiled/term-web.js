@@ -1761,14 +1761,14 @@
             contentWidth = _term$drawer.contentWidth,
             contentPadding = _term$drawer.contentPadding;
         var _term$options = term.options,
-            backgroundColor = _term$options.backgroundColor,
-            fontColor = _term$options.fontColor;
+            background = _term$options.background,
+            color = _term$options.color;
         var text = lastLogs.reduce(function (result, item) {
           return result + item.text;
         }, '');
-        ctx.fillStyle = fontColor;
+        ctx.fillStyle = color;
         ctx.fillRect(contentPadding[3], lastLogs[0].top, contentWidth, fontSize);
-        ctx.fillStyle = backgroundColor;
+        ctx.fillStyle = background;
         ctx.fillText(text, contentPadding[3], lastLogs[0].top);
         $copy.value = text;
         $copy.focus();
@@ -1794,13 +1794,13 @@
           ctx = _term$drawer2.ctx,
           fontSize = _term$drawer2.fontSize;
       var _term$options2 = term.options,
-          backgroundColor = _term$options2.backgroundColor,
-          fontColor = _term$options2.fontColor;
+          background = _term$options2.background,
+          color = _term$options2.color;
       lastLogs = logs;
       lastDblclickTime = Date.now();
-      ctx.fillStyle = fontColor;
+      ctx.fillStyle = color;
       ctx.fillRect(log.left, log.top, log.width, fontSize);
-      ctx.fillStyle = backgroundColor;
+      ctx.fillStyle = background;
       ctx.fillText(log.text, log.left, log.top);
       $copy.value = log.text;
       $copy.focus();
@@ -2451,10 +2451,10 @@
       key: "renderBackground",
       value: function renderBackground() {
         var _this$term$options2 = this.term.options,
-            backgroundColor = _this$term$options2.backgroundColor,
+            background = _this$term$options2.background,
             pixelRatio = _this$term$options2.pixelRatio,
             debug = _this$term$options2.debug;
-        this.ctx.fillStyle = backgroundColor;
+        this.ctx.fillStyle = background;
         this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
         if (this.$watermark) {
@@ -2504,9 +2504,9 @@
 
         var _this$term$options3 = this.term.options,
             title = _this$term$options3.title,
-            fontColor = _this$term$options3.fontColor,
+            color = _this$term$options3.color,
             pixelRatio = _this$term$options3.pixelRatio;
-        this.ctx.fillStyle = fontColor;
+        this.ctx.fillStyle = color;
 
         var _this$ctx$measureText = this.ctx.measureText(title),
             width = _this$ctx$measureText.width;
@@ -2532,7 +2532,7 @@
       value: function renderContent() {
         var _this$term$options4 = this.term.options,
             pixelRatio = _this$term$options4.pixelRatio,
-            fontColor = _this$term$options4.fontColor,
+            color = _this$term$options4.color,
             debug = _this$term$options4.debug;
 
         if (this.renderLogs.length) {
@@ -2557,7 +2557,7 @@
                   this.ctx.fillRect(log.left, top, log.width, this.fontSize);
                 }
 
-                this.ctx.fillStyle = log.color || fontColor;
+                this.ctx.fillStyle = log.color || color;
                 this.ctx.fillText(log.text, log.left, top);
 
                 if (log.href || log.underline) {
@@ -2620,15 +2620,15 @@
       key: "renderCursor",
       value: function renderCursor() {
         var _this$term$options5 = this.term.options,
-            backgroundColor = _this$term$options5.backgroundColor,
-            fontColor = _this$term$options5.fontColor,
+            background = _this$term$options5.background,
+            color = _this$term$options5.color,
             pixelRatio = _this$term$options5.pixelRatio;
         var _this$cursorPos2 = this.cursorPos,
             left = _this$cursorPos2.left,
             top = _this$cursorPos2.top;
 
         if (this.renderEditable && left && top) {
-          this.ctx.fillStyle = this.cursor ? fontColor : backgroundColor;
+          this.ctx.fillStyle = this.cursor ? color : background;
           this.ctx.fillRect(left, top, 5 * pixelRatio, this.fontSize);
         }
       }
@@ -6573,14 +6573,14 @@
           fontSize: 13,
           watermark: '',
           fontFamily: 'monospace',
-          fontColor: '#b0b2b6',
+          color: '#b0b2b6',
           title: 'Term Web',
           prefix: 'root@linux: ~ <d color="#00f501">$</d> ',
           welcome: "Last login: ".concat(new Date()),
           loading: function loading() {
             return '<d color="yellow">Loading...</d>';
           },
-          backgroundColor: 'rgb(42, 39, 52)',
+          background: 'rgb(42, 39, 52)',
           pixelRatio: window.devicePixelRatio,
           notFound: function notFound(val) {
             return "-bash: <d color='red'>".concat(val, "</d>: command not found");
@@ -6608,12 +6608,12 @@
           fontSize: 'number',
           watermark: 'string',
           fontFamily: 'string',
-          fontColor: 'string',
+          color: 'string',
           title: 'string',
           prefix: 'string',
           welcome: 'string',
           loading: 'function',
-          backgroundColor: 'string',
+          background: 'string',
           pixelRatio: 'number',
           notFound: 'function'
         };
@@ -6668,20 +6668,20 @@
     }, {
       key: "color",
       set: function set(value) {
-        this.options.fontColor = value;
+        this.options.color = value;
         this.drawer.init();
       },
       get: function get() {
-        return this.options.fontColor;
+        return this.options.color;
       }
     }, {
       key: "background",
       set: function set(value) {
-        this.options.backgroundColor = value;
+        this.options.background = value;
         this.drawer.init();
       },
       get: function get() {
-        return this.options.backgroundColor;
+        return this.options.background;
       }
     }, {
       key: "watermark",

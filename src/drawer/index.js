@@ -112,8 +112,8 @@ export default class Drawer {
     }
 
     renderBackground() {
-        const { backgroundColor, pixelRatio, debug } = this.term.options;
-        this.ctx.fillStyle = backgroundColor;
+        const { background, pixelRatio, debug } = this.term.options;
+        this.ctx.fillStyle = background;
         this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
         if (this.$watermark) {
             const { width, height } = this.$watermark;
@@ -147,8 +147,8 @@ export default class Drawer {
     }
 
     renderTopbar() {
-        const { title, fontColor, pixelRatio } = this.term.options;
-        this.ctx.fillStyle = fontColor;
+        const { title, color, pixelRatio } = this.term.options;
+        this.ctx.fillStyle = color;
         const { width } = this.ctx.measureText(title);
         this.ctx.fillText(title, this.canvasWidth / 2 - width / 2, this.contentPadding[1] - pixelRatio / 3);
         this.controlColor.forEach((color, index) => {
@@ -163,7 +163,7 @@ export default class Drawer {
     }
 
     renderContent() {
-        const { pixelRatio, fontColor, debug } = this.term.options;
+        const { pixelRatio, color, debug } = this.term.options;
 
         if (this.renderLogs.length) {
             for (let i = 0; i < this.renderLogs.length; i += 1) {
@@ -182,7 +182,7 @@ export default class Drawer {
                             this.ctx.fillStyle = log.background;
                             this.ctx.fillRect(log.left, top, log.width, this.fontSize);
                         }
-                        this.ctx.fillStyle = log.color || fontColor;
+                        this.ctx.fillStyle = log.color || color;
                         this.ctx.fillText(log.text, log.left, top);
                         if (log.href || log.underline) {
                             this.ctx.fillRect(log.left, top + this.fontSize, log.width, pixelRatio);
@@ -235,10 +235,10 @@ export default class Drawer {
     }
 
     renderCursor() {
-        const { backgroundColor, fontColor, pixelRatio } = this.term.options;
+        const { background, color, pixelRatio } = this.term.options;
         const { left, top } = this.cursorPos;
         if (this.renderEditable && left && top) {
-            this.ctx.fillStyle = this.cursor ? fontColor : backgroundColor;
+            this.ctx.fillStyle = this.cursor ? color : background;
             this.ctx.fillRect(left, top, 5 * pixelRatio, this.fontSize);
         }
     }

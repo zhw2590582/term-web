@@ -91,10 +91,10 @@ var term = new Term({
     watermark: '',
 
     // Font color
-    fontColor: '#b0b2b6',
+    color: '#b0b2b6',
 
     // Background color
-    backgroundColor: 'rgb(42, 39, 52)',
+    background: 'rgb(42, 39, 52)',
 
     // Title on the topbar
     title: 'Term Web',
