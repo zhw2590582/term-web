@@ -273,6 +273,21 @@ Link jump behavior
 term.output('<d href="www.google.com">google</d>');
 ```
 
+## Common problem
+
+#### How to use the font after the font file is loaded?
+
+[MDN Web Docs - FontFace](https://developer.mozilla.org/en-US/docs/Web/API/FontFace/FontFace)
+
+```js
+Term.font('Font Name', 'path/to/font.ttf').then((font) => {
+    var term = new Term({
+        fontFamily: font.family,
+        // ... options
+    });
+});
+```
+
 ## Donations
 
 We accept donations through these channels:

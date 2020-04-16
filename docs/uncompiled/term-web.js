@@ -6541,6 +6541,21 @@
     var _super = _createSuper$1(Term);
 
     createClass(Term, null, [{
+      key: "font",
+      value: function font(name, url) {
+        return new Promise(function (resolve, reject) {
+          if (!window.FontFace) {
+            return reject(new Error('FontFace constructor is not supported'));
+          }
+
+          var fontFace = new FontFace(name, "url(".concat(url, ")"));
+          return fontFace.load().then(function (font) {
+            document.fonts.add(font);
+            resolve(font);
+          });
+        });
+      }
+    }, {
       key: "instances",
       get: function get() {
         return instances;

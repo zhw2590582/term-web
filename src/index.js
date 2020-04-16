@@ -26,6 +26,19 @@ export default class Term extends Emitter {
         return utils;
     }
 
+    static font(name, url) {
+        return new Promise((resolve, reject) => {
+            if (!window.FontFace) {
+                return reject(new Error('FontFace constructor is not supported'));
+            }
+            const fontFace = new FontFace(name, `url(${url})`);
+            return fontFace.load().then((font) => {
+                document.fonts.add(font);
+                resolve(font);
+            });
+        });
+    }
+
     static get default() {
         return {
             container: '#term',
@@ -114,7 +127,6 @@ export default class Term extends Emitter {
         this.clear = this.drawer.clear;
         this.radio = this.inquirer.radio;
         this.checkbox = this.inquirer.checkbox;
-
         this.tree = (list) => tree(this, list);
 
         id += 1;
