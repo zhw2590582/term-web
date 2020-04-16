@@ -249,7 +249,7 @@
         term.isFocus = true;
         term.emit('focus');
         term.emit(event.type, event);
-      } else {
+      } else if (term.isFocus) {
         term.isFocus = false;
         term.emit('blur');
       }
