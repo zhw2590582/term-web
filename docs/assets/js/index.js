@@ -1,3 +1,8 @@
+var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+if (isMobile) {
+    window.location.href = './mobile.html';
+}
+
 var mirror = CodeMirror(document.querySelector('.code'), {
     lineNumbers: true,
     mode: 'javascript',

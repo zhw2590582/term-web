@@ -135,6 +135,20 @@ export default class Term extends Emitter {
         this.drawer.init();
     }
 
+    set width(value) {
+        this.emit('resize', {
+            width: value,
+            height: this.template.$container.clientHeight,
+        });
+    }
+
+    set height(value) {
+        this.emit('resize', {
+            width: this.template.$container.clientWidth,
+            height: value,
+        });
+    }
+
     destroy() {
         instances.splice(instances.indexOf(this), 1);
         this.events.destroy();

@@ -209,6 +209,22 @@ Modify watermark image
 term.watermark = 'img.png';
 ```
 
+#### term.width
+
+Modify terminal width
+
+```js
+term.width = 500;
+```
+
+#### term.height
+
+Modify terminal height
+
+```js
+term.height = 500;
+```
+
 ## Style attribute
 
 The output interface supports multiple styles through a html tag, currently does not support tag nesting effect
@@ -254,7 +270,7 @@ term.output('<d color="yellow" del>some text</d>');
 Link jump behavior
 
 ```js
-term.output('<d href="www.google.com" del>google</d>');
+term.output('<d href="www.google.com">google</d>');
 ```
 
 ## Donations

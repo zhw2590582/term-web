@@ -168,7 +168,7 @@ export default class Drawer {
                         log.top = top;
                         if (log.background) {
                             this.ctx.fillStyle = log.background;
-                            this.ctx.fillRect(log.left, top - pixelRatio, log.width, this.fontSize + pixelRatio * 2);
+                            this.ctx.fillRect(log.left, top, log.width, this.fontSize);
                         }
                         this.ctx.fillStyle = log.color || fontColor;
                         this.ctx.fillText(log.text, log.left, top);
