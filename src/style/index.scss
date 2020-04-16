@@ -4,6 +4,8 @@
     overflow: hidden;
     border-radius: 5px;
     box-shadow: rgba(0, 0, 0, 0.55) 0px 20px 68px;
+    scrollbar-color: #666 transparent !important;
+    scrollbar-width: thin !important;
 
     ::-webkit-scrollbar {
         width: 5px;
