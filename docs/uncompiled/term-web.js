@@ -2718,7 +2718,7 @@
                 var letterSize = this.ctx.measureText(letter).width;
                 var nextLetterWidth = left + letterSize;
 
-                if (left <= this.contentWidth) {
+                if (nextLetterWidth <= this.contentWidth) {
                   textTmp += letter;
                   left = nextLetterWidth;
                 } else {

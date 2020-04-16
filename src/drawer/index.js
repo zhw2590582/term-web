@@ -313,7 +313,7 @@ export default class Drawer {
                         const letter = letters[k];
                         const letterSize = this.ctx.measureText(letter).width;
                         const nextLetterWidth = left + letterSize;
-                        if (left <= this.contentWidth) {
+                        if (nextLetterWidth <= this.contentWidth) {
                             textTmp += letter;
                             left = nextLetterWidth;
                         } else {
