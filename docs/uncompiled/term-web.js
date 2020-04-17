@@ -2027,8 +2027,10 @@
         }
       }
     });
-    events.proxy($header, 'dblclick', function () {
-      term.emit('fullscreen', !isFullscreen);
+    events.proxy($header, 'dblclick', function (event) {
+      if (event.target === $header) {
+        term.emit('fullscreen', !isFullscreen);
+      }
     });
     events.proxy(window, 'resize', function () {
       if (isFullscreen) {

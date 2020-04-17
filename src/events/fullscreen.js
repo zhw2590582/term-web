@@ -30,8 +30,10 @@ export default function (term, events) {
         }
     });
 
-    events.proxy($header, 'dblclick', () => {
-        term.emit('fullscreen', !isFullscreen);
+    events.proxy($header, 'dblclick', (event) => {
+        if (event.target === $header) {
+            term.emit('fullscreen', !isFullscreen);
+        }
     });
 
     events.proxy(window, 'resize', () => {
