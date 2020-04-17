@@ -90,24 +90,24 @@ function init() {
         term.watermark = `/assets/img/watermark${randomIndex()}.png`;
     });
 
-    var $pip = document.querySelector('.pip');
-    var $video = document.querySelector('.video');
-    $pip.addEventListener('click', function () {
-        var term = Term.instances[0];
-        var canvas = term.template.$canvas;
-        var steam = canvas.captureStream(30);
-        $video.srcObject = steam;
-        setTimeout(function () {
-            $video.play();
-            if (document.pictureInPictureEnabled) {
-                $video.requestPictureInPicture();
-            } else if ($video.webkitSupportsPresentationMode) {
-                $video.webkitSetPresentationMode('picture-in-picture');
-            } else {
-                $video.srcObject = null;
-            }
-        }, 1000);
-    });
+    // var $pip = document.querySelector('.pip');
+    // var $video = document.querySelector('.video');
+    // $pip.addEventListener('click', function () {
+    //     var term = Term.instances[0];
+    //     var canvas = term.template.$canvas;
+    //     var steam = canvas.captureStream(30);
+    //     $video.srcObject = steam;
+    //     setTimeout(function () {
+    //         $video.play();
+    //         if (document.pictureInPictureEnabled) {
+    //             $video.requestPictureInPicture();
+    //         } else if ($video.webkitSupportsPresentationMode) {
+    //             $video.webkitSetPresentationMode('picture-in-picture');
+    //         } else {
+    //             $video.srcObject = null;
+    //         }
+    //     }, 1000);
+    // });
 
     var $debug = document.querySelector('.debug');
     $debug.addEventListener('click', function () {
