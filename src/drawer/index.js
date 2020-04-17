@@ -55,7 +55,7 @@ export default class Drawer {
         this.canvasHeight = $canvas.height;
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[3];
+        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
 
         this.ctx.textBaseline = 'top';
@@ -125,8 +125,10 @@ export default class Drawer {
         }
         if (debug) {
             this.ctx.fillStyle = 'green';
+            this.ctx.fillRect(0, this.contentPadding[0], this.canvasWidth, pixelRatio);
             this.ctx.fillRect(0, this.contentPadding[0] + this.contentHeight, this.canvasWidth, pixelRatio);
             this.ctx.fillRect(this.contentPadding[3], 0, pixelRatio, this.canvasHeight);
+            this.ctx.fillRect(this.contentPadding[3] + this.contentWidth, 0, pixelRatio, this.canvasHeight);
         }
     }
 

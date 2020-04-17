@@ -63,6 +63,36 @@
   	return module = { exports: {} }, fn(module, module.exports), module.exports;
   }
 
+  var setPrototypeOf = createCommonjsModule(function (module) {
+  function _setPrototypeOf(o, p) {
+    module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  module.exports = _setPrototypeOf;
+  });
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) setPrototypeOf(subClass, superClass);
+  }
+
+  var inherits = _inherits;
+
   var _typeof_1 = createCommonjsModule(function (module) {
   function _typeof(obj) {
     "@babel/helpers - typeof";
@@ -103,36 +133,6 @@
 
   module.exports = _getPrototypeOf;
   });
-
-  var setPrototypeOf = createCommonjsModule(function (module) {
-  function _setPrototypeOf(o, p) {
-    module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf(o, p);
-  }
-
-  module.exports = _setPrototypeOf;
-  });
-
-  function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) setPrototypeOf(subClass, superClass);
-  }
-
-  var inherits = _inherits;
 
   function styleInject(css, ref) {
     if ( ref === void 0 ) ref = {};
@@ -2419,7 +2419,7 @@
         this.canvasHeight = $canvas.height;
         this.canvasWidth = $canvas.width;
         this.contentHeight = this.canvasHeight - this.contentPadding[0] - this.contentPadding[2];
-        this.contentWidth = this.canvasWidth - this.contentPadding[3];
+        this.contentWidth = this.canvasWidth - this.contentPadding[3] - this.contentPadding[1] / 2;
         this.maxLength = Math.floor(this.contentHeight / this.lineHeight);
         this.ctx.textBaseline = 'top';
         this.ctx.font = "".concat(this.fontSize, "px ").concat(fontFamily);
@@ -2470,8 +2470,10 @@
 
         if (debug) {
           this.ctx.fillStyle = 'green';
+          this.ctx.fillRect(0, this.contentPadding[0], this.canvasWidth, pixelRatio);
           this.ctx.fillRect(0, this.contentPadding[0] + this.contentHeight, this.canvasWidth, pixelRatio);
           this.ctx.fillRect(this.contentPadding[3], 0, pixelRatio, this.canvasHeight);
+          this.ctx.fillRect(this.contentPadding[3] + this.contentWidth, 0, pixelRatio, this.canvasHeight);
         }
       }
     }, {
@@ -6561,7 +6563,7 @@
     }, {
       key: "version",
       get: function get() {
-        return '1.1.6';
+        return '1.1.7';
       }
     }, {
       key: "utils",

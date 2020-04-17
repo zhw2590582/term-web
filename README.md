@@ -65,6 +65,9 @@ var term = new Term({
     // Mounted dom element
     container: '#term',
 
+    // Debug mode
+    debug: false,
+
     // Initial size
     width: 600,
     height: 500,
@@ -76,7 +79,7 @@ var term = new Term({
     recorder: true,
 
     // Type of recorder: gif or video
-    recordType: 'gif',
+    recordType: 'video',
 
     // Is it draggable
     draggable: true,
@@ -85,7 +88,7 @@ var term = new Term({
     fontSize: 13,
 
     // Font family
-    fontFamily: 'Arial',
+    fontFamily: 'monospace',
 
     // Watermark image url
     watermark: '',
