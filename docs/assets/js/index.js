@@ -3,7 +3,7 @@ if (isMobile) {
     window.location.href = './mobile.html';
 }
 
-function init(term) {
+function init() {
     var pickrOpt = {
         theme: 'classic',
         swatches: [
@@ -39,7 +39,7 @@ function init(term) {
         Object.assign(
             {
                 el: '.color',
-                default: term.color,
+                default: '#b0b2b6',
             },
             pickrOpt,
         ),
@@ -47,10 +47,12 @@ function init(term) {
 
     $color
         .on('save', function (color) {
+            var term = Term.instances[0];
             term.color = color.toHEXA().toString();
             $color.hide();
         })
         .on('change', function (color) {
+            var term = Term.instances[0];
             term.color = color.toHEXA().toString();
         });
 
@@ -58,7 +60,7 @@ function init(term) {
         Object.assign(
             {
                 el: '.background',
-                default: term.background,
+                default: 'rgb(42, 39, 52)',
             },
             pickrOpt,
         ),
@@ -66,10 +68,12 @@ function init(term) {
 
     $background
         .on('save', function (color) {
+            var term = Term.instances[0];
             term.background = color.toHEXA().toString();
             $background.hide();
         })
         .on('change', function (color) {
+            var term = Term.instances[0];
             term.background = color.toHEXA().toString();
         });
 
@@ -82,12 +86,14 @@ function init(term) {
 
     var $watermark = document.querySelector('.watermark');
     $watermark.addEventListener('click', function () {
+        var term = Term.instances[0];
         term.watermark = `/assets/img/watermark${randomIndex()}.png`;
     });
 
     var $pip = document.querySelector('.pip');
     var $video = document.querySelector('.video');
     $pip.addEventListener('click', function () {
+        var term = Term.instances[0];
         var canvas = term.template.$canvas;
         var steam = canvas.captureStream(30);
         $video.srcObject = steam;
@@ -105,6 +111,7 @@ function init(term) {
 
     var $debug = document.querySelector('.debug');
     $debug.addEventListener('click', function () {
+        var term = Term.instances[0];
         term.debug = !term.debug;
     });
 }
@@ -119,17 +126,38 @@ var mirror = CodeMirror(document.querySelector('.code'), {
     value: '',
 });
 
-var url = '/assets/js/sample.js';
-if (window.location.href.includes('github.io')) {
-    url = '/term-web/assets/js/sample.js';
-}
-
-fetch(url)
+var options = {};
+fetch('/assets/js/sample.js')
     .then(function (response) {
         return response.text();
     })
     .then(function (text) {
         mirror.setValue(text);
         eval(text);
-        init(Term.instances[0]);
+        options = Term.instances[0].options;
+        init();
     });
+
+var $fontFamily = document.querySelector('.fontFamily');
+$fontFamily.addEventListener('change', function () {
+    if (!$fontFamily.value) {
+        Term.instances[0].destroy();
+        var term = new Term(
+            Object.assign({}, options, {
+                fontFamily: 'monospace',
+                fontSize: 13,
+            }),
+        );
+    } else {
+        Term.font($fontFamily.value.replace('.ttf', ''), '/assets/font/' + $fontFamily.value).then((font) => {
+            Term.instances[0].destroy();
+            var fontSize = Number($fontFamily.selectedOptions[0].getAttribute('size'));
+            var term = new Term(
+                Object.assign({}, options, {
+                    fontFamily: font.family,
+                    fontSize: fontSize,
+                }),
+            );
+        });
+    }
+});
