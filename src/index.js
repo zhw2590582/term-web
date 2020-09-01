@@ -5,8 +5,7 @@ import Events from './events';
 import Template from './template';
 import Drawer from './drawer';
 import Commander from './commander';
-import Video from './recorder/video';
-import Gif from './recorder/gif';
+import Recorder from './recorder';
 import Inquirer from './inquirer';
 import tree from './addon/tree';
 import * as utils from './share/utils';
@@ -48,12 +47,11 @@ export default class Term extends Emitter {
             actions: [],
             parseOpt: {},
             recorder: true,
-            recordType: 'video',
-            gifshotOpt: {},
             draggable: true,
             dragOpt: {},
             fontSize: 13,
             watermark: '',
+            autofocus: false,
             fontFamily: 'monospace',
             color: '#b0b2b6',
             title: 'Term Web',
@@ -80,12 +78,11 @@ export default class Term extends Emitter {
             ],
             parseOpt: 'object',
             recorder: 'boolean',
-            recordType: 'string',
-            gifshotOpt: 'object',
             draggable: 'boolean',
             dragOpt: 'object',
             fontSize: 'number',
             watermark: 'string',
+            autofocus: 'boolean',
             fontFamily: 'string',
             color: 'string',
             title: 'string',
@@ -117,8 +114,7 @@ export default class Term extends Emitter {
         this.drawer = new Drawer(this);
         this.commander = new Commander(this);
         this.inquirer = new Inquirer(this);
-        this.video = new Video(this);
-        this.gif = new Gif(this);
+        this.recorder = new Recorder(this);
 
         this.ask = this.commander.ask;
         this.type = this.commander.type;

@@ -1,7 +1,7 @@
 import { errorHandle, download } from '../share/utils';
 import { recorderOptions } from '../share/constant';
 
-export default class VideoRecorder {
+export default class Recorder {
     constructor(term) {
         this.term = term;
         this.blobs = [];

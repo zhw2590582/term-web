@@ -1,13 +1,13 @@
 export default function (term, events) {
-    const { recordType, recorder } = term.options;
+    const { recorder } = term.options;
     if (!recorder) return;
     const { $recorder } = term.template;
 
     events.proxy($recorder, 'click', () => {
-        if (term[recordType].recording) {
-            term[recordType].end();
+        if (term.recorder.recording) {
+            term.recorder.end();
         } else {
-            term[recordType].start();
+            term.recorder.start();
         }
     });
 

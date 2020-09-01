@@ -20,4 +20,10 @@ export default function (term, events) {
         const { log } = events.getLogFromEvent(event);
         if (log && log.href) window.open(log.href);
     });
+
+    if (term.options.autofocus) {
+        setTimeout(() => {
+            term.template.$content.click();
+        }, 10);
+    }
 }
