@@ -78,9 +78,6 @@ var term = new Term({
     // Use the display recorder button
     recorder: true,
 
-    // Type of recorder: gif or video
-    recordType: 'video',
-
     // Is it draggable
     draggable: true,
 
