@@ -6,7 +6,7 @@ export default function (term, events) {
         const key = event.keyCode;
 
         if (key === 13) {
-            term.emit('enter', $textarea.value.trim());
+            term.emit('enter', $textarea.value);
             $textarea.value = '';
         }
 

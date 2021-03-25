@@ -6,9 +6,9 @@ export default function (term) {
 
     function history(step) {
         const { cacheEmits } = term.drawer;
-        const inputs = cacheEmits.filter((item, index) => {
-            return item.type === INPUT && item.text.trim() && index !== cacheEmits.length - 1;
-        });
+        const inputs = cacheEmits.filter(
+            (item, index) => item.type === INPUT && item.text.trim() && index !== cacheEmits.length - 1,
+        );
         const input = inputs[inputs.length + currentIndex + step];
         if (input) {
             currentIndex += step;

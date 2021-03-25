@@ -25,7 +25,7 @@ export default {
         }),
         postcss({
             plugins: [
-                autoprefixer(),
+                // autoprefixer(),
                 cssnano({
                     preset: ['default'],
                 }),

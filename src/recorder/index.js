@@ -12,9 +12,7 @@ export default class Recorder {
     }
 
     get size() {
-        return this.blobs.reduce((result, item) => {
-            return result + item.size;
-        }, 0);
+        return this.blobs.reduce((result, item) => result + item.size, 0);
     }
 
     get duration() {
