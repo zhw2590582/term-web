@@ -1764,7 +1764,7 @@
 	function input (term, events) {
 	  var $textarea = term.template.$textarea;
 	  events.proxy($textarea, 'input', function () {
-	    term.emit('input', $textarea.value);
+	    term.emit('input', $textarea.value.trim());
 	  });
 	  events.proxy($textarea, 'paste', function () {
 	    term.emit('input', $textarea.value);
@@ -3881,7 +3881,7 @@
 	  }, {
 	    key: "version",
 	    get: function get() {
-	      return '1.1.8';
+	      return '1.1.9';
 	    }
 	  }, {
 	    key: "utils",
