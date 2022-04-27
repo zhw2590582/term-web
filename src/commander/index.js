@@ -132,7 +132,7 @@ export default class Commander {
         this.term.drawer.emit({
             type: INPUT,
             replace,
-            text: String(text),
+            text: String(text).trim(),
         });
         return this;
     }
